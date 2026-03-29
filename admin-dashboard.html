@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>لوحة الأدمن — SyriaExpress</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --gold:#c9a84c;--gold-light:#e8c96d;
+      --bg:#0f0f0f;--bg2:#181614;--card:#1a1814;--card2:#1e1b17;
+      --text:#f0e8d0;--text-muted:#8a7a5a;
+      --border:rgba(201,168,76,0.15);
+      --green:#4caf50;--orange:#ff9800;--blue:#2196f3;--red:#e05555;--purple:#9c27b0;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;}
+
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0.9rem 1.2rem;
+      background:rgba(15,15,15,0.96);
+      border-bottom:1px solid var(--border);
+      position:sticky;top:0;z-index:100;
+    }
+    .topbar-title{font-size:1rem;font-weight:700;}
+    .topbar-actions{display:flex;gap:0.6rem;align-items:center;}
+
+    .btn-verif{
+      padding:0.4rem 0.9rem;
+      background:rgba(224,85,85,0.15);color:var(--red);
+      border:1px solid rgba(224,85,85,0.3);border-radius:8px;
+      font-family:'Cairo',sans-serif;font-size:0.8rem;font-weight:700;
+      cursor:pointer;transition:all 0.2s;
+    }
+    .btn-verif:hover{background:rgba(224,85,85,0.25);}
+
+    .btn-admin-mode{
+      padding:0.4rem 0.9rem;
+      background:rgba(224,85,85,0.1);color:var(--red);
+      border:1px solid rgba(224,85,85,0.2);border-radius:8px;
+      font-family:'Cairo',sans-serif;font-size:0.8rem;font-weight:600;
+      cursor:pointer;
+    }
+
+    .btn-bell{width:36px;height:36px;background:var(--card);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;position:relative;}
+    .bell-dot{position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--red);}
+    .btn-menu{width:36px;height:36px;background:var(--card);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;}
+
+    .tabs{display:flex;gap:0;padding:0 1.2rem;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;}
+    .tab{padding:0.7rem 1rem;font-size:0.85rem;font-weight:600;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap;}
+    .tab:hover{color:var(--text);}
+    .tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+    .content{padding:1.2rem;}
+
+    /* SYSTEM STATUS */
+    .sys-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-bottom:1rem;}
+    .sys-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;animation:fadeUp 0.5s ease both;}
+    .sys-header{display:flex;align-items:center;gap:0.4rem;margin-bottom:0.4rem;font-size:0.72rem;color:var(--text-muted);}
+    .sys-dot{width:8px;height:8px;border-radius:50%;}
+    .dot-green{background:var(--green);animation:pulse 2s infinite;}
+    .dot-gold{background:var(--gold);}
+    .sys-value{font-size:0.92rem;font-weight:700;}
+    .sys-green{color:var(--green);}
+    .sys-gold{color:var(--gold);}
+
+    /* STATS */
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-bottom:1rem;}
+    .stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.2rem;position:relative;overflow:hidden;animation:fadeUp 0.5s ease both;}
+    .stat-card::before{content:'';position:absolute;top:0;right:0;left:0;height:3px;border-radius:14px 14px 0 0;}
+    .card-blue::before{background:linear-gradient(90deg,var(--blue),#64b5f6);}
+    .card-gold::before{background:linear-gradient(90deg,var(--gold),var(--gold-light));}
+    .card-orange::before{background:linear-gradient(90deg,var(--orange),#ffb74d);}
+    .card-green::before{background:linear-gradient(90deg,var(--green),#81c784);}
+    .card-red::before{background:linear-gradient(90deg,var(--red),#ef9a9a);}
+    .card-icon{font-size:1.8rem;margin-bottom:0.6rem;}
+    .card-value{font-size:2.2rem;font-weight:900;line-height:1;margin-bottom:0.3rem;}
+    .card-blue .card-value{color:var(--blue);}
+    .card-gold .card-value{color:var(--gold);}
+    .card-orange .card-value{color:var(--orange);}
+    .card-green .card-value{color:var(--green);}
+    .card-red .card-value{color:var(--red);}
+    .card-label{font-size:0.82rem;color:var(--text-muted);margin-bottom:0.3rem;}
+    .card-sub{font-size:0.72rem;}
+    .card-blue .card-sub{color:var(--blue);}
+    .card-gold .card-sub{color:var(--gold);}
+    .card-orange .card-sub{color:var(--orange);}
+    .card-green .card-sub{color:var(--green);}
+    .card-red .card-sub{color:var(--red);}
+
+    /* VERIFICATIONS */
+    .verif-list{display:flex;flex-direction:column;gap:0.8rem;}
+    .verif-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem;animation:fadeUp 0.4s ease both;}
+    .verif-card:hover{border-color:rgba(201,168,76,0.3);}
+    .verif-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:0.8rem;}
+    .verif-company{font-size:0.95rem;font-weight:700;margin-bottom:0.25rem;}
+    .verif-meta{font-size:0.78rem;color:var(--text-muted);line-height:1.6;}
+    .verif-actions{display:flex;gap:0.5rem;flex-wrap:wrap;flex-shrink:0;}
+    .tier-sel{padding:0.3rem 0.6rem;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Cairo',sans-serif;font-size:0.75rem;outline:none;}
+    .btn-approve{padding:0.35rem 0.9rem;background:rgba(76,175,80,0.15);color:var(--green);border:1px solid rgba(76,175,80,0.3);border-radius:6px;font-family:'Cairo',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
+    .btn-approve:hover{background:rgba(76,175,80,0.25);}
+    .btn-reject{padding:0.35rem 0.9rem;background:rgba(224,85,85,0.1);color:var(--red);border:1px solid rgba(224,85,85,0.2);border-radius:6px;font-family:'Cairo',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
+    .btn-reject:hover{background:rgba(224,85,85,0.2);}
+
+    /* USERS */
+    .users-table{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+    .table-row{display:grid;grid-template-columns:2fr 1fr 1fr auto;padding:0.9rem 1.2rem;border-bottom:1px solid var(--border);align-items:center;animation:fadeUp 0.4s ease both;}
+    .table-row:last-child{border-bottom:none;}
+    .table-row:hover{background:rgba(201,168,76,0.03);}
+    .table-header{display:grid;grid-template-columns:2fr 1fr 1fr auto;padding:0.6rem 1.2rem;background:var(--card2);border-bottom:1px solid var(--border);font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
+    .u-name{font-size:0.88rem;font-weight:600;}
+    .u-email{font-size:0.72rem;color:var(--text-muted);margin-top:0.1rem;}
+    .type-badge{display:inline-block;padding:0.18rem 0.55rem;border-radius:4px;font-size:0.7rem;font-weight:600;}
+    .t-buyer{background:rgba(33,150,243,0.15);color:var(--blue);}
+    .t-seller{background:rgba(201,168,76,0.15);color:var(--gold);}
+    .t-admin{background:rgba(224,85,85,0.15);color:var(--red);}
+    .active-dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+    .d-on{background:var(--green);}
+    .d-off{background:var(--red);}
+    .btn-tog{padding:0.25rem 0.6rem;border-radius:5px;font-family:'Cairo',sans-serif;font-size:0.72rem;font-weight:600;cursor:pointer;border:1px solid;transition:all 0.2s;}
+    .btn-sus{color:var(--orange);border-color:rgba(255,152,0,0.3);background:rgba(255,152,0,0.08);}
+    .btn-sus:hover{background:rgba(255,152,0,0.15);}
+    .btn-act-u{color:var(--green);border-color:rgba(76,175,80,0.3);background:rgba(76,175,80,0.08);}
+
+    .search-bar{display:flex;gap:0.8rem;margin-bottom:1rem;}
+    .search-input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:0.65rem 1rem;color:var(--text);font-family:'Cairo',sans-serif;font-size:0.85rem;outline:none;}
+    .search-input:focus{border-color:var(--gold);}
+    .search-input::placeholder{color:var(--text-muted);opacity:0.5;}
+    .filter-sel{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:0.65rem 0.8rem;color:var(--text);font-family:'Cairo',sans-serif;font-size:0.82rem;outline:none;}
+    select option{background:var(--card);}
+
+    .orders-section{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+    .orders-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.2rem;border-bottom:1px solid var(--border);}
+    .orders-title{display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;font-weight:700;}
+    .orders-title::before{content:'●';font-size:0.5rem;color:var(--gold);animation:pulse2 2s infinite;}
+    @keyframes pulse2{0%,100%{opacity:1}50%{opacity:0.3}}
+    .order-row{display:flex;align-items:center;gap:1rem;padding:0.9rem 1.2rem;border-bottom:1px solid var(--border);animation:fadeUp 0.4s ease both;}
+    .order-row:last-child{border-bottom:none;}
+    .order-row:hover{background:rgba(201,168,76,0.03);}
+    .status-badge{display:inline-flex;padding:0.18rem 0.6rem;border-radius:20px;font-size:0.7rem;font-weight:700;}
+    .s-pending{background:rgba(255,152,0,0.15);color:var(--orange);}
+    .s-confirmed{background:rgba(33,150,243,0.15);color:var(--blue);}
+    .s-shipped{background:rgba(156,39,176,0.15);color:#ab47bc;}
+    .s-delivered{background:rgba(76,175,80,0.15);color:var(--green);}
+    .s-cancelled{background:rgba(224,85,85,0.15);color:var(--red);}
+
+    .loading{text-align:center;padding:2rem;color:var(--text-muted);}
+    .spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+    .empty{text-align:center;padding:2.5rem;color:var(--text-muted);}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-title">نظرة عامة</div>
+  <div class="topbar-actions">
+    <button class="btn-verif" onclick="showTab('verifications',null)" id="verif-btn">⏳ 0 توثيقات معلّقة</button>
+    <div class="btn-bell">🔔<div class="bell-dot"></div></div>
+    <button class="btn-admin-mode">وضع 🔴 الإدارة</button>
+    <div class="btn-menu">☰</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('overview',this)">نظرة عامة</div>
+  <div class="tab" onclick="showTab('verifications',this)">طلبات التحقق</div>
+  <div class="tab" onclick="showTab('users',this)">المستخدمون</div>
+  <div class="tab" onclick="showTab('orders',this)">الطلبات</div>
+</div>
+
+<div class="content">
+
+  <!-- OVERVIEW -->
+  <div id="tab-overview">
+    <!-- SYSTEM STATUS -->
+    <div class="sys-grid">
+      <div class="sys-card" style="animation-delay:0s">
+        <div class="sys-header"><div class="sys-dot dot-green"></div> قاعدة البيانات</div>
+        <div class="sys-value sys-green">✓ سليمة</div>
+      </div>
+      <div class="sys-card" style="animation-delay:0.05s">
+        <div class="sys-header"><div class="sys-dot dot-green"></div> حالة الموقع</div>
+        <div class="sys-value sys-green">✓ يعمل</div>
+      </div>
+      <div class="sys-card" style="animation-delay:0.1s">
+        <div class="sys-header"><div class="sys-dot dot-green"></div> آخر نسخة احتياطية</div>
+        <div class="sys-value" style="color:var(--text)">منذ 6 ساعات</div>
+      </div>
+      <div class="sys-card" style="animation-delay:0.15s">
+        <div class="sys-header"><div class="sys-dot dot-gold"></div> التخزين السحابي</div>
+        <div class="sys-value sys-gold">73% مستخدم</div>
+      </div>
+    </div>
+
+    <!-- MAIN STATS -->
+    <div class="stats-grid">
+      <div class="stat-card card-blue" style="animation-delay:0.2s">
+        <div class="card-icon">👥</div>
+        <div class="card-value" id="s-buyers">—</div>
+        <div class="card-label">مشترٍ مسجّل</div>
+        <div class="card-sub" id="s-buyers-sub">⬆ +18 هذا الشهر</div>
+      </div>
+      <div class="stat-card card-gold" style="animation-delay:0.25s">
+        <div class="card-icon">🏭</div>
+        <div class="card-value" id="s-sellers">—</div>
+        <div class="card-label">بائع موثّق</div>
+        <div class="card-sub">⬆ +3 هذا الشهر</div>
+      </div>
+      <div class="stat-card card-orange" style="animation-delay:0.3s">
+        <div class="card-icon">📋</div>
+        <div class="card-value" id="s-verif">—</div>
+        <div class="card-label">توثيقات معلّقة</div>
+        <div class="card-sub">⚠ تحتاج مراجعة</div>
+      </div>
+      <div class="stat-card card-green" style="animation-delay:0.35s">
+        <div class="card-icon">📦</div>
+        <div class="card-value" id="s-orders">—</div>
+        <div class="card-label">إجمالي الطلبات</div>
+        <div class="card-sub">⬆ +127 هذا الشهر</div>
+      </div>
+      <div class="stat-card card-red" style="animation-delay:0.4s">
+        <div class="card-icon">🚫</div>
+        <div class="card-value" id="s-suspended">2</div>
+        <div class="card-label">حسابات موقوفة</div>
+        <div class="card-sub">لا تغيير</div>
+      </div>
+    </div>
+
+    <div class="orders-section">
+      <div class="orders-header">
+        <div class="orders-title">آخر الطلبات</div>
+      </div>
+      <div id="recent-orders"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+  </div>
+
+  <!-- VERIFICATIONS -->
+  <div id="tab-verifications" style="display:none">
+    <div class="verif-list" id="verif-list">
+      <div class="loading"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- USERS -->
+  <div id="tab-users" style="display:none">
+    <div class="search-bar">
+      <input class="search-input" type="text" id="user-search" placeholder="ابحث بالاسم أو البريد..." oninput="debounceUsers()"/>
+      <select class="filter-sel" id="user-type" onchange="loadUsers()">
+        <option value="">الكل</option>
+        <option value="buyer">مشترٍ</option>
+        <option value="seller">بائع</option>
+      </select>
+    </div>
+    <div class="users-table">
+      <div class="table-header"><div>المستخدم</div><div>النوع</div><div>الحالة</div><div>إجراء</div></div>
+      <div id="users-list"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+  </div>
+
+  <!-- ORDERS -->
+  <div id="tab-orders" style="display:none">
+    <div class="orders-section">
+      <div class="orders-header"><div class="orders-title">جميع الطلبات</div></div>
+      <div id="all-orders"><div class="loading"><div class="spinner"></div></div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const API = 'https://syriaexpress-backend-production.up.railway.app';
+  const token = localStorage.getItem('token');
+  const user = JSON.parse(localStorage.getItem('user')||'{}');
+  if(!token || user.user_type !== 'admin') window.location.href = 'login.html';
+
+  let userTimer = null;
+  const statusMap={pending:{l:'انتظار ⏳',c:'s-pending'},confirmed:{l:'مؤكد ✓',c:'s-confirmed'},shipped:{l:'شحن 🚚',c:'s-shipped'},delivered:{l:'تسليم ✅',c:'s-delivered'},cancelled:{l:'ملغي ✗',c:'s-cancelled'}};
+
+  function showTab(name, el) {
+    ['overview','verifications','users','orders'].forEach(t=>document.getElementById('tab-'+t).style.display='none');
+    document.getElementById('tab-'+name).style.display='block';
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    if(el) el.classList.add('active');
+    const titles={overview:'نظرة عامة',verifications:'طلبات التحقق',users:'المستخدمون',orders:'الطلبات'};
+    document.querySelector('.topbar-title').textContent=titles[name]||'';
+    if(name==='verifications') loadVerifications();
+    if(name==='users') loadUsers();
+    if(name==='orders') loadOrders();
+  }
+
+  async function loadOverview(){
+    try{
+      const r=await fetch(`${API}/api/admin/overview`,{headers:{'Authorization':'Bearer '+token}});
+      const d=await r.json();
+      const s=d.stats||{};
+      document.getElementById('s-buyers').textContent=s.buyers||0;
+      document.getElementById('s-sellers').textContent=s.verified_sellers||0;
+      document.getElementById('s-verif').textContent=s.pending_verif||0;
+      document.getElementById('s-orders').textContent=s.total_orders||0;
+      if(s.pending_verif>0) document.getElementById('verif-btn').textContent=`⏳ ${s.pending_verif} توثيقات معلّقة`;
+
+      const orders=d.recentOrders||[];
+      const el=document.getElementById('recent-orders');
+      if(!orders.length){el.innerHTML='<div class="empty">📭 لا توجد طلبات</div>';return;}
+      el.innerHTML=orders.map((o,i)=>{
+        const s2=statusMap[o.status]||{l:o.status,c:''};
+        const date=new Date(o.created_at).toLocaleDateString('ar-SY');
+        return `<div class="order-row" style="animation-delay:${i*0.04}s">
+          <div style="flex:1"><div style="font-size:0.88rem;font-weight:600">${o.name_ar||'منتج'}</div><div style="font-size:0.75rem;color:var(--text-muted)">${o.company_name_ar||''} → ${o.buyer_name||''}</div></div>
+          <div style="font-size:0.75rem;color:var(--text-muted)">${date}</div>
+          <div><span class="status-badge ${s2.c}">${s2.l}</span></div>
+        </div>`;
+      }).join('');
+    }catch{document.getElementById('recent-orders').innerHTML='<div class="empty">⚠️ تعذّر التحميل</div>';}
+  }
+
+  async function loadVerifications(){
+    try{
+      const r=await fetch(`${API}/api/admin/verifications?status=pending`,{headers:{'Authorization':'Bearer '+token}});
+      const list=await r.json();
+      const el=document.getElementById('verif-list');
+      if(!Array.isArray(list)||!list.length){el.innerHTML='<div class="empty">✅ لا توجد طلبات معلّقة</div>';return;}
+      el.innerHTML=list.map((v,i)=>`
+        <div class="verif-card" id="vc-${v.id}" style="animation-delay:${i*0.05}s">
+          <div class="verif-top">
+            <div>
+              <div class="verif-company">${v.company_name_ar||v.company_name_en||'شركة'}</div>
+              <div class="verif-meta">👤 ${v.owner_name||''} • 📧 ${v.owner_email||''}<br/>📍 ${v.governorate||''} • 🏭 ${v.activity_type||''}</div>
+            </div>
+            <div class="verif-actions">
+              <select class="tier-sel" id="tier-${v.id}">
+                <option value="none">بدون رتبة</option>
+                <option value="silver">Silver</option>
+                <option value="gold">Gold</option>
+              </select>
+              <button class="btn-approve" onclick="reviewVerif(${v.id},'approved')">قبول ✓</button>
+              <button class="btn-reject" onclick="reviewVerif(${v.id},'rejected')">رفض ✗</button>
+            </div>
+          </div>
+        </div>`).join('');
+    }catch{document.getElementById('verif-list').innerHTML='<div class="empty">⚠️ تعذّر التحميل</div>';}
+  }
+
+  async function reviewVerif(id,action){
+    const tier=document.getElementById(`tier-${id}`)?.value||'none';
+    try{
+      const r=await fetch(`${API}/api/admin/verifications/${id}`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({action,partner_tier:tier,admin_notes:''})});
+      if(r.ok){const c=document.getElementById(`vc-${id}`);if(c){c.style.opacity='0.4';c.style.pointerEvents='none';}}
+    }catch{alert('تعذّر التحديث');}
+  }
+
+  function debounceUsers(){clearTimeout(userTimer);userTimer=setTimeout(loadUsers,400);}
+
+  async function loadUsers(){
+    const search=document.getElementById('user-search')?.value.trim()||'';
+    const type=document.getElementById('user-type')?.value||'';
+    const el=document.getElementById('users-list');
+    el.innerHTML='<div class="loading"><div class="spinner"></div></div>';
+    try{
+      const p=new URLSearchParams();
+      if(search)p.set('search',search);if(type)p.set('type',type);p.set('limit','20');
+      const r=await fetch(`${API}/api/admin/users?${p}`,{headers:{'Authorization':'Bearer '+token}});
+      const users=await r.json();
+      const list=Array.isArray(users)?users:[];
+      if(!list.length){el.innerHTML='<div class="empty">👥 لا توجد نتائج</div>';return;}
+      const tc={buyer:'t-buyer',seller:'t-seller',admin:'t-admin'};
+      const tl={buyer:'مشترٍ',seller:'بائع',admin:'أدمن'};
+      el.innerHTML=list.map((u,i)=>`
+        <div class="table-row" style="animation-delay:${i*0.03}s">
+          <div><div class="u-name">${u.name||'—'}</div><div class="u-email">${u.email||''}</div></div>
+          <div><span class="type-badge ${tc[u.user_type]||''}">${tl[u.user_type]||u.user_type}</span></div>
+          <div><span class="active-dot ${u.is_active?'d-on':'d-off'}"></span></div>
+          <div>${u.user_type!=='admin'?`<button class="btn-tog ${u.is_active?'btn-sus':'btn-act-u'}" onclick="toggleUser(${u.id},${!u.is_active})">${u.is_active?'تعليق':'تفعيل'}</button>`:'—'}</div>
+        </div>`).join('');
+    }catch{el.innerHTML='<div class="empty">⚠️ تعذّر التحميل</div>';}
+  }
+
+  async function toggleUser(id,active){
+    try{await fetch(`${API}/api/admin/users/${id}/status`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({is_active:active})});loadUsers();}
+    catch{alert('تعذّر تحديث الحالة');}
+  }
+
+  async function loadOrders(){
+    const el=document.getElementById('all-orders');
+    try{
+      const r=await fetch(`${API}/api/orders/my`,{headers:{'Authorization':'Bearer '+token}});
+      const data=await r.json();
+      const orders=Array.isArray(data)?data:[];
+      if(!orders.length){el.innerHTML='<div class="empty">📭 لا توجد طلبات</div>';return;}
+      el.innerHTML=orders.map((o,i)=>{
+        const s=statusMap[o.status]||{l:o.status,c:''};
+        const date=new Date(o.created_at).toLocaleDateString('ar-SY');
+        return `<div class="order-row" style="animation-delay:${i*0.04}s">
+          <div style="flex:1"><div style="font-size:0.88rem;font-weight:600">${o.name_ar||'منتج'}</div><div style="font-size:0.75rem;color:var(--text-muted)">${o.company_name_ar||''}</div></div>
+          <div style="font-size:0.75rem;color:var(--text-muted)">${date}</div>
+          <span class="status-badge ${s.c}">${s.l}</span>
+        </div>`;
+      }).join('');
+    }catch{el.innerHTML='<div class="empty">⚠️ تعذّر التحميل</div>';}
+  }
+
+  function logout(){localStorage.clear();window.location.href='login.html';}
+  loadOverview();
+</script>
+</body>
+</html>
