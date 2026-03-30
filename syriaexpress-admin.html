@@ -16,7 +16,17 @@
 }
 body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);direction:rtl;min-height:100vh;}
 
-
+/* HEADER */
+.header{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:56px;background:rgba(15,14,12,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-gold);}
+.header-right{display:flex;align-items:center;gap:10px}
+.btn-home{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);color:var(--text-dim);padding:7px 12px;border-radius:8px;font-family:'Cairo',sans-serif;font-size:12px;cursor:pointer;text-decoration:none;transition:all 0.2s;white-space:nowrap;}
+.btn-home:hover{border-color:var(--gold);color:var(--gold)}
+.btn-home svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
+.header-title{font-size:15px;font-weight:700;white-space:nowrap}
+.header-left{display:flex;align-items:center;gap:8px}
+.btn-logout{display:flex;align-items:center;gap:5px;background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.25);padding:7px 12px;border-radius:8px;font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.btn-logout:hover{background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.4)}
+.btn-logout svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
 
 /* MAIN */
 main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:16px;}
@@ -27,24 +37,19 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 .stat-card.green{border-top:3px solid var(--green)}
 .stat-card.gold{border-top:3px solid var(--gold)}
 .stat-card.blue{border-top:3px solid var(--blue)}
-.stat-card.purple{border-top:3px solid var(--purple)}
 .stat-card.orange{border-top:3px solid var(--orange)}
 .stat-icon{font-size:26px;margin-bottom:8px;display:block}
 .stat-num{font-size:32px;font-weight:900;line-height:1;margin-bottom:4px}
 .stat-card.green .stat-num{color:var(--green)}
 .stat-card.gold .stat-num{color:var(--gold)}
 .stat-card.blue .stat-num{color:var(--blue)}
-.stat-card.purple .stat-num{color:var(--purple)}
 .stat-card.orange .stat-num{color:var(--orange)}
 .stat-label{font-size:12px;color:var(--text-dim);margin-bottom:4px}
 .stat-sub{font-size:11px;color:var(--text-dim);opacity:0.7}
 
 /* BOX */
 .box{background:var(--bg3);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
-.box-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 16px;border-bottom:1px solid var(--border);
-}
+.box-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);}
 .box-title{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;}
 .box-dot{width:8px;height:8px;border-radius:50%;background:var(--gold)}
 .box-dot.orange{background:var(--orange)}
@@ -55,10 +60,7 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 
 /* VERIFICATIONS */
 .verif-list{display:flex;flex-direction:column;}
-.verif-row{
-  display:flex;align-items:center;gap:12px;
-  padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);
-}
+.verif-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);}
 .verif-row:last-child{border-bottom:none}
 .verif-icon{font-size:26px;min-width:32px;text-align:center}
 .verif-info{flex:1}
@@ -70,16 +72,9 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 
 /* USERS LIST */
 .users-list{display:flex;flex-direction:column;}
-.user-row{
-  display:flex;align-items:center;gap:12px;
-  padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);
-}
+.user-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);}
 .user-row:last-child{border-bottom:none}
-.user-avatar{
-  width:36px;height:36px;border-radius:50%;
-  background:var(--bg4);border:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;font-size:16px;
-}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;}
 .user-info{flex:1}
 .user-name{font-size:13px;font-weight:700}
 .user-email{font-size:11px;color:var(--text-dim)}
@@ -90,21 +85,14 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 
 /* ANALYTICS */
 .analytics-rows{padding:4px 0}
-.analytics-row{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);
-}
+.analytics-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);}
 .analytics-row:last-child{border-bottom:none}
 .analytics-label{font-size:14px;color:var(--text-dim)}
 .analytics-val{font-size:16px;font-weight:800;color:var(--gold)}
 
 /* QUICK ACTIONS */
 .quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px;}
-.quick-btn{
-  background:var(--bg4);border:1px solid var(--border);
-  border-radius:10px;padding:14px;text-align:center;cursor:pointer;
-  transition:border-color 0.2s;
-}
+.quick-btn{background:var(--bg4);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:border-color 0.2s;}
 .quick-btn:hover{border-color:var(--border-gold)}
 .quick-btn .icon{font-size:24px;margin-bottom:6px}
 .quick-btn .label{font-size:12px;color:var(--text-dim)}
@@ -114,53 +102,6 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 .empty-icon{font-size:34px;margin-bottom:10px;}
 .empty-text{font-size:14px;font-weight:700;color:var(--text-dim);margin-bottom:4px;}
 .empty-sub{font-size:12px;color:var(--text-dim);opacity:0.6;line-height:1.5;}
-
-
-/* HEADER */
-.header{
-  position:sticky;top:0;z-index:50;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 16px;height:56px;
-  background:rgba(15,14,12,0.95);backdrop-filter:blur(12px);
-  border-bottom:1px solid var(--border-gold);
-}
-.header-right{display:flex;align-items:center;gap:10px}
-.btn-home{
-  display:flex;align-items:center;gap:6px;
-  background:var(--bg3);border:1px solid var(--border);
-  color:var(--text-dim);padding:7px 12px;border-radius:8px;
-  font-family:'Cairo',sans-serif;font-size:12px;cursor:pointer;
-  text-decoration:none;transition:all 0.2s;white-space:nowrap;
-}
-.btn-home:hover{border-color:var(--gold);color:var(--gold)}
-.btn-home svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
-.header-title{font-size:15px;font-weight:700;white-space:nowrap}
-.header-left{display:flex;align-items:center;gap:8px}
-.btn-notif{
-  background:var(--bg3);border:1px solid var(--border);
-  width:36px;height:36px;border-radius:8px;display:flex;align-items:center;
-  justify-content:center;cursor:pointer;font-size:16px;flex-shrink:0;
-}
-.btn-logout{
-  display:flex;align-items:center;gap:5px;
-  background:rgba(239,68,68,0.1);color:#f87171;
-  border:1px solid rgba(239,68,68,0.25);
-  padding:7px 12px;border-radius:8px;
-  font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;
-  cursor:pointer;transition:all 0.2s;white-space:nowrap;
-}
-.btn-logout:hover{background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.4)}
-.btn-logout svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
-.btn-add{
-  background:var(--gold);color:#0F0E0C;border:none;
-  padding:7px 12px;border-radius:8px;font-family:'Cairo',sans-serif;
-  font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;
-}
-.btn-new-order{
-  background:var(--gold);color:#0F0E0C;border:none;
-  padding:7px 12px;border-radius:8px;font-family:'Cairo',sans-serif;
-  font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;
-}
 </style>
 </head>
 <body>
@@ -188,27 +129,27 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
   <div class="stats-grid">
     <div class="stat-card blue">
       <span class="stat-icon">👤</span>
-      <div class="stat-num">0</div>
+      <div class="stat-num" id="stat-users">—</div>
       <div class="stat-label">إجمالي المستخدمين</div>
-      <div class="stat-sub">لا يوجد بعد</div>
+      <div class="stat-sub" id="stat-users-sub">جاري التحميل...</div>
     </div>
     <div class="stat-card gold">
       <span class="stat-icon">🏭</span>
-      <div class="stat-num">0</div>
+      <div class="stat-num" id="stat-sellers">—</div>
       <div class="stat-label">البائعون النشطون</div>
-      <div class="stat-sub">لا يوجد بعد</div>
+      <div class="stat-sub" id="stat-sellers-sub">جاري التحميل...</div>
     </div>
     <div class="stat-card orange">
       <span class="stat-icon">⏳</span>
-      <div class="stat-num">0</div>
+      <div class="stat-num" id="stat-verif">—</div>
       <div class="stat-label">طلبات توثيق</div>
       <div class="stat-sub">بانتظار المراجعة</div>
     </div>
     <div class="stat-card green">
       <span class="stat-icon">📦</span>
-      <div class="stat-num">0</div>
+      <div class="stat-num" id="stat-orders">—</div>
       <div class="stat-label">إجمالي الطلبات</div>
-      <div class="stat-sub">لا يوجد بعد</div>
+      <div class="stat-sub" id="stat-orders-sub">جاري التحميل...</div>
     </div>
   </div>
 
@@ -218,22 +159,10 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
       <div class="box-title"><span class="box-dot"></span> إجراءات سريعة</div>
     </div>
     <div class="quick-actions">
-      <div class="quick-btn">
-        <div class="icon">✅</div>
-        <div class="label">مراجعة التوثيق</div>
-      </div>
-      <div class="quick-btn">
-        <div class="icon">👥</div>
-        <div class="label">إدارة المستخدمين</div>
-      </div>
-      <div class="quick-btn">
-        <div class="icon">📊</div>
-        <div class="label">التحليلات</div>
-      </div>
-      <div class="quick-btn">
-        <div class="icon">🗂️</div>
-        <div class="label">إدارة الفئات</div>
-      </div>
+      <div class="quick-btn"><div class="icon">✅</div><div class="label">مراجعة التوثيق</div></div>
+      <div class="quick-btn"><div class="icon">👥</div><div class="label">إدارة المستخدمين</div></div>
+      <div class="quick-btn"><div class="icon">📊</div><div class="label">التحليلات</div></div>
+      <div class="quick-btn"><div class="icon">🗂️</div><div class="label">إدارة الفئات</div></div>
     </div>
   </div>
 
@@ -243,12 +172,8 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
       <div class="box-title"><span class="box-dot orange"></span> طلبات التوثيق</div>
       <a href="#" class="box-link">عرض الكل ←</a>
     </div>
-    <div class="verif-list">
-      <div class="empty-state">
-        <div class="empty-icon">📋</div>
-        <div class="empty-text">لا توجد طلبات توثيق</div>
-        <div class="empty-sub">ستظهر طلبات البائعين الجدد هنا للمراجعة</div>
-      </div>
+    <div class="verif-list" id="verif-list">
+      <div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-text">جاري التحميل...</div></div>
     </div>
   </div>
 
@@ -258,12 +183,8 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
       <div class="box-title"><span class="box-dot blue"></span> المستخدمون</div>
       <a href="#" class="box-link">عرض الكل ←</a>
     </div>
-    <div class="users-list">
-      <div class="empty-state">
-        <div class="empty-icon">👥</div>
-        <div class="empty-text">لا يوجد مستخدمون بعد</div>
-        <div class="empty-sub">سيظهر المستخدمون المسجلون هنا</div>
-      </div>
+    <div class="users-list" id="users-list">
+      <div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-text">جاري التحميل...</div></div>
     </div>
   </div>
 
@@ -273,22 +194,10 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
       <div class="box-title"><span class="box-dot green"></span> التحليلات</div>
     </div>
     <div class="analytics-rows">
-      <div class="analytics-row">
-        <span class="analytics-label">إجمالي المبيعات</span>
-        <span class="analytics-val">—</span>
-      </div>
-      <div class="analytics-row">
-        <span class="analytics-label">متوسط قيمة الطلب</span>
-        <span class="analytics-val">—</span>
-      </div>
-      <div class="analytics-row">
-        <span class="analytics-label">أكثر الفئات نشاطاً</span>
-        <span class="analytics-val">—</span>
-      </div>
-      <div class="analytics-row">
-        <span class="analytics-label">معدل إتمام الطلبات</span>
-        <span class="analytics-val">—</span>
-      </div>
+      <div class="analytics-row"><span class="analytics-label">إجمالي المبيعات</span><span class="analytics-val" id="anal-sales">—</span></div>
+      <div class="analytics-row"><span class="analytics-label">متوسط قيمة الطلب</span><span class="analytics-val" id="anal-avg">—</span></div>
+      <div class="analytics-row"><span class="analytics-label">أكثر الفئات نشاطاً</span><span class="analytics-val" id="anal-cat">—</span></div>
+      <div class="analytics-row"><span class="analytics-label">معدل إتمام الطلبات</span><span class="analytics-val" id="anal-rate">—</span></div>
     </div>
   </div>
 
@@ -296,17 +205,99 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 
 <script>
 const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
-// TODO: GET /api/admin/overview
-// TODO: GET /api/admin/verifications
-// TODO: GET /api/admin/analytics
 
+function getToken() { return localStorage.getItem('token'); }
+function authHeaders() {
+  return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` };
+}
 
+const user = JSON.parse(localStorage.getItem('user') || '{}');
+if (!getToken() || user.user_type !== 'admin') { window.location.href = 'login.html'; }
+
+async function loadAll() {
+  await Promise.all([loadOverview(), loadVerifications(), loadAnalytics()]);
+}
+
+async function loadOverview() {
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/overview`, { headers: authHeaders() });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    document.getElementById('stat-users').textContent = data.total_users ?? data.users ?? '0';
+    document.getElementById('stat-users-sub').textContent = `مشتري: ${data.buyers ?? 0} | بائع: ${data.sellers ?? 0}`;
+    document.getElementById('stat-sellers').textContent = data.active_sellers ?? data.sellers ?? '0';
+    document.getElementById('stat-sellers-sub').textContent = 'بائع نشط';
+    document.getElementById('stat-verif').textContent = data.pending_verifications ?? data.pending ?? '0';
+    document.getElementById('stat-orders').textContent = data.total_orders ?? data.orders ?? '0';
+    document.getElementById('stat-orders-sub').textContent = `هذا الشهر: ${data.orders_this_month ?? '—'}`;
+  } catch {
+    ['stat-users','stat-sellers','stat-verif','stat-orders'].forEach(id => {
+      document.getElementById(id).textContent = '—';
+    });
+  }
+}
+
+async function loadVerifications() {
+  const list = document.getElementById('verif-list');
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/verifications`, { headers: authHeaders() });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const items = data.verifications ?? data.requests ?? data ?? [];
+    if (!items.length) {
+      list.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا توجد طلبات توثيق</div><div class="empty-sub">ستظهر طلبات البائعين الجدد هنا للمراجعة</div></div>`;
+      return;
+    }
+    list.innerHTML = items.map(v => `
+      <div class="verif-row" id="verif-${v.id}">
+        <div class="verif-icon">🏭</div>
+        <div class="verif-info">
+          <div class="verif-name">${v.company_name_ar || v.seller_name || v.name || 'بائع جديد'}</div>
+          <div class="verif-type">${v.activity_type || ''} · ${v.governorate || ''}</div>
+        </div>
+        <div class="verif-actions">
+          <button class="btn-approve" onclick="handleVerif('${v.id}','approved')">قبول</button>
+          <button class="btn-reject" onclick="handleVerif('${v.id}','rejected')">رفض</button>
+        </div>
+      </div>`).join('');
+  } catch {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">تعذّر تحميل البيانات</div><div class="empty-sub">تحقق من اتصالك أو حاول مرة ثانية</div></div>`;
+  }
+}
+
+async function handleVerif(id, status) {
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/verifications/${id}`, {
+      method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ status })
+    });
+    if (!res.ok) throw new Error();
+    const row = document.getElementById(`verif-${id}`);
+    if (row) { row.style.transition='opacity 0.3s'; row.style.opacity='0'; setTimeout(()=>{row.remove();loadOverview();},300); }
+  } catch { alert('حدث خطأ، حاول مرة ثانية'); }
+}
+
+async function loadAnalytics() {
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/analytics`, { headers: authHeaders() });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const fmt = n => n != null ? Number(n).toLocaleString('ar-SY') : '—';
+    document.getElementById('anal-sales').textContent = data.total_sales != null ? `${fmt(data.total_sales)} ل.س` : '—';
+    document.getElementById('anal-avg').textContent = data.avg_order_value != null ? `${fmt(data.avg_order_value)} ل.س` : '—';
+    document.getElementById('anal-cat').textContent = data.top_category ?? '—';
+    document.getElementById('anal-rate').textContent = data.completion_rate != null ? `${data.completion_rate}%` : '—';
+  } catch {
+    ['anal-sales','anal-avg','anal-cat','anal-rate'].forEach(id => { document.getElementById(id).textContent = '—'; });
+  }
+}
 
 function logout() {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
   window.location.href = 'syriaexpress-landing.html';
 }
+
+loadAll();
 </script>
 </body>
 </html>
