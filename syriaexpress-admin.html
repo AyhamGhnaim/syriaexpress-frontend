@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة الإدارة — SyriaExpress</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C9A84C;--gold-light:#E8C96A;--gold-dim:#8B6914;
+  --bg:#0F0E0C;--bg2:#161410;--bg3:#1C1A16;--bg4:#221F19;
+  --text:#F5F0E8;--text-dim:#A89880;
+  --border:#2A2620;--border-gold:rgba(201,168,76,0.25);
+  --green:#4ade80;--blue:#60a5fa;--orange:#fb923c;--purple:#a78bfa;--red:#f87171;
+}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);direction:rtl;min-height:100vh;}
+
+/* HEADER */
+.header{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;height:56px;
+  background:rgba(15,14,12,0.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border-gold);
+}
+.header-right{display:flex;align-items:center;gap:10px}
+.btn-home{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--text-dim);padding:8px 14px;border-radius:8px;
+  font-family:'Cairo',sans-serif;font-size:13px;cursor:pointer;
+  text-decoration:none;transition:all 0.2s;
+}
+.btn-home:hover{border-color:var(--gold);color:var(--gold)}
+.btn-home svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+.header-title{font-size:16px;font-weight:700}
+.admin-badge{
+  background:rgba(129,140,248,0.15);color:var(--purple);
+  border:1px solid rgba(129,140,248,0.3);
+  padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;
+}
+
+/* MAIN */
+main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:16px;}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:16px;}
+.stat-card.green{border-top:3px solid var(--green)}
+.stat-card.gold{border-top:3px solid var(--gold)}
+.stat-card.blue{border-top:3px solid var(--blue)}
+.stat-card.purple{border-top:3px solid var(--purple)}
+.stat-card.orange{border-top:3px solid var(--orange)}
+.stat-icon{font-size:26px;margin-bottom:8px;display:block}
+.stat-num{font-size:32px;font-weight:900;line-height:1;margin-bottom:4px}
+.stat-card.green .stat-num{color:var(--green)}
+.stat-card.gold .stat-num{color:var(--gold)}
+.stat-card.blue .stat-num{color:var(--blue)}
+.stat-card.purple .stat-num{color:var(--purple)}
+.stat-card.orange .stat-num{color:var(--orange)}
+.stat-label{font-size:12px;color:var(--text-dim);margin-bottom:4px}
+.stat-sub{font-size:11px;color:var(--text-dim);opacity:0.7}
+
+/* BOX */
+.box{background:var(--bg3);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.box-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid var(--border);
+}
+.box-title{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;}
+.box-dot{width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.box-dot.orange{background:var(--orange)}
+.box-dot.blue{background:var(--blue)}
+.box-dot.green{background:var(--green)}
+.box-link{font-size:12px;color:var(--text-dim);text-decoration:none;}
+.box-link:hover{color:var(--gold)}
+
+/* VERIFICATIONS */
+.verif-list{display:flex;flex-direction:column;}
+.verif-row{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);
+}
+.verif-row:last-child{border-bottom:none}
+.verif-icon{font-size:26px;min-width:32px;text-align:center}
+.verif-info{flex:1}
+.verif-name{font-size:14px;font-weight:700}
+.verif-type{font-size:11px;color:var(--text-dim)}
+.verif-actions{display:flex;gap:8px}
+.btn-approve{background:rgba(74,222,128,0.15);color:var(--green);border:1px solid rgba(74,222,128,0.3);padding:6px 12px;border-radius:6px;font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;}
+.btn-reject{background:rgba(248,113,113,0.15);color:var(--red);border:1px solid rgba(248,113,113,0.3);padding:6px 12px;border-radius:6px;font-family:'Cairo',sans-serif;font-size:12px;cursor:pointer;}
+
+/* USERS LIST */
+.users-list{display:flex;flex-direction:column;}
+.user-row{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);
+}
+.user-row:last-child{border-bottom:none}
+.user-avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--bg4);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+}
+.user-info{flex:1}
+.user-name{font-size:13px;font-weight:700}
+.user-email{font-size:11px;color:var(--text-dim)}
+.user-type-tag{padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;}
+.user-type-tag.buyer{background:rgba(74,222,128,0.1);color:var(--green)}
+.user-type-tag.seller{background:rgba(201,168,76,0.1);color:var(--gold)}
+.user-type-tag.admin{background:rgba(129,140,248,0.1);color:var(--purple)}
+
+/* ANALYTICS */
+.analytics-rows{padding:4px 0}
+.analytics-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);
+}
+.analytics-row:last-child{border-bottom:none}
+.analytics-label{font-size:14px;color:var(--text-dim)}
+.analytics-val{font-size:16px;font-weight:800;color:var(--gold)}
+
+/* QUICK ACTIONS */
+.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px;}
+.quick-btn{
+  background:var(--bg4);border:1px solid var(--border);
+  border-radius:10px;padding:14px;text-align:center;cursor:pointer;
+  transition:border-color 0.2s;
+}
+.quick-btn:hover{border-color:var(--border-gold)}
+.quick-btn .icon{font-size:24px;margin-bottom:6px}
+.quick-btn .label{font-size:12px;color:var(--text-dim)}
+
+/* EMPTY */
+.empty-state{padding:28px 16px;text-align:center;}
+.empty-icon{font-size:34px;margin-bottom:10px;}
+.empty-text{font-size:14px;font-weight:700;color:var(--text-dim);margin-bottom:4px;}
+.empty-sub{font-size:12px;color:var(--text-dim);opacity:0.6;line-height:1.5;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-right">
+    <a href="syriaexpress-landing.html" class="btn-home">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      الرئيسية
+    </a>
+    <span class="header-title">لوحة الإدارة</span>
+  </div>
+  <div>
+    <span class="admin-badge">⚙️ Admin</span>
+  </div>
+</div>
+
+<main>
+
+  <!-- STAT CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <span class="stat-icon">👤</span>
+      <div class="stat-num">0</div>
+      <div class="stat-label">إجمالي المستخدمين</div>
+      <div class="stat-sub">لا يوجد بعد</div>
+    </div>
+    <div class="stat-card gold">
+      <span class="stat-icon">🏭</span>
+      <div class="stat-num">0</div>
+      <div class="stat-label">البائعون النشطون</div>
+      <div class="stat-sub">لا يوجد بعد</div>
+    </div>
+    <div class="stat-card orange">
+      <span class="stat-icon">⏳</span>
+      <div class="stat-num">0</div>
+      <div class="stat-label">طلبات توثيق</div>
+      <div class="stat-sub">بانتظار المراجعة</div>
+    </div>
+    <div class="stat-card green">
+      <span class="stat-icon">📦</span>
+      <div class="stat-num">0</div>
+      <div class="stat-label">إجمالي الطلبات</div>
+      <div class="stat-sub">لا يوجد بعد</div>
+    </div>
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <div class="box">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot"></span> إجراءات سريعة</div>
+    </div>
+    <div class="quick-actions">
+      <div class="quick-btn">
+        <div class="icon">✅</div>
+        <div class="label">مراجعة التوثيق</div>
+      </div>
+      <div class="quick-btn">
+        <div class="icon">👥</div>
+        <div class="label">إدارة المستخدمين</div>
+      </div>
+      <div class="quick-btn">
+        <div class="icon">📊</div>
+        <div class="label">التحليلات</div>
+      </div>
+      <div class="quick-btn">
+        <div class="icon">🗂️</div>
+        <div class="label">إدارة الفئات</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VERIFICATIONS -->
+  <div class="box">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot orange"></span> طلبات التوثيق</div>
+      <a href="#" class="box-link">عرض الكل ←</a>
+    </div>
+    <div class="verif-list">
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-text">لا توجد طلبات توثيق</div>
+        <div class="empty-sub">ستظهر طلبات البائعين الجدد هنا للمراجعة</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- USERS -->
+  <div class="box">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot blue"></span> المستخدمون</div>
+      <a href="#" class="box-link">عرض الكل ←</a>
+    </div>
+    <div class="users-list">
+      <div class="empty-state">
+        <div class="empty-icon">👥</div>
+        <div class="empty-text">لا يوجد مستخدمون بعد</div>
+        <div class="empty-sub">سيظهر المستخدمون المسجلون هنا</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANALYTICS -->
+  <div class="box">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot green"></span> التحليلات</div>
+    </div>
+    <div class="analytics-rows">
+      <div class="analytics-row">
+        <span class="analytics-label">إجمالي المبيعات</span>
+        <span class="analytics-val">—</span>
+      </div>
+      <div class="analytics-row">
+        <span class="analytics-label">متوسط قيمة الطلب</span>
+        <span class="analytics-val">—</span>
+      </div>
+      <div class="analytics-row">
+        <span class="analytics-label">أكثر الفئات نشاطاً</span>
+        <span class="analytics-val">—</span>
+      </div>
+      <div class="analytics-row">
+        <span class="analytics-label">معدل إتمام الطلبات</span>
+        <span class="analytics-val">—</span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
+// TODO: GET /api/admin/overview
+// TODO: GET /api/admin/verifications
+// TODO: GET /api/admin/analytics
+</script>
+</body>
+</html>

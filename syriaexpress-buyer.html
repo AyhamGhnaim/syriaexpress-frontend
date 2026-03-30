@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة المشتري — SyriaExpress</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C9A84C;--gold-light:#E8C96A;--gold-dim:#8B6914;
+  --bg:#0F0E0C;--bg2:#161410;--bg3:#1C1A16;--bg4:#221F19;
+  --text:#F5F0E8;--text-dim:#A89880;
+  --border:#2A2620;--border-gold:rgba(201,168,76,0.25);
+  --green:#4ade80;--blue:#60a5fa;--orange:#fb923c;--purple:#a78bfa;--red:#f87171;
+}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);direction:rtl;min-height:100vh;}
+
+/* HEADER */
+.header{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;height:56px;
+  background:rgba(15,14,12,0.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border-gold);
+}
+.header-right{display:flex;align-items:center;gap:10px}
+.btn-home{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--text-dim);padding:8px 14px;border-radius:8px;
+  font-family:'Cairo',sans-serif;font-size:13px;cursor:pointer;
+  text-decoration:none;transition:all 0.2s;
+}
+.btn-home:hover{border-color:var(--gold);color:var(--gold)}
+.btn-home svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+.header-title{font-size:16px;font-weight:700}
+.header-left{display:flex;align-items:center;gap:10px}
+.btn-notif{
+  background:var(--bg3);border:1px solid var(--border);
+  width:38px;height:38px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;font-size:18px;
+}
+.btn-new-order{
+  background:var(--gold);color:#0F0E0C;border:none;
+  padding:8px 14px;border-radius:8px;font-family:'Cairo',sans-serif;
+  font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;
+}
+
+/* MAIN */
+main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:16px;}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.stat-card{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:14px;padding:16px;
+}
+.stat-card.green{border-top:3px solid var(--green)}
+.stat-card.gold{border-top:3px solid var(--gold)}
+.stat-card.orange{border-top:3px solid var(--orange)}
+.stat-card.blue{border-top:3px solid var(--blue)}
+.stat-icon{font-size:26px;margin-bottom:8px;display:block}
+.stat-num{font-size:32px;font-weight:900;line-height:1;margin-bottom:4px}
+.stat-card.green .stat-num{color:var(--green)}
+.stat-card.gold .stat-num{color:var(--gold)}
+.stat-card.orange .stat-num{color:var(--orange)}
+.stat-card.blue .stat-num{color:var(--blue)}
+.stat-label{font-size:12px;color:var(--text-dim);margin-bottom:4px}
+.stat-sub{font-size:11px;color:var(--text-dim);opacity:0.7}
+
+/* BOX */
+.box{background:var(--bg3);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.box-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid var(--border);
+}
+.box-title{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;}
+.box-dot{width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.box-dot.green{background:var(--green)}
+.box-dot.blue{background:var(--blue)}
+.box-link{font-size:12px;color:var(--text-dim);text-decoration:none;}
+.box-link:hover{color:var(--gold)}
+
+/* ORDERS TABLE */
+.orders-list{display:flex;flex-direction:column;}
+.order-row{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);
+}
+.order-row:last-child{border-bottom:none}
+.order-num{font-size:13px;font-weight:700;color:var(--gold);min-width:48px}
+.order-icon{font-size:22px;min-width:28px;text-align:center}
+.order-info{flex:1}
+.order-name{font-size:13px;font-weight:700}
+.order-company{font-size:11px;color:var(--text-dim)}
+.order-status{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap;}
+.order-status.shipped{background:rgba(167,139,250,0.15);color:var(--purple);border:1px solid rgba(167,139,250,0.3)}
+.order-status.confirmed{background:rgba(96,165,250,0.15);color:var(--blue);border:1px solid rgba(96,165,250,0.3)}
+.order-status.pending{background:rgba(251,146,60,0.15);color:var(--orange);border:1px solid rgba(251,146,60,0.3)}
+.order-status.delivered{background:rgba(74,222,128,0.15);color:var(--green);border:1px solid rgba(74,222,128,0.3)}
+.order-date{font-size:11px;color:var(--text-dim);min-width:40px;text-align:left}
+.order-action{font-size:11px;color:var(--text-dim);background:var(--bg4);border:1px solid var(--border);padding:4px 10px;border-radius:6px;cursor:pointer;font-family:'Cairo',sans-serif;white-space:nowrap;}
+
+/* TRACKER */
+.tracker-box{padding:16px;}
+.tracker-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.tracker-id{font-size:14px;font-weight:700;color:var(--gold)}
+.tracker-product{font-size:14px;font-weight:700;margin-bottom:16px;text-align:center}
+.tracker-steps{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:12px;}
+.t-step{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.t-circle{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;border:2px solid var(--border);background:var(--bg4);
+}
+.t-circle.done{background:var(--green);border-color:var(--green);color:#fff}
+.t-circle.active{background:var(--gold);border-color:var(--gold);color:#0F0E0C}
+.t-circle.waiting{background:var(--bg4);border-color:var(--border);opacity:0.5}
+.t-label{font-size:10px;color:var(--text-dim)}
+.t-line{width:40px;height:2px;background:var(--border);margin-bottom:20px;}
+.t-line.done{background:var(--green)}
+.tracker-eta{font-size:12px;color:var(--text-dim);text-align:center}
+
+/* NOTIFICATIONS */
+.notif-list{display:flex;flex-direction:column;}
+.notif-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);
+}
+.notif-item:last-child{border-bottom:none}
+.notif-left-bar{width:3px;border-radius:2px;align-self:stretch;min-height:38px}
+.notif-left-bar.orange{background:var(--orange)}
+.notif-left-bar.green{background:var(--green)}
+.notif-left-bar.blue{background:var(--blue)}
+.notif-icon-box{
+  width:38px;height:38px;min-width:38px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  background:var(--bg4);border:1px solid var(--border);
+}
+.notif-text{font-size:13px;font-weight:600;margin-bottom:2px}
+.notif-time{font-size:11px;color:var(--text-dim)}
+
+/* QUICK BROWSE */
+.cats-grid-small{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;
+  padding:16px;
+}
+.cat-btn{
+  background:var(--bg4);border:1px solid var(--border);
+  border-radius:10px;padding:12px 8px;text-align:center;
+  cursor:pointer;transition:border-color 0.2s;text-decoration:none;color:inherit;
+}
+.cat-btn:hover{border-color:var(--border-gold)}
+.cat-btn .icon{font-size:24px;margin-bottom:4px}
+.cat-btn .name{font-size:12px;color:var(--text-dim)}
+/* the last one alone */
+.cats-grid-small .cat-btn:last-child:nth-child(3n+1){grid-column:2}
+
+/* SUGGESTED */
+.suggested-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px;}
+.suggested-card{
+  background:var(--bg4);border:1px solid var(--border);
+  border-radius:12px;padding:16px;text-align:center;
+  cursor:pointer;transition:border-color 0.2s;
+}
+.suggested-card:hover{border-color:var(--border-gold)}
+.suggested-icon{font-size:36px;margin-bottom:8px}
+.suggested-company{font-size:10px;color:var(--text-dim);margin-bottom:4px}
+.suggested-name{font-size:13px;font-weight:700;color:var(--gold);margin-bottom:8px}
+.partner-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;
+}
+.partner-badge.gold{background:rgba(201,168,76,0.12);color:var(--gold);border:1px solid var(--border-gold)}
+.partner-badge.silver{background:rgba(176,184,193,0.12);color:#B0B8C1;border:1px solid rgba(176,184,193,0.2)}
+
+/* EMPTY */
+.empty-state{padding:32px 16px;text-align:center;}
+.empty-icon{font-size:36px;margin-bottom:10px;}
+.empty-text{font-size:15px;font-weight:700;color:var(--text-dim);margin-bottom:6px;}
+.empty-sub{font-size:12px;color:var(--text-dim);opacity:0.6;line-height:1.5;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-right">
+    <a href="syriaexpress-landing.html" class="btn-home">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      الرئيسية
+    </a>
+    <span class="header-title">لوحة المشتري</span>
+  </div>
+  <div class="header-left">
+    <div class="btn-notif">🔔</div>
+    <button class="btn-new-order" onclick="location.href='syriaexpress-categories.html'">+ طلب جديد</button>
+  </div>
+</div>
+
+<main>
+
+  <!-- STAT CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card green">
+      <span class="stat-icon">✅</span>
+      <div class="stat-num">0</div>
+      <div class="stat-label">طلبات مكتملة</div>
+      <div class="stat-sub">لا يوجد بعد</div>
+    </div>
+    <div class="stat-card gold">
+      <span class="stat-icon">📦</span>
+      <div class="stat-num">0</div>
+      <div class="stat-label">إجمالي الطلبات</div>
+      <div class="stat-sub">لا يوجد بعد</div>
+    </div>
+    <div class="stat-card orange">
+      <span class="stat-icon">⏳</span>
+      <div class="stat-num">0</div>
+      <div class="stat-label">بانتظار التأكيد</div>
+      <div class="stat-sub">لا يوجد بعد</div>
+    </div>
+    <div class="stat-card blue">
+      <span class="stat-icon">🚛</span>
+      <div class="stat-num">0</div>
+      <div class="stat-label">قيد التوصيل</div>
+      <div class="stat-sub">لا يوجد بعد</div>
+    </div>
+  </div>
+
+  <!-- LATEST ORDERS -->
+  <div class="box">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot"></span> آخر الطلبات</div>
+      <a href="#" class="box-link">عرض الكل ←</a>
+    </div>
+    <div class="orders-list">
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <div class="empty-text">لا توجد طلبات بعد</div>
+        <div class="empty-sub">اضغط "طلب جديد" لتصفح المنتجات وإرسال أول طلب</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVE TRACKING -->
+  <div class="box">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot green"></span> تتبع نشط</div>
+    </div>
+    <div class="empty-state">
+      <div class="empty-icon">🗺️</div>
+      <div class="empty-text">لا يوجد شحن نشط</div>
+      <div class="empty-sub">طلباتك قيد الشحن ستظهر هنا مع تتبع لحظي</div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS -->
+  <div class="box">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot"></span> إشعارات</div>
+      <a href="#" class="box-link">الكل</a>
+    </div>
+    <div class="notif-list">
+      <div class="empty-state">
+        <div class="empty-icon">🔕</div>
+        <div class="empty-text">لا توجد إشعارات</div>
+        <div class="empty-sub">ستظهر تحديثات طلباتك هنا</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK BROWSE -->
+  <div class="box">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot blue"></span> تصفح سريع</div>
+    </div>
+    <div class="cats-grid-small">
+      <a href="syriaexpress-categories.html" class="cat-btn">
+        <div class="icon">🥫</div><div class="name">غذائيات</div>
+      </a>
+      <div class="cat-btn" style="opacity:0.5">
+        <div class="icon">💊</div><div class="name">طبية</div>
+      </div>
+      <div class="cat-btn" style="opacity:0.5">
+        <div class="icon">👔</div><div class="name">ألبسة</div>
+      </div>
+      <div class="cat-btn" style="opacity:0.5">
+        <div class="icon">🧴</div><div class="name">بلاستيكيات</div>
+      </div>
+      <div class="cat-btn" style="opacity:0.5">
+        <div class="icon">⚡</div><div class="name">كهربائيات</div>
+      </div>
+      <div class="cat-btn" style="opacity:0.5">
+        <div class="icon">🏗️</div><div class="name">مواد بناء</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUGGESTED -->
+  <div class="box">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot"></span> مقترحة لك</div>
+      <a href="syriaexpress-categories.html" class="box-link">عرض الكل ←</a>
+    </div>
+    <div class="suggested-grid">
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-text">لا توجد اقتراحات بعد</div>
+        <div class="empty-sub">ستظهر منتجات مقترحة بعد أول تصفح</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
+// TODO: GET /api/orders/my — تحميل طلبات المشتري
+// TODO: GET /api/notifications — تحميل الإشعارات
+</script>
+</body>
+</html>

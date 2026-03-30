@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة البائع — SyriaExpress</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C9A84C;--gold-light:#E8C96A;--gold-dim:#8B6914;
+  --bg:#0F0E0C;--bg2:#161410;--bg3:#1C1A16;--bg4:#221F19;
+  --text:#F5F0E8;--text-dim:#A89880;
+  --border:#2A2620;--border-gold:rgba(201,168,76,0.25);
+  --green:#4ade80;--blue:#60a5fa;--orange:#fb923c;--purple:#a78bfa;
+}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);direction:rtl;min-height:100vh;}
+
+/* ── HEADER ── */
+.header{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;height:56px;
+  background:rgba(15,14,12,0.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border-gold);
+}
+.header-right{display:flex;align-items:center;gap:12px}
+.btn-home{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--text-dim);padding:8px 14px;border-radius:8px;
+  font-family:'Cairo',sans-serif;font-size:13px;cursor:pointer;
+  text-decoration:none;transition:all 0.2s;gap:6px;
+}
+.btn-home:hover{border-color:var(--gold);color:var(--gold)}
+.btn-home svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+.header-title{font-size:16px;font-weight:700;color:var(--text)}
+.header-left{display:flex;align-items:center;gap:10px}
+.btn-notif{
+  position:relative;background:var(--bg3);border:1px solid var(--border);
+  width:38px;height:38px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;font-size:18px;
+}
+.notif-badge{
+  position:absolute;top:-4px;left:-4px;
+  background:#ef4444;color:#fff;font-size:10px;font-weight:700;
+  width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+}
+.btn-add{
+  background:var(--gold);color:#0F0E0C;border:none;
+  padding:8px 14px;border-radius:8px;font-family:'Cairo',sans-serif;
+  font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;
+}
+
+/* ── MAIN ── */
+main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:16px;}
+
+/* ── STAT CARDS ── */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.stat-card{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:14px;padding:16px;
+  position:relative;overflow:hidden;
+}
+.stat-card::before{
+  content:'';position:absolute;top:0;right:0;left:0;height:3px;
+}
+.stat-card.green::before{background:var(--green)}
+.stat-card.blue::before{background:var(--blue)}
+.stat-card.orange::before{background:var(--orange)}
+.stat-card.purple{border-top:3px solid var(--purple)}
+.stat-card.green{border-top:3px solid var(--green)}
+.stat-card.blue{border-top:3px solid var(--blue)}
+.stat-card.orange{border-top:3px solid var(--orange)}
+.stat-icon{font-size:26px;margin-bottom:8px;display:block}
+.stat-num{font-size:32px;font-weight:900;line-height:1;margin-bottom:4px}
+.stat-card.green .stat-num{color:var(--green)}
+.stat-card.blue .stat-num{color:var(--blue)}
+.stat-card.orange .stat-num{color:var(--orange)}
+.stat-card.purple .stat-num{color:var(--purple)}
+.stat-label{font-size:12px;color:var(--text-dim);margin-bottom:6px}
+.stat-trend{font-size:11px;color:var(--text-dim);}
+.stat-trend span{color:var(--green)}
+
+/* ── SECTION BOX ── */
+.box{background:var(--bg3);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.box-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid var(--border);
+}
+.box-title{
+  display:flex;align-items:center;gap:8px;
+  font-size:15px;font-weight:700;
+}
+.box-dot{width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.box-dot.green{background:var(--green)}
+.box-link{font-size:12px;color:var(--text-dim);text-decoration:none;}
+.box-link:hover{color:var(--gold)}
+
+/* ── MONTH STATS ── */
+.month-rows{padding:4px 0}
+.month-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);
+}
+.month-row:last-child{border-bottom:none}
+.month-row-label{font-size:14px;color:var(--text-dim)}
+.month-row-val{font-size:18px;font-weight:800}
+.month-row-val.gold{color:var(--gold)}
+.month-row-val.green{color:var(--green)}
+.month-row-val.blue{color:var(--blue)}
+.month-row-val.orange{color:var(--orange)}
+
+/* ── ORDERS TABLE ── */
+.orders-list{display:flex;flex-direction:column;}
+.order-row{
+  padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);
+  display:flex;flex-direction:column;gap:8px;
+}
+.order-row:last-child{border-bottom:none}
+.order-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.order-customer{font-size:14px;font-weight:700;}
+.order-id{font-size:11px;color:var(--gold);margin-top:2px}
+.order-location{font-size:11px;color:var(--text-dim)}
+.order-badges{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.badge{
+  padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;
+  display:inline-flex;align-items:center;gap:4px;
+}
+.badge.new{background:rgba(251,146,60,0.15);color:var(--orange);border:1px solid rgba(251,146,60,0.3)}
+.badge.accepted{background:rgba(74,222,128,0.15);color:var(--green);border:1px solid rgba(74,222,128,0.3)}
+.badge.shipped{background:rgba(96,165,250,0.15);color:var(--blue);border:1px solid rgba(96,165,250,0.3)}
+.badge.inside{background:rgba(201,168,76,0.12);color:var(--gold);border:1px solid var(--border-gold)}
+.badge.outside{background:rgba(167,139,250,0.12);color:var(--purple);border:1px solid rgba(167,139,250,0.3)}
+.order-product{font-size:13px;color:var(--text-dim)}
+.order-actions{display:flex;gap:8px}
+.btn-accept{background:rgba(74,222,128,0.15);color:var(--green);border:1px solid rgba(74,222,128,0.3);padding:6px 14px;border-radius:6px;font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;}
+.btn-reject{background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);padding:6px 14px;border-radius:6px;font-family:'Cairo',sans-serif;font-size:12px;cursor:pointer;}
+.btn-details{background:var(--bg4);color:var(--text-dim);border:1px solid var(--border);padding:6px 14px;border-radius:6px;font-family:'Cairo',sans-serif;font-size:12px;cursor:pointer;}
+
+/* ── NOTIFICATIONS ── */
+.notif-list{display:flex;flex-direction:column;}
+.notif-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);
+}
+.notif-item:last-child{border-bottom:none}
+.notif-icon-box{
+  width:38px;height:38px;min-width:38px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.notif-icon-box.new-order{background:rgba(251,146,60,0.12);border:1px solid rgba(251,146,60,0.2)}
+.notif-icon-box.delivered{background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.2)}
+.notif-left-bar{width:3px;border-radius:2px;align-self:stretch;min-height:38px}
+.notif-left-bar.orange{background:var(--orange)}
+.notif-left-bar.green{background:var(--green)}
+.notif-text{font-size:13px;font-weight:600;margin-bottom:2px}
+.notif-text strong{color:var(--text)}
+.notif-time{font-size:11px;color:var(--text-dim)}
+
+/* ── TOP PRODUCTS ── */
+.top-product-list{display:flex;flex-direction:column;}
+.top-product-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);
+}
+.top-product-item:last-child{border-bottom:none}
+.top-rank{
+  width:28px;height:28px;min-width:28px;
+  background:var(--bg4);border:1px solid var(--border);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:var(--gold);
+}
+.top-product-icon{font-size:22px}
+.top-product-info{flex:1}
+.top-product-name{font-size:14px;font-weight:700;margin-bottom:2px}
+.top-product-orders{font-size:11px;color:var(--text-dim)}
+.top-product-bar-wrap{margin-top:6px;background:var(--bg4);border-radius:4px;height:4px;}
+.top-product-bar{height:4px;border-radius:4px;background:var(--gold);}
+
+/* EMPTY STATE */
+.empty-state{padding:32px 16px;text-align:center;}
+.empty-icon{font-size:36px;margin-bottom:10px;}
+.empty-text{font-size:15px;font-weight:700;color:var(--text-dim);margin-bottom:6px;}
+.empty-sub{font-size:12px;color:var(--text-dim);opacity:0.6;line-height:1.5;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-right">
+    <a href="syriaexpress-landing.html" class="btn-home">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      الرئيسية
+    </a>
+    <span class="header-title">لوحة البائع</span>
+  </div>
+  <div class="header-left">
+    <div class="btn-notif">
+      🔔
+      
+    </div>
+    <button class="btn-add" onclick="alert('قريباً')">+ إضافة منتج</button>
+  </div>
+</div>
+
+<main>
+
+  <!-- STAT CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card green">
+      <span class="stat-icon">✅</span>
+      <div class="stat-num">0</div>
+      <div class="stat-label">طلبات مكتملة</div>
+      <div class="stat-trend" style="color:var(--text-dim)">لا يوجد بعد</div>
+    </div>
+    <div class="stat-card blue">
+      <span class="stat-icon">📦</span>
+      <div class="stat-num">0</div>
+      <div class="stat-label">طلبات جديدة</div>
+      <div class="stat-trend" style="color:var(--text-dim)">لا يوجد بعد</div>
+    </div>
+    <div class="stat-card orange">
+      <span class="stat-icon">👥</span>
+      <div class="stat-num">0</div>
+      <div class="stat-label">مشترٍ تعامل معك</div>
+      <div class="stat-trend" style="color:var(--text-dim)">لا يوجد بعد</div>
+    </div>
+    <div class="stat-card purple">
+      <span class="stat-icon">🏷️</span>
+      <div class="stat-num">0</div>
+      <div class="stat-label">منتج نشط</div>
+      <div class="stat-trend" style="color:var(--text-dim)">لا يوجد بعد</div>
+    </div>
+  </div>
+
+  <!-- THIS MONTH -->
+  <div class="box">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot green"></span> هذا الشهر</div>
+    </div>
+    <div class="month-rows">
+      <div class="month-row">
+        <span class="month-row-label">طلبات واردة</span>
+        <span class="month-row-val gold">—</span>
+      </div>
+      <div class="month-row">
+        <span class="month-row-label">تم التسليم</span>
+        <span class="month-row-val green">—</span>
+      </div>
+      <div class="month-row">
+        <span class="month-row-label">بانتظار الشحن</span>
+        <span class="month-row-val blue">—</span>
+      </div>
+      <div class="month-row">
+        <span class="month-row-label">معدل الرضا</span>
+        <span class="month-row-val green">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- LATEST ORDERS -->
+  <div class="box">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot"></span> آخر الطلبات الواردة</div>
+      <a href="#" class="box-link">عرض الكل ←</a>
+    </div>
+    <div class="orders-list">
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <div class="empty-text">لا توجد طلبات بعد</div>
+        <div class="empty-sub">ستظهر الطلبات الواردة هنا فور وصولها</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS -->
+  <div class="box">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot"></span> إشعارات</div>
+      <a href="#" class="box-link">الكل</a>
+    </div>
+    <div class="notif-list">
+      <div class="empty-state">
+        <div class="empty-icon">🔕</div>
+        <div class="empty-text">لا توجد إشعارات</div>
+        <div class="empty-sub">ستظهر الإشعارات هنا</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOP PRODUCTS -->
+  <div class="box">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot"></span> أكثر المنتجات طلباً</div>
+      <a href="#" class="box-link">تقارير كاملة ←</a>
+    </div>
+    <div class="top-product-list">
+      <div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <div class="empty-text">لا توجد بيانات بعد</div>
+        <div class="empty-sub">ستظهر أكثر منتجاتك طلباً هنا بعد أول طلب</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
+// TODO: استدعاء /api/sellers/me/dashboard لتحميل البيانات الحقيقية
+</script>
+</body>
+</html>
