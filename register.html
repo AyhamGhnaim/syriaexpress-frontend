@@ -736,8 +736,8 @@
 
       setTimeout(() => {
         const userType = data.user?.user_type;
-        if (userType === 'seller') window.location.href = 'seller-dashboard.html';
-        else window.location.href = 'buyer-dashboard.html';
+        if (userType === 'seller') window.location.href = 'syriaexpress-seller.html';
+        else window.location.href = 'syriaexpress-buyer.html';
       }, 2000);
 
     } catch (err) {
@@ -750,9 +750,9 @@
   // Redirect if already logged in
   if (localStorage.getItem('token')) {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    if (user.user_type === 'seller') window.location.href = 'seller-dashboard.html';
-    else if (user.user_type === 'buyer') window.location.href = 'buyer-dashboard.html';
-    else if (user.user_type === 'admin') window.location.href = 'admin-dashboard.html';
+    if (user.user_type === 'seller') window.location.href = 'syriaexpress-seller.html';
+    else if (user.user_type === 'buyer') window.location.href = 'syriaexpress-buyer.html';
+    else if (user.user_type === 'admin') window.location.href = 'syriaexpress-admin.html';
   }
 </script>
 
