@@ -361,19 +361,18 @@ async function loadVerifications() {
       list.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا توجد طلبات توثيق معلقة</div></div>`;
       return;
     }
-    list.innerHTML = data.map(v => `
-      <div class="verif-card" id="verif-${v.id}">
-        <div class="verif-company">🏭 ${v.company_name_ar || v.company_name_en}</div>
-        <div class="verif-meta">
-          👤 ${v.owner_name} &nbsp;|&nbsp; 📧 ${v.owner_email} &nbsp;|&nbsp; 📍 ${v.governorate || "—"}
-          <br>نوع النشاط: ${v.activity_type || "—"}
-        </div>
-        <div class="verif-actions">
-          <button class="btn-approve" onclick="reviewVerif('${v.id}', 'approved')">✅ قبول</button>
-          <button class="btn-reject" onclick="reviewVerif('${v.id}', 'rejected')">❌ رفض</button>
-        </div>
-      </div>
-    `).join('');
+    list.innerHTML = data.map(function(v) {
+      return '<div class="verif-card" id="verif-' + v.id + '">' +
+        '<div class="verif-company">🏭 ' + (v.company_name_ar || v.company_name_en) + '</div>' +
+        '<div class="verif-meta">' +
+        '👤 ' + v.owner_name + ' | 📧 ' + v.owner_email + ' | 📍 ' + (v.governorate || '—') +
+        '<br>نوع النشاط: ' + (v.activity_type || '—') +
+        '</div>' +
+        '<div class="verif-actions">' +
+        '<button class="btn-approve" onclick="reviewVerif('' + v.id + '', 'approved')">✅ قبول</button>' +
+        '<button class="btn-reject" onclick="reviewVerif('' + v.id + '', 'rejected')">❌ رفض</button>' +
+        '</div></div>';
+    }).join('');
   } catch(e) {
     document.getElementById('verifList').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">تعذّر تحميل طلبات التوثيق</div></div>`;
   }
@@ -416,15 +415,16 @@ async function loadUsers() {
       document.getElementById('stat-users-sub').textContent = 'مشتري: 0 | بائع: 0';
       return;
     }
-    list.innerHTML = data.map(u => `
-      <div class="user-row">
-        <div class="user-info">
-          <div class="user-name">${u.name}</div>
-          <div class="user-email">${u.email}</div>
-        </div>
-        <span class="user-type-badge ${u.user_type}">${u.user_type === 'buyer' ? 'مشتري' : u.user_type === 'seller' ? 'بائع' : 'أدمن'}</span>
-      </div>
-    `).join('');
+    list.innerHTML = data.map(function(u) {
+      var label = u.user_type === 'buyer' ? 'مشتري' : u.user_type === 'seller' ? 'بائع' : 'أدمن';
+      return '<div class="user-row">' +
+        '<div class="user-info">' +
+        '<div class="user-name">' + u.name + '</div>' +
+        '<div class="user-email">' + u.email + '</div>' +
+        '</div>' +
+        '<span class="user-type-badge ' + u.user_type + '">' + label + '</span>' +
+        '</div>';
+    }).join('');
 
     // حساب إجمالي المستخدمين الحقيقي
     const buyers = data.filter(u => u.user_type === 'buyer').length;
