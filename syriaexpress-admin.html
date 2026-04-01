@@ -324,12 +324,13 @@ async function loadStats() {
     const data = await res.json();
 
     const s = data.stats || {};
-    const totalUsers = (s.buyers || 0) + (s.verified_sellers || 0);
-    document.getElementById('stat-users').textContent = totalUsers;
-    document.getElementById('stat-users-sub').textContent =
-      `مشتري: ${s.buyers || 0} | بائع: ${s.verified_sellers || 0}`;
+    // إجمالي المستخدمين من قائمة المستخدمين الكاملة — سنحسبه بعد loadUsers
+    const totalBuyers = s.buyers || 0;
+    const totalSellers = s.verified_sellers || 0;
+    document.getElementById('stat-users').textContent = '—';
+    document.getElementById('stat-users-sub').textContent = 'جاري التحميل...';
 
-    document.getElementById('stat-sellers').textContent = s.verified_sellers || 0;
+    document.getElementById('stat-sellers').textContent = totalSellers;
     document.getElementById('stat-sellers-sub').textContent = 'بائع موثّق';
 
     document.getElementById('stat-pending').textContent = s.pending_verif || 0;
@@ -414,6 +415,12 @@ async function loadUsers() {
         <span class="user-type-badge ${u.user_type}">${u.user_type === 'buyer' ? 'مشتري' : u.user_type === 'seller' ? 'بائع' : 'أدمن'}</span>
       </div>
     `).join('');
+
+    // حساب إجمالي المستخدمين الحقيقي
+    const buyers = data.filter(u => u.user_type === 'buyer').length;
+    const sellers = data.filter(u => u.user_type === 'seller').length;
+    document.getElementById('stat-users').textContent = data.length;
+    document.getElementById('stat-users-sub').textContent = `مشتري: ${buyers} | بائع: ${sellers}`;
   } catch(e) {
     document.getElementById('usersList').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">تعذّر تحميل المستخدمين</div></div>`;
   }

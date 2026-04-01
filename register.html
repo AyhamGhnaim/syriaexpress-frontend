@@ -780,6 +780,25 @@
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
+      // إرسال طلب توثيق للبائع
+      if (selectedType === 'seller' && data.token) {
+        try {
+          await fetch(`${API_BASE}/api/sellers/verification-request`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${data.token}`
+            },
+            body: JSON.stringify({
+              notes: 'طلب توثيق جديد من البائع'
+            })
+          });
+        } catch(e) {
+          // ما يوقف التسجيل إذا فشل طلب التوثيق
+          console.log('verification request failed', e);
+        }
+      }
+
       // Show success
       document.querySelectorAll('.step-content').forEach(s => s.classList.remove('active'));
       document.getElementById('step4').classList.add('active');
