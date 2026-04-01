@@ -369,8 +369,8 @@ async function loadVerifications() {
           <br>نوع النشاط: ${v.activity_type || "—"}
         </div>
         <div class="verif-actions">
-          <button class="btn-approve" onclick="reviewVerif(${v.id}, `approved`)">✅ قبول</button>
-          <button class="btn-reject" onclick="reviewVerif(${v.id}, `rejected`)">❌ رفض</button>
+          <button class="btn-approve" onclick="reviewVerif('${v.id}', 'approved')">✅ قبول</button>
+          <button class="btn-reject" onclick="reviewVerif('${v.id}', 'rejected')">❌ رفض</button>
         </div>
       </div>
     `).join('');
