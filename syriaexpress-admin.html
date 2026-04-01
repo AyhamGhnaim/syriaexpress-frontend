@@ -386,11 +386,16 @@ async function reviewVerif(id, action) {
       headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ action })
     });
-    if (!res.ok) throw new Error();
+    const data = await res.json();
+    if (!res.ok) {
+      alert('خطأ: ' + (data.error || res.status));
+      return;
+    }
+    alert('✅ تم!');
     document.getElementById(`verif-${id}`).remove();
     loadStats();
   } catch(e) {
-    alert('حدث خطأ، حاول مرة أخرى');
+    alert('خطأ في الاتصال: ' + e.message);
   }
 }
 
