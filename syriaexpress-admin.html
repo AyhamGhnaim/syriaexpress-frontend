@@ -305,156 +305,121 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 </main>
 
 <script>
-const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
-
-// Check auth
-const token = localStorage.getItem('token');
-let user = {};
+var API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
+var token = localStorage.getItem('token');
+var user = {};
 try { user = JSON.parse(localStorage.getItem('user') || '{}'); } catch(e) {}
 if (!token || user.user_type !== 'admin') {
   window.location.href = 'login.html';
 }
-
-// Load stats
-async function loadStats() {
-  try {
-    const res = await fetch(`${API_BASE}/api/admin/overview`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!res.ok) throw new Error('فشل التحميل');
-    const data = await res.json();
-
-    const s = data.stats || {};
-    // إجمالي المستخدمين من قائمة المستخدمين الكاملة — سنحسبه بعد loadUsers
-    const totalBuyers = s.buyers || 0;
-    const totalSellers = s.verified_sellers || 0;
-    document.getElementById('stat-users').textContent = '—';
-    document.getElementById('stat-users-sub').textContent = 'جاري التحميل...';
-
-    document.getElementById('stat-sellers').textContent = totalSellers;
-    document.getElementById('stat-sellers-sub').textContent = 'بائع موثّق';
-
-    document.getElementById('stat-pending').textContent = s.pending_verif || 0;
-
-    document.getElementById('stat-orders').textContent = s.total_orders || 0;
-    document.getElementById('stat-orders-sub').textContent = 'إجمالي الطلبات';
-
-  } catch(e) {
-    // إذا الـ API مو جاهز بعد
-    ['stat-users','stat-sellers','stat-pending','stat-orders'].forEach(id => {
-      document.getElementById(id).textContent = '—';
-    });
-    document.getElementById('stat-users-sub').textContent = 'تعذّر الاتصال بالـ API';
-  }
-}
-
-// Load verifications
-async function loadVerifications() {
-  try {
-    const res = await fetch(`${API_BASE}/api/admin/verifications`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!res.ok) throw new Error();
-    const data = await res.json();
-    const list = document.getElementById('verifList');
-    if (!data.length) {
-      list.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا توجد طلبات توثيق معلقة</div></div>`;
-      return;
-    }
-    list.innerHTML = data.map(function(v) {
-      return '<div class="verif-card" id="verif-' + v.id + '">' +
-        '<div class="verif-company">🏭 ' + (v.company_name_ar || v.company_name_en) + '</div>' +
-        '<div class="verif-meta">' +
-        '👤 ' + v.owner_name + ' | 📧 ' + v.owner_email + ' | 📍 ' + (v.governorate || '—') +
-        '<br>نوع النشاط: ' + (v.activity_type || '—') +
-        '</div>' +
-        '<div class="verif-actions">' +
-        '<button class="btn-approve" data-id="' + v.id + '" data-action="approved" onclick="handleVerif(this)">✅ قبول</button>' +
-        '<button class="btn-reject" data-id="' + v.id + '" data-action="rejected" onclick="handleVerif(this)">❌ رفض</button>' +
-        '</div></div>';
-    }).join('');
-  } catch(e) {
-    document.getElementById('verifList').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">تعذّر تحميل طلبات التوثيق</div></div>`;
-  }
-}
-
-function handleVerif(btn) {
-  var id = btn.getAttribute('data-id');
-  var action = btn.getAttribute('data-action');
-  reviewVerif(id, action);
-}
-
-async function reviewVerif(id, action) {
-  try {
-    const res = await fetch(`${API_BASE}/api/admin/verifications/${id}`, {
-      method: 'PATCH',
-      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action })
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      alert('خطأ: ' + (data.error || res.status));
-      return;
-    }
-    alert('✅ تم!');
-    document.getElementById(`verif-${id}`).remove();
-    loadStats();
-  } catch(e) {
-    alert('خطأ في الاتصال: ' + e.message);
-  }
-}
-
-// Load users
-async function loadUsers() {
-  try {
-    const res = await fetch(`${API_BASE}/api/admin/users`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!res.ok) throw new Error();
-    const raw = await res.json();
-    // API ممكن ترجع array مباشرة أو object فيه rows
-    const data = Array.isArray(raw) ? raw : (raw.rows || raw.users || []);
-    const list = document.getElementById('usersList');
-    if (!data.length) {
-      list.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد مستخدمون بعد</div></div>`;
-      document.getElementById('stat-users').textContent = '0';
-      document.getElementById('stat-users-sub').textContent = 'مشتري: 0 | بائع: 0';
-      return;
-    }
-    list.innerHTML = data.map(function(u) {
-      var label = u.user_type === 'buyer' ? 'مشتري' : u.user_type === 'seller' ? 'بائع' : 'أدمن';
-      return '<div class="user-row">' +
-        '<div class="user-info">' +
-        '<div class="user-name">' + u.name + '</div>' +
-        '<div class="user-email">' + u.email + '</div>' +
-        '</div>' +
-        '<span class="user-type-badge ' + u.user_type + '">' + label + '</span>' +
-        '</div>';
-    }).join('');
-
-    // حساب إجمالي المستخدمين الحقيقي
-    const buyers = data.filter(u => u.user_type === 'buyer').length;
-    const sellers = data.filter(u => u.user_type === 'seller').length;
-    document.getElementById('stat-users').textContent = data.length;
-    document.getElementById('stat-users-sub').textContent = `مشتري: ${buyers} | بائع: ${sellers}`;
-  } catch(e) {
-    document.getElementById('usersList').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">تعذّر تحميل المستخدمين</div></div>`;
-    document.getElementById('stat-users').textContent = '—';
-    document.getElementById('stat-users-sub').textContent = 'تعذّر الاتصال';
-  }
-}
-
-loadStats();
-loadVerifications();
-loadUsers();
-
-
 
 function logout() {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
   window.location.href = 'syriaexpress-landing.html';
 }
+
+function loadStats() {
+  fetch(API_BASE + '/api/admin/overview', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    var s = data.stats || {};
+    document.getElementById('stat-sellers').textContent = s.verified_sellers || 0;
+    document.getElementById('stat-pending').textContent = s.pending_verif || 0;
+    document.getElementById('stat-orders').textContent = s.total_orders || 0;
+  })
+  .catch(function() {});
+}
+
+function loadVerifications() {
+  fetch(API_BASE + '/api/admin/verifications', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    var list = document.getElementById('verifList');
+    if (!data || !data.length) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا توجد طلبات توثيق معلقة</div></div>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < data.length; i++) {
+      var v = data[i];
+      html += '<div class="verif-card" id="verif-' + v.id + '">';
+      html += '<div class="verif-company">🏭 ' + (v.company_name_ar || v.company_name_en || '') + '</div>';
+      html += '<div class="verif-meta">👤 ' + (v.owner_name || '') + ' | 📧 ' + (v.owner_email || '') + ' | 📍 ' + (v.governorate || '') + '<br>نوع النشاط: ' + (v.activity_type || '') + '</div>';
+      html += '<div class="verif-actions">';
+      html += '<button class="btn-approve" data-id="' + v.id + '" data-action="approved" onclick="handleVerif(this)">✅ قبول</button>';
+      html += '<button class="btn-reject" data-id="' + v.id + '" data-action="rejected" onclick="handleVerif(this)">❌ رفض</button>';
+      html += '</div></div>';
+    }
+    list.innerHTML = html;
+  })
+  .catch(function() {
+    document.getElementById('verifList').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">تعذّر تحميل طلبات التوثيق</div></div>';
+  });
+}
+
+function handleVerif(btn) {
+  var id = btn.getAttribute('data-id');
+  var action = btn.getAttribute('data-action');
+  fetch(API_BASE + '/api/admin/verifications/' + id, {
+    method: 'PATCH',
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: action })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.error) { alert('خطأ: ' + data.error); return; }
+    var card = document.getElementById('verif-' + id);
+    if (card) card.remove();
+    loadStats();
+    loadUsers();
+  })
+  .catch(function(e) { alert('خطأ في الاتصال'); });
+}
+
+function loadUsers() {
+  fetch(API_BASE + '/api/admin/users', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(raw) {
+    var data = Array.isArray(raw) ? raw : (raw.rows || raw.users || []);
+    var list = document.getElementById('usersList');
+    if (!data.length) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد مستخدمون بعد</div></div>';
+      document.getElementById('stat-users').textContent = '0';
+      document.getElementById('stat-users-sub').textContent = 'مشتري: 0 | بائع: 0';
+      return;
+    }
+    var html = '';
+    var buyers = 0, sellers = 0;
+    for (var i = 0; i < data.length; i++) {
+      var u = data[i];
+      if (u.user_type === 'buyer') buyers++;
+      if (u.user_type === 'seller') sellers++;
+      var label = u.user_type === 'buyer' ? 'مشتري' : u.user_type === 'seller' ? 'بائع' : 'أدمن';
+      html += '<div class="user-row">';
+      html += '<div class="user-info"><div class="user-name">' + u.name + '</div><div class="user-email">' + u.email + '</div></div>';
+      html += '<span class="user-type-badge ' + u.user_type + '">' + label + '</span>';
+      html += '</div>';
+    }
+    list.innerHTML = html;
+    document.getElementById('stat-users').textContent = data.length;
+    document.getElementById('stat-users-sub').textContent = 'مشتري: ' + buyers + ' | بائع: ' + sellers;
+  })
+  .catch(function() {
+    document.getElementById('stat-users').textContent = '—';
+    document.getElementById('stat-users-sub').textContent = 'تعذّر الاتصال';
+  });
+}
+
+loadStats();
+loadVerifications();
+loadUsers();
 </script>
 </body>
 </html>
