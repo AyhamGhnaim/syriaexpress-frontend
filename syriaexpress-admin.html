@@ -309,7 +309,8 @@ const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
 
 // Check auth
 const token = localStorage.getItem('token');
-const user = JSON.parse(localStorage.getItem('user') || '{}');
+let user = {};
+try { user = JSON.parse(localStorage.getItem('user') || '{}'); } catch(e) {}
 if (!token || user.user_type !== 'admin') {
   window.location.href = 'login.html';
 }
@@ -364,12 +365,12 @@ async function loadVerifications() {
       <div class="verif-card" id="verif-${v.id}">
         <div class="verif-company">🏭 ${v.company_name_ar || v.company_name_en}</div>
         <div class="verif-meta">
-          👤 ${v.owner_name} &nbsp;|&nbsp; 📧 ${v.owner_email} &nbsp;|&nbsp; 📍 ${v.governorate || '—'}
-          <br>نوع النشاط: ${v.activity_type || '—'}
+          👤 ${v.owner_name} &nbsp;|&nbsp; 📧 ${v.owner_email} &nbsp;|&nbsp; 📍 ${v.governorate || "—"}
+          <br>نوع النشاط: ${v.activity_type || "—"}
         </div>
         <div class="verif-actions">
-          <button class="btn-approve" onclick="reviewVerif(${v.id}, 'approved')">✅ قبول</button>
-          <button class="btn-reject" onclick="reviewVerif(${v.id}, 'rejected')">❌ رفض</button>
+          <button class="btn-approve" onclick="reviewVerif(${v.id}, `approved`)">✅ قبول</button>
+          <button class="btn-reject" onclick="reviewVerif(${v.id}, `rejected`)">❌ رفض</button>
         </div>
       </div>
     `).join('');
@@ -400,10 +401,14 @@ async function loadUsers() {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!res.ok) throw new Error();
-    const data = await res.json();
+    const raw = await res.json();
+    // API ممكن ترجع array مباشرة أو object فيه rows
+    const data = Array.isArray(raw) ? raw : (raw.rows || raw.users || []);
     const list = document.getElementById('usersList');
     if (!data.length) {
       list.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد مستخدمون بعد</div></div>`;
+      document.getElementById('stat-users').textContent = '0';
+      document.getElementById('stat-users-sub').textContent = 'مشتري: 0 | بائع: 0';
       return;
     }
     list.innerHTML = data.map(u => `
@@ -423,6 +428,10 @@ async function loadUsers() {
     document.getElementById('stat-users-sub').textContent = `مشتري: ${buyers} | بائع: ${sellers}`;
   } catch(e) {
     document.getElementById('usersList').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">تعذّر تحميل المستخدمين</div></div>`;
+    document.getElementById('stat-users').textContent = '—';
+    document.getElementById('stat-users-sub').textContent = 'تعذّر الاتصال';
+  }
+}
   }
 }
 
