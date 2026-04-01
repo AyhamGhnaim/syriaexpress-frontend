@@ -369,13 +369,19 @@ async function loadVerifications() {
         '<br>نوع النشاط: ' + (v.activity_type || '—') +
         '</div>' +
         '<div class="verif-actions">' +
-        '<button class="btn-approve" onclick="reviewVerif('' + v.id + '', 'approved')">✅ قبول</button>' +
-        '<button class="btn-reject" onclick="reviewVerif('' + v.id + '', 'rejected')">❌ رفض</button>' +
+        '<button class="btn-approve" data-id="' + v.id + '" data-action="approved" onclick="handleVerif(this)">✅ قبول</button>' +
+        '<button class="btn-reject" data-id="' + v.id + '" data-action="rejected" onclick="handleVerif(this)">❌ رفض</button>' +
         '</div></div>';
     }).join('');
   } catch(e) {
     document.getElementById('verifList').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">تعذّر تحميل طلبات التوثيق</div></div>`;
   }
+}
+
+function handleVerif(btn) {
+  var id = btn.getAttribute('data-id');
+  var action = btn.getAttribute('data-action');
+  reviewVerif(id, action);
 }
 
 async function reviewVerif(id, action) {
@@ -435,8 +441,6 @@ async function loadUsers() {
     document.getElementById('usersList').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">تعذّر تحميل المستخدمين</div></div>`;
     document.getElementById('stat-users').textContent = '—';
     document.getElementById('stat-users-sub').textContent = 'تعذّر الاتصال';
-  }
-}
   }
 }
 
