@@ -244,14 +244,14 @@ function submitProduct() {
   var body = {
     name_ar: name_ar,
     name_en: document.getElementById('name_en').value.trim(),
-    category: category,
+    category_id: category,
     description: document.getElementById('description').value.trim(),
     price: parseFloat(price),
     unit: unit,
-    moq: parseInt(moq) || 1,
+    min_order_quantity: parseInt(moq) || 1,
     stock: parseInt(document.getElementById('stock').value) || 0,
-    ship_local: document.getElementById('ship_local').checked,
-    ship_provincial: document.getElementById('ship_provincial').checked,
+    ship_inside: document.getElementById('ship_local').checked,
+    ship_outside: document.getElementById('ship_provincial').checked,
     ship_international: document.getElementById('ship_international').checked
   };
 
