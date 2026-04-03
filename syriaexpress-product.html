@@ -202,11 +202,18 @@ async function loadProduct() {
   try {
     const res = await fetch(`${API_BASE}/api/products/${productId}`);
     if (!res.ok) throw new Error();
-    product = await res.json();
-    // الـ API ممكن يرجع { product: {...} } أو مباشرة {}
-    if (product.product) product = product.product;
+    const raw = await res.json();
+    console.log('RAW API:', JSON.stringify(raw));
+    // handle كل أشكال الـ response
+    if (raw && raw.product) product = raw.product;
+    else if (raw && raw.data) product = raw.data;
+    else if (raw && raw.rows && raw.rows[0]) product = raw.rows[0];
+    else if (Array.isArray(raw) && raw[0]) product = raw[0];
+    else product = raw;
+    console.log('PRODUCT:', JSON.stringify(product));
     renderProduct(product);
   } catch(e) {
+    console.error('loadProduct error:', e);
     showError('تعذّر تحميل المنتج');
   }
 }
@@ -214,19 +221,20 @@ async function loadProduct() {
 function renderProduct(p) {
   // normalize الحقول — DB أسماؤها مختلفة
   const nameAr      = p.name_ar || p.name || 'منتج';
-  const price       = p.price ? Number(p.price).toLocaleString() : '0';
+  const priceRaw    = parseFloat(p.price) || 0;
+  const price       = priceRaw > 0 ? priceRaw.toLocaleString() : '0';
   const unit        = p.unit || 'عبوة';
-  const moq         = p.min_order_quantity || p.moq || 1;
+  const moq         = parseInt(p.min_order_quantity || p.moq || 1);
   const sellerName  = p.seller_name || p.seller_business_name || 'بائع موثّق';
-  const catName     = p.category_name || p.category_ar || '';
+  const catName     = p.category_name || p.category_ar || p.categories?.name_ar || '';
   const catId       = p.category_id || p.category || '';
   const icon        = getCatIcon(catName);
   const descAr      = p.description_ar || p.description || '';
-  const imgUrl      = p.image_url || (p.images && p.images[0]) || '';
+  const imgUrl      = p.image_url || (p.product_images && p.product_images[0]?.image_url) || '';
   // شحن — DB: ship_inside / ship_outside / ship_international
-  const shipLocal   = p.ship_inside   || p.ship_local       || false;
-  const shipProv    = p.ship_outside  || p.ship_provincial  || false;
-  const shipIntl    = p.ship_international                  || false;
+  const shipLocal   = !!(p.ship_inside   || p.ship_local);
+  const shipProv    = !!(p.ship_outside  || p.ship_provincial);
+  const shipIntl    = !!(p.ship_international);
 
   const page = document.getElementById('pageContent');
   page.innerHTML = `
@@ -350,7 +358,7 @@ function renderProduct(p) {
 
 function changeQty(delta) {
   if (!product) return;
-  const moq = product.min_order_quantity || product.moq || 1;
+  const moq = parseInt(product.min_order_quantity || product.moq || 1);
   quantity = Math.max(moq, quantity + delta);
   const inp = document.getElementById('qtyInput');
   if (inp) inp.value = quantity;
@@ -359,7 +367,7 @@ function changeQty(delta) {
 
 function updateTotal() {
   if (!product) return;
-  const total = (Number(product.price) || 0) * quantity;
+  const total = (parseFloat(product.price) || 0) * quantity;
   const el = document.getElementById('totalPrice');
   if (el) el.textContent = total.toLocaleString();
 }
