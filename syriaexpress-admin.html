@@ -164,7 +164,24 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 .verif-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
 .verif-company{font-size:15px;font-weight:700;margin-bottom:4px;}
 .verif-meta{font-size:12px;color:var(--text-dim);margin-bottom:10px;}
-.verif-actions{display:flex;gap:8px;}
+.verif-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-docs{background:rgba(96,165,250,0.12);color:var(--blue);border:1px solid rgba(96,165,250,0.3);padding:7px 16px;border-radius:8px;font-family:'Cairo',sans-serif;font-size:13px;cursor:pointer;}
+/* DOCS MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;overflow-y:auto;padding:20px 16px;}
+.modal-overlay.open{display:flex;align-items:flex-start;justify-content:center;}
+.modal-box{background:var(--bg3);border:1px solid var(--border-gold);border-radius:16px;width:100%;max-width:480px;overflow:hidden;}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);}
+.modal-title{font-size:15px;font-weight:700;color:var(--gold);}
+.modal-close{background:transparent;border:none;color:var(--text-dim);font-size:20px;cursor:pointer;padding:4px 8px;}
+.modal-body{padding:16px;}
+.doc-item{background:var(--bg4);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;display:flex;align-items:center;gap:12px;}
+.doc-item:last-child{margin-bottom:0}
+.doc-icon{font-size:28px;min-width:36px;text-align:center;}
+.doc-info{flex:1}
+.doc-name{font-size:13px;font-weight:700;margin-bottom:3px;}
+.doc-type{font-size:11px;color:var(--text-dim);}
+.btn-view-doc{background:var(--gold);color:#0F0E0C;border:none;padding:6px 14px;border-radius:6px;font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.no-docs{text-align:center;padding:30px;color:var(--text-dim);}
 .btn-approve{background:#4caf50;color:#fff;border:none;padding:7px 16px;border-radius:8px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
 .btn-reject{background:#e05555;color:#fff;border:none;padding:7px 16px;border-radius:8px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
 .user-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
@@ -304,6 +321,19 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 
 </main>
 
+<!-- DOCS MODAL -->
+<div class="modal-overlay" id="docsModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">📄 وثائق البائع</div>
+      <button class="modal-close" onclick="closeDocsModal()">✕</button>
+    </div>
+    <div class="modal-body" id="docsModalBody">
+      <div class="no-docs">جاري التحميل...</div>
+    </div>
+  </div>
+</div>
+
 <script>
 var API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
 var token = localStorage.getItem('token');
@@ -351,6 +381,7 @@ function loadVerifications() {
       html += '<div class="verif-company">🏭 ' + (v.company_name_ar || v.company_name_en || '') + '</div>';
       html += '<div class="verif-meta">👤 ' + (v.owner_name || '') + ' | 📧 ' + (v.owner_email || '') + ' | 📍 ' + (v.governorate || '') + '<br>نوع النشاط: ' + (v.activity_type || '') + '</div>';
       html += '<div class="verif-actions">';
+      html += '<button class="btn-docs" onclick="openDocsModal(\'' + (v.seller_id || v.id) + '\', \'' + (v.company_name_ar || '') + '\')">📄 الوثائق</button>';
       html += '<button class="btn-approve" data-id="' + v.id + '" data-action="approved" onclick="handleVerif(this)">✅ قبول</button>';
       html += '<button class="btn-reject" data-id="' + v.id + '" data-action="rejected" onclick="handleVerif(this)">❌ رفض</button>';
       html += '</div></div>';
@@ -415,6 +446,49 @@ function loadUsers() {
     document.getElementById('stat-users').textContent = '—';
     document.getElementById('stat-users-sub').textContent = 'تعذّر الاتصال';
   });
+}
+
+function openDocsModal(sellerId, companyName) {
+  var modal = document.getElementById('docsModal');
+  var body = document.getElementById('docsModalBody');
+  modal.classList.add('open');
+  body.innerHTML = '<div class="no-docs">جاري التحميل...</div>';
+
+  fetch(API_BASE + '/api/admin/sellers/' + sellerId + '/documents', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    var docs = data.documents || data || [];
+    if (!docs.length) {
+      body.innerHTML = '<div class="no-docs">📂 لا توجد وثائق مرفوعة لهذا البائع</div>';
+      return;
+    }
+    var typeLabels = { trade_license:'سجل تجاري', id_card:'هوية', tax_certificate:'شهادة ضريبية', other:'وثيقة أخرى' };
+    var html = '';
+    for (var i = 0; i < docs.length; i++) {
+      var d = docs[i];
+      var label = typeLabels[d.document_type] || d.document_type || 'وثيقة';
+      var isPdf = d.file_url && d.file_url.match(/\.pdf/i);
+      var icon = isPdf ? '📄' : '🖼️';
+      html += '<div class="doc-item">';
+      html += '<div class="doc-icon">' + icon + '</div>';
+      html += '<div class="doc-info"><div class="doc-name">' + label + '</div>';
+      html += '<div class="doc-type">' + (d.file_name || d.document_type || '') + '</div></div>';
+      if (d.file_url) {
+        html += '<a href="' + d.file_url + '" target="_blank"><button class="btn-view-doc">عرض</button></a>';
+      }
+      html += '</div>';
+    }
+    body.innerHTML = html;
+  })
+  .catch(function() {
+    body.innerHTML = '<div class="no-docs">⚠️ تعذّر تحميل الوثائق</div>';
+  });
+}
+
+function closeDocsModal() {
+  document.getElementById('docsModal').classList.remove('open');
 }
 
 loadStats();
