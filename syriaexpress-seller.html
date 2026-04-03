@@ -270,7 +270,7 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
     <button class="btn-add" onclick="location.href='syriaexpress-add-product.html'">+ إضافة منتج</button>
   </div>
   <div class="header-right">
-    <span class="header-title">لوحة البائع</span>
+    <button class="btn-add" onclick="location.href='syriaexpress-seller-profile.html'" style="background:transparent;border:1px solid var(--border-gold);color:var(--gold);">👤 معلوماتي</button>
     <a href="syriaexpress-landing.html" class="btn-home">
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       الرئيسية
@@ -392,63 +392,6 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
     </div>
   </div>
 
-  <!-- SELLER PROFILE -->
-  <div class="box">
-    <div class="box-header">
-      <div class="box-title"><span class="box-dot gold"></span> معلومات شركتي</div>
-    </div>
-    <div class="profile-form" id="profileForm">
-      <div class="form-group">
-        <div class="form-label">اسم الشركة (عربي)</div>
-        <input type="text" class="form-input" id="company_name_ar" placeholder="مثال: شركة الأمل للتجارة">
-      </div>
-      <div class="form-group">
-        <div class="form-label">اسم الشركة (إنجليزي)</div>
-        <input type="text" class="form-input" id="company_name_en" placeholder="e.g. Al Amal Trading Co.">
-      </div>
-      <div class="form-group">
-        <div class="form-label">المحافظة</div>
-        <select class="form-select" id="governorate">
-          <option value="">اختر المحافظة</option>
-          <option value="دمشق">دمشق</option>
-          <option value="ريف دمشق">ريف دمشق</option>
-          <option value="حلب">حلب</option>
-          <option value="حمص">حمص</option>
-          <option value="حماة">حماة</option>
-          <option value="اللاذقية">اللاذقية</option>
-          <option value="طرطوس">طرطوس</option>
-          <option value="إدلب">إدلب</option>
-          <option value="دير الزور">دير الزور</option>
-          <option value="الرقة">الرقة</option>
-          <option value="الحسكة">الحسكة</option>
-          <option value="درعا">درعا</option>
-          <option value="السويداء">السويداء</option>
-          <option value="القنيطرة">القنيطرة</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <div class="form-label">نوع النشاط</div>
-        <select class="form-select" id="activity_type">
-          <option value="">اختر نوع النشاط</option>
-          <option value="factory">مصنع</option>
-          <option value="manufacturer">مُصنّع</option>
-          <option value="distributor">موزع</option>
-          <option value="wholesaler">تاجر جملة</option>
-          <option value="importer">مستورد</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <div class="form-label">رقم الهاتف</div>
-        <input type="text" class="form-input" id="phone" placeholder="+963 xxx xxx xxx">
-      </div>
-      <div class="form-group">
-        <div class="form-label">وصف الشركة</div>
-        <textarea class="form-textarea" id="description" placeholder="اكتب وصفاً مختصراً عن نشاطك التجاري..."></textarea>
-      </div>
-      <div class="profile-alert" id="profileAlert"></div>
-      <button class="btn-save-profile" onclick="saveProfile()">💾 حفظ المعلومات</button>
-    </div>
-  </div>
 
 </main>
 
@@ -462,7 +405,6 @@ if (!token) location.href = 'login.html';
 // تحميل البيانات عند الفتح
 loadDashboard();
 loadMyProducts();
-loadProfile();
 
 async function loadDashboard() {
   try {
@@ -540,65 +482,6 @@ async function deleteProduct(id, btn) {
       btn.closest('.my-prod-item').remove();
     }
   } catch(e) {}
-}
-
-async function loadProfile() {
-  try {
-    const res = await fetch(`${API_BASE}/api/sellers/me`, {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    if (!res.ok) return;
-    const data = await res.json();
-    const s = data.seller || data;
-    if (s.company_name_ar) document.getElementById('company_name_ar').value = s.company_name_ar;
-    if (s.company_name_en) document.getElementById('company_name_en').value = s.company_name_en;
-    if (s.governorate) document.getElementById('governorate').value = s.governorate;
-    if (s.activity_type) document.getElementById('activity_type').value = s.activity_type;
-    if (s.phone) document.getElementById('phone').value = s.phone;
-    if (s.description) document.getElementById('description').value = s.description;
-  } catch(e) {}
-}
-
-async function saveProfile() {
-  const btn = document.querySelector('.btn-save-profile');
-  btn.disabled = true;
-  btn.textContent = 'جاري الحفظ...';
-  try {
-    const body = {
-      company_name_ar: document.getElementById('company_name_ar').value.trim(),
-      company_name_en: document.getElementById('company_name_en').value.trim(),
-      governorate: document.getElementById('governorate').value,
-      activity_type: document.getElementById('activity_type').value,
-      phone: document.getElementById('phone').value.trim(),
-      description: document.getElementById('description').value.trim()
-    };
-    const res = await fetch(`${API_BASE}/api/sellers/me`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-    const data = await res.json();
-    const alert = document.getElementById('profileAlert');
-    if (!res.ok) {
-      alert.textContent = data.error || 'حدث خطأ';
-      alert.className = 'profile-alert error';
-    } else {
-      alert.textContent = '✅ تم حفظ المعلومات بنجاح';
-      alert.className = 'profile-alert success';
-    }
-    alert.style.display = 'block';
-    setTimeout(() => alert.style.display = 'none', 3000);
-  } catch(e) {
-    const alert = document.getElementById('profileAlert');
-    alert.textContent = 'تعذّر الحفظ، حاول مجدداً';
-    alert.className = 'profile-alert error';
-    alert.style.display = 'block';
-  }
-  btn.disabled = false;
-  btn.textContent = '💾 حفظ المعلومات';
 }
 
 function logout() {

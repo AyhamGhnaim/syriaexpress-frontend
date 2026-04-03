@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>معلوماتي — SyriaExpress</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C9A84C;--gold-light:#E8C96A;--gold-dim:#8B6914;
+  --bg:#0F0E0C;--bg2:#161410;--bg3:#1C1A16;--bg4:#221F19;
+  --text:#F5F0E8;--text-dim:#A89880;
+  --border:#2A2620;--border-gold:rgba(201,168,76,0.25);
+  --green:#4ade80;
+}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);direction:rtl;min-height:100vh;}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:56px;background:rgba(15,14,12,0.97);border-bottom:1px solid var(--border-gold);position:sticky;top:0;z-index:100;}
+.header-right{display:flex;align-items:center;gap:10px;}
+.header-left{display:flex;align-items:center;gap:10px;}
+.btn-back{background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:7px 14px;border-radius:8px;font-family:'Cairo',sans-serif;font-size:12px;cursor:pointer;}
+.header-title{font-family:'Amiri',serif;font-size:18px;color:var(--gold);}
+
+/* MAIN */
+main{padding:16px;max-width:480px;margin:0 auto;padding-bottom:40px;}
+
+/* BOX */
+.box{background:var(--bg3);border:1px solid var(--border);border-radius:16px;margin-bottom:16px;overflow:hidden;}
+.box-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);}
+.box-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;}
+.box-dot{width:8px;height:8px;border-radius:50%;background:var(--border);display:inline-block;}
+.box-dot.gold{background:var(--gold);}
+
+/* PROFILE INFO (read mode) */
+.info-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);}
+.info-row:last-child{border-bottom:none}
+.info-label{font-size:12px;color:var(--text-dim);}
+.info-val{font-size:14px;font-weight:600;color:var(--text);text-align:left;}
+.info-val.empty{color:var(--text-dim);font-weight:400;font-style:italic;}
+
+/* FORM */
+.form-group{padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);}
+.form-group:last-child{border-bottom:none}
+.form-label{font-size:12px;color:var(--text-dim);margin-bottom:6px;}
+.form-input{width:100%;background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Cairo',sans-serif;font-size:14px;color:var(--text);outline:none;}
+.form-input:focus{border-color:var(--border-gold);}
+.form-select{width:100%;background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Cairo',sans-serif;font-size:14px;color:var(--text);outline:none;}
+.form-textarea{width:100%;background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Cairo',sans-serif;font-size:14px;color:var(--text);outline:none;resize:none;min-height:90px;}
+
+/* BUTTONS */
+.btn-edit{background:rgba(201,168,76,0.12);color:var(--gold);border:1px solid var(--border-gold);padding:7px 18px;border-radius:8px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+.btn-save{width:calc(100% - 32px);margin:14px 16px;background:var(--gold);border:none;color:#0F0E0C;padding:13px;border-radius:10px;font-family:'Cairo',sans-serif;font-size:15px;font-weight:700;cursor:pointer;}
+.btn-save:disabled{opacity:0.6;cursor:not-allowed;}
+.btn-cancel{width:calc(100% - 32px);margin:0 16px 14px;background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:11px;border-radius:10px;font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer;}
+
+/* ALERT */
+.alert{margin:8px 16px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;}
+.alert.success{background:rgba(74,222,128,0.12);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
+.alert.error{background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.3);}
+
+/* VERIFICATION BADGE */
+.verif-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;}
+.verif-badge.verified{background:rgba(74,222,128,0.12);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
+.verif-badge.pending{background:rgba(251,146,60,0.12);color:#fb923c;border:1px solid rgba(251,146,60,0.3);}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <button class="btn-back" onclick="location.href='syriaexpress-seller.html'">← رجوع</button>
+  </div>
+  <div class="header-right">
+    <span class="header-title">معلوماتي</span>
+  </div>
+</div>
+
+<main>
+
+  <!-- حالة التوثيق -->
+  <div class="box">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot gold"></span> حالة الحساب</div>
+    </div>
+    <div class="info-row">
+      <span class="info-label">حالة التوثيق</span>
+      <span class="info-val" id="verifStatus">—</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">البريد الإلكتروني</span>
+      <span class="info-val" id="emailVal">—</span>
+    </div>
+  </div>
+
+  <!-- معلومات الشركة -->
+  <div class="box">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot gold"></span> معلومات الشركة</div>
+      <button class="btn-edit" id="editBtn" onclick="toggleEdit()">✏️ تعديل</button>
+    </div>
+
+    <!-- وضع العرض -->
+    <div id="viewMode">
+      <div class="info-row">
+        <span class="info-label">اسم الشركة (عربي)</span>
+        <span class="info-val" id="view_company_ar">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">اسم الشركة (إنجليزي)</span>
+        <span class="info-val" id="view_company_en">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">المحافظة</span>
+        <span class="info-val" id="view_gov">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">نوع النشاط</span>
+        <span class="info-val" id="view_activity">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">رقم الهاتف</span>
+        <span class="info-val" id="view_phone">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">وصف الشركة</span>
+        <span class="info-val" id="view_desc">—</span>
+      </div>
+    </div>
+
+    <!-- وضع التعديل -->
+    <div id="editMode" style="display:none;">
+      <div class="form-group">
+        <div class="form-label">اسم الشركة (عربي)</div>
+        <input type="text" class="form-input" id="company_name_ar" placeholder="مثال: شركة الأمل للتجارة">
+      </div>
+      <div class="form-group">
+        <div class="form-label">اسم الشركة (إنجليزي)</div>
+        <input type="text" class="form-input" id="company_name_en" placeholder="e.g. Al Amal Trading Co.">
+      </div>
+      <div class="form-group">
+        <div class="form-label">المحافظة</div>
+        <select class="form-select" id="governorate">
+          <option value="">اختر المحافظة</option>
+          <option value="دمشق">دمشق</option>
+          <option value="ريف دمشق">ريف دمشق</option>
+          <option value="حلب">حلب</option>
+          <option value="حمص">حمص</option>
+          <option value="حماة">حماة</option>
+          <option value="اللاذقية">اللاذقية</option>
+          <option value="طرطوس">طرطوس</option>
+          <option value="إدلب">إدلب</option>
+          <option value="دير الزور">دير الزور</option>
+          <option value="الرقة">الرقة</option>
+          <option value="الحسكة">الحسكة</option>
+          <option value="درعا">درعا</option>
+          <option value="السويداء">السويداء</option>
+          <option value="القنيطرة">القنيطرة</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="form-label">نوع النشاط</div>
+        <select class="form-select" id="activity_type">
+          <option value="">اختر نوع النشاط</option>
+          <option value="factory">مصنع</option>
+          <option value="manufacturer">مُصنّع</option>
+          <option value="distributor">موزع</option>
+          <option value="wholesaler">تاجر جملة</option>
+          <option value="importer">مستورد</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="form-label">رقم الهاتف</div>
+        <input type="text" class="form-input" id="phone" placeholder="+963 xxx xxx xxx">
+      </div>
+      <div class="form-group">
+        <div class="form-label">وصف الشركة</div>
+        <textarea class="form-textarea" id="description" placeholder="اكتب وصفاً مختصراً عن نشاطك التجاري..."></textarea>
+      </div>
+      <div class="alert" id="alertBox"></div>
+      <button class="btn-save" id="saveBtn" onclick="saveProfile()">💾 حفظ التعديلات</button>
+      <button class="btn-cancel" onclick="toggleEdit()">إلغاء</button>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
+const token = localStorage.getItem('token');
+const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+if (!token) location.href = 'login.html';
+
+const activityLabels = {
+  factory: 'مصنع', manufacturer: 'مُصنّع',
+  distributor: 'موزع', wholesaler: 'تاجر جملة', importer: 'مستورد'
+};
+
+let sellerData = {};
+
+loadProfile();
+
+async function loadProfile() {
+  try {
+    const res = await fetch(`${API_BASE}/api/sellers/me`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    sellerData = data.seller || data;
+    renderView();
+  } catch(e) {
+    // إذا ما في بيانات بعد، خلي العرض فاضي
+  }
+
+  // بيانات ثابتة من الـ token
+  document.getElementById('emailVal').textContent = user.email || '—';
+}
+
+function renderView() {
+  const s = sellerData;
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (val) { el.textContent = val; el.className = 'info-val'; }
+    else { el.textContent = 'غير محدد'; el.className = 'info-val empty'; }
+  };
+  set('view_company_ar', s.company_name_ar);
+  set('view_company_en', s.company_name_en);
+  set('view_gov', s.governorate);
+  set('view_activity', activityLabels[s.activity_type] || s.activity_type);
+  set('view_phone', s.phone);
+  set('view_desc', s.description);
+
+  // حالة التوثيق
+  const vs = s.verification_status || 'pending';
+  const verifEl = document.getElementById('verifStatus');
+  if (vs === 'verified') {
+    verifEl.innerHTML = '<span class="verif-badge verified">✓ موثّق</span>';
+  } else {
+    verifEl.innerHTML = '<span class="verif-badge pending">⏳ قيد المراجعة</span>';
+  }
+}
+
+function toggleEdit() {
+  const editMode = document.getElementById('editMode');
+  const viewMode = document.getElementById('viewMode');
+  const btn = document.getElementById('editBtn');
+  const isEditing = editMode.style.display !== 'none';
+
+  if (isEditing) {
+    editMode.style.display = 'none';
+    viewMode.style.display = 'block';
+    btn.textContent = '✏️ تعديل';
+  } else {
+    // حشو الحقول بالبيانات الحالية
+    const s = sellerData;
+    document.getElementById('company_name_ar').value = s.company_name_ar || '';
+    document.getElementById('company_name_en').value = s.company_name_en || '';
+    document.getElementById('governorate').value = s.governorate || '';
+    document.getElementById('activity_type').value = s.activity_type || '';
+    document.getElementById('phone').value = s.phone || '';
+    document.getElementById('description').value = s.description || '';
+    editMode.style.display = 'block';
+    viewMode.style.display = 'none';
+    btn.textContent = '✕ إلغاء';
+  }
+}
+
+async function saveProfile() {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.textContent = 'جاري الحفظ...';
+
+  const body = {
+    company_name_ar: document.getElementById('company_name_ar').value.trim(),
+    company_name_en: document.getElementById('company_name_en').value.trim(),
+    governorate: document.getElementById('governorate').value,
+    activity_type: document.getElementById('activity_type').value,
+    phone: document.getElementById('phone').value.trim(),
+    description: document.getElementById('description').value.trim()
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/api/sellers/me`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'خطأ');
+
+    sellerData = { ...sellerData, ...body };
+    renderView();
+    toggleEdit();
+    showAlert('✅ تم حفظ المعلومات بنجاح', 'success');
+  } catch(e) {
+    showAlert(e.message || 'تعذّر الحفظ، حاول مجدداً', 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '💾 حفظ التعديلات';
+}
+
+function showAlert(msg, type) {
+  const el = document.getElementById('alertBox');
+  el.textContent = msg;
+  el.className = 'alert ' + type;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 3000);
+}
+</script>
+</body>
+</html>
