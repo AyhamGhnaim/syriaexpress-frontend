@@ -222,15 +222,15 @@ function renderProduct(p) {
   // normalize الحقول — DB أسماؤها مختلفة
   const nameAr      = p.name_ar || p.name || 'منتج';
   const priceRaw    = parseFloat(p.price) || 0;
-  const price       = priceRaw > 0 ? priceRaw.toLocaleString() : '0';
+  const price       = priceRaw > 0 ? priceRaw.toLocaleString() : '—';
   const unit        = p.unit || 'عبوة';
   const moq         = parseInt(p.min_order_quantity || p.moq || 1);
-  const sellerName  = p.seller_name || p.seller_business_name || 'بائع موثّق';
-  const catName     = p.category_name || p.category_ar || p.categories?.name_ar || '';
+  const sellerName  = p.company_name_ar || p.seller_name || p.seller_business_name || 'بائع موثّق';
+  const catName     = p.category_name_ar || p.category_name || p.category_ar || '';
   const catId       = p.category_id || p.category || '';
   const icon        = getCatIcon(catName);
   const descAr      = p.description_ar || p.description || '';
-  const imgUrl      = p.image_url || (p.product_images && p.product_images[0]?.image_url) || '';
+  const imgUrl      = (p.images && p.images[0]) || p.image_url || '';
   // شحن — DB: ship_inside / ship_outside / ship_international
   const shipLocal   = !!(p.ship_inside   || p.ship_local);
   const shipProv    = !!(p.ship_outside  || p.ship_provincial);
