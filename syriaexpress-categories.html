@@ -199,6 +199,7 @@ const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
 const catIconMap = {
   'غذائيات': '🌾', 'ألبسة': '🧵', 'كهربائيات': '📱',
   'بناء': '🏗️', 'بلاستيك': '🧴', 'طبية': '💊',
+  'كيميائية': '🧴', 'منظفات': '🧴',
 };
 function getCatIcon(name) {
   for (const [key, icon] of Object.entries(catIconMap)) {
@@ -229,12 +230,15 @@ async function loadCategories() {
     }
 
     // فقط غذائيات وكيماويات ومنظفات متاحتان الآن
-    const ACTIVE_CATS = ['غذائيات', 'كيماويات'];
+    const ACTIVE_IDS = [
+      'd91a982a-4943-41d2-a10d-190bdcc46dbf', // غذائيات
+      'dbc84456-4a45-41bb-81b1-6c55866a84ae'  // مواد كيميائية ومنظفات
+    ];
 
     grid.innerHTML = cats.map(cat => {
       const nameAr = cat.name_ar || cat.name || '';
       const icon = getCatIcon(nameAr);
-      const isActive = ACTIVE_CATS.some(a => nameAr.includes(a));
+      const isActive = ACTIVE_IDS.includes(cat.id);
 
       if (isActive) {
         return `
