@@ -338,10 +338,159 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 
 <script>
 const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
-// TODO: GET /api/orders/my — تحميل طلبات المشتري
-// TODO: GET /api/notifications — تحميل الإشعارات
+const token = localStorage.getItem('token');
+const user = JSON.parse(localStorage.getItem('user') || '{}');
 
+if (!token) location.href = 'login.html';
 
+loadOrders();
+loadNotifications();
+loadCategories();
+
+// ── طلبات المشتري ──
+async function loadOrders() {
+  try {
+    const res = await fetch(`${API_BASE}/api/orders/my`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const orders = data.orders || data || [];
+
+    // stats
+    const total    = orders.length;
+    const completed = orders.filter(o => o.status === 'delivered').length;
+    const pending  = orders.filter(o => o.status === 'pending').length;
+    const shipping = orders.filter(o => o.status === 'shipped').length;
+
+    const nums = document.querySelectorAll('.stat-num');
+    if (nums[0]) nums[0].textContent = completed;
+    if (nums[1]) nums[1].textContent = total;
+    if (nums[2]) nums[2].textContent = pending;
+    if (nums[3]) nums[3].textContent = shipping;
+
+    // قائمة الطلبات
+    const list = document.querySelector('.orders-list');
+    if (!orders.length) {
+      list.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <div class="empty-text">لا توجد طلبات بعد</div>
+        <div class="empty-sub">اضغط "طلب جديد" لتصفح المنتجات وإرسال أول طلب</div>
+      </div>`;
+      return;
+    }
+
+    const statusLabel = { pending:'بانتظار التأكيد', confirmed:'مؤكد', shipped:'قيد الشحن', delivered:'مُسلَّم', cancelled:'ملغى' };
+    const statusClass = { pending:'pending', confirmed:'confirmed', shipped:'shipped', delivered:'delivered', cancelled:'pending' };
+
+    list.innerHTML = orders.slice(0,10).map((o, i) => {
+      const name = o.product_name_ar || o.product_name || 'منتج';
+      const company = o.seller_company || o.company_name_ar || 'بائع';
+      const date = o.created_at ? new Date(o.created_at).toLocaleDateString('ar-SY') : '';
+      const st = o.status || 'pending';
+      return `
+        <div class="order-row">
+          <div class="order-num">#${String(i+1).padStart(3,'0')}</div>
+          <div class="order-icon">📦</div>
+          <div class="order-info">
+            <div class="order-name">${name}</div>
+            <div class="order-company">${company}</div>
+          </div>
+          <div class="order-status ${statusClass[st]}">${statusLabel[st] || st}</div>
+          <div class="order-date">${date}</div>
+        </div>
+      `;
+    }).join('');
+
+    // تتبع الشحن النشط
+    const activeShipping = orders.filter(o => o.status === 'shipped');
+    if (activeShipping.length) {
+      const trackBox = document.querySelector('.box:nth-child(3) .empty-state');
+      if (trackBox) {
+        trackBox.innerHTML = `
+          <div class="tracker-box">
+            <div class="tracker-product">📦 ${activeShipping[0].product_name_ar || 'طلبك'}</div>
+            <div class="tracker-steps">
+              <div class="t-step"><div class="t-circle done">✓</div><div class="t-label">مؤكد</div></div>
+              <div class="t-line done"></div>
+              <div class="t-step"><div class="t-circle active">🚛</div><div class="t-label">شحن</div></div>
+              <div class="t-line"></div>
+              <div class="t-step"><div class="t-circle waiting">🏠</div><div class="t-label">تسليم</div></div>
+            </div>
+            <div class="tracker-eta">الطلبات النشطة: ${activeShipping.length}</div>
+          </div>
+        `;
+      }
+    }
+
+  } catch(e) {}
+}
+
+// ── الإشعارات ──
+async function loadNotifications() {
+  try {
+    const res = await fetch(`${API_BASE}/api/notifications`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    const notifs = data.notifications || data || [];
+    if (!notifs.length) return;
+
+    const list = document.querySelector('.notif-list');
+    list.innerHTML = notifs.slice(0,5).map(n => `
+      <div class="notif-item">
+        <div class="notif-left-bar ${n.type === 'order' ? 'orange' : n.type === 'delivery' ? 'green' : 'blue'}"></div>
+        <div class="notif-icon-box">${n.type === 'order' ? '📦' : n.type === 'delivery' ? '✅' : '🔔'}</div>
+        <div>
+          <div class="notif-text">${n.message || n.title || ''}</div>
+          <div class="notif-time">${n.created_at ? new Date(n.created_at).toLocaleDateString('ar-SY') : ''}</div>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {}
+}
+
+// ── الفئات المتاحة ──
+async function loadCategories() {
+  try {
+    const res = await fetch(`${API_BASE}/api/categories`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const cats = data.categories || data || [];
+    if (!cats.length) return;
+
+    const ACTIVE_IDS = [
+      'd91a982a-4943-41d2-a10d-190bdcc46dbf',
+      'dbc84456-4a45-41bb-81b1-6c55866a84ae'
+    ];
+    const iconMap = {
+      'd91a982a-4943-41d2-a10d-190bdcc46dbf': '🌾',
+      'dbc84456-4a45-41bb-81b1-6c55866a84ae': '🧴',
+      '022f9e74-b115-4ce0-ab15-5951dab17f10': '💊',
+      '0450b35f-331b-4b91-b7d6-0fefbe0c3299': '🏗️',
+      '2c2ebbf1-d69b-4808-a24b-b24e95cbb81c': '🧪',
+      '4a853f88-f000-4a81-ba5a-54f6b17f666f': '📱',
+      '9cd45ecd-7b06-4908-9e96-0e3e5182372a': '🧵',
+    };
+
+    const grid = document.querySelector('.cats-grid-small');
+    grid.innerHTML = cats.map(c => {
+      const icon = iconMap[c.id] || '📦';
+      const name = c.name_ar || c.name || '';
+      const active = ACTIVE_IDS.includes(c.id);
+      if (active) {
+        return `<a href="syriaexpress-products.html?cat=${c.id}" class="cat-btn">
+          <div class="icon">${icon}</div><div class="name">${name}</div>
+        </a>`;
+      } else {
+        return `<div class="cat-btn" style="opacity:0.5">
+          <div class="icon">${icon}</div><div class="name">${name}</div>
+        </div>`;
+      }
+    }).join('');
+  } catch(e) {}
+}
 
 function logout() {
   localStorage.removeItem('token');
