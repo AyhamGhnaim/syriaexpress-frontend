@@ -141,58 +141,10 @@ nav{position:fixed;top:0;right:0;left:0;z-index:100;display:flex;align-items:cen
 
   <!-- CATEGORIES GRID -->
   <div class="cats-grid fade-in" id="catsGrid">
-
-    <a href="syriaexpress-products.html?cat=food" class="cat-card" data-cat="active food" data-name="مواد غذائية">
-      <div class="cat-glow" style="background:radial-gradient(circle,rgba(201,168,76,0.15),transparent)"></div>
-      <span class="cat-icon">🌾</span>
-      <div class="cat-name">مواد غذائية</div>
-      <div class="cat-count">متاح • بائعون موثّقون</div>
-      <span class="cat-badge active">متاح</span>
-    </a>
-
-    <a href="#" class="cat-card" data-cat="soon textile" data-name="نسيج وملابس">
-      <span class="cat-icon">🧵</span>
-      <div class="cat-name">نسيج وملابس</div>
-      <div class="cat-count">قريباً</div>
-      <span class="cat-badge soon">قريباً</span>
-    </a>
-
-    <a href="syriaexpress-products.html?cat=cleaning" class="cat-card" data-cat="active industrial" data-name="كيماويات ومنظفات">
-      <div class="cat-glow" style="background:radial-gradient(circle,rgba(201,168,76,0.15),transparent)"></div>
-      <span class="cat-icon">🧴</span>
-      <div class="cat-name">كيماويات ومنظفات</div>
-      <div class="cat-count">متاح • بائعون موثّقون</div>
-      <span class="cat-badge active">متاح</span>
-    </a>
-
-    <a href="#" class="cat-card" data-cat="soon food" data-name="منتجات ألبان">
-      <span class="cat-icon">🥛</span>
-      <div class="cat-name">منتجات ألبان</div>
-      <div class="cat-count">قريباً</div>
-      <span class="cat-badge soon">قريباً</span>
-    </a>
-
-    <a href="#" class="cat-card" data-cat="soon industrial" data-name="مواد بناء">
-      <span class="cat-icon">🏗️</span>
-      <div class="cat-name">مواد بناء</div>
-      <div class="cat-count">قريباً</div>
-      <span class="cat-badge soon">قريباً</span>
-    </a>
-
-    <a href="#" class="cat-card" data-cat="soon" data-name="إلكترونيات">
-      <span class="cat-icon">📱</span>
-      <div class="cat-name">إلكترونيات</div>
-      <div class="cat-count">قريباً</div>
-      <span class="cat-badge soon">قريباً</span>
-    </a>
-
-    <a href="#" class="cat-card" data-cat="soon textile" data-name="أثاث ومفروشات">
-      <span class="cat-icon">🛋️</span>
-      <div class="cat-name">أثاث ومفروشات</div>
-      <div class="cat-count">قريباً</div>
-      <span class="cat-badge soon">قريباً</span>
-    </a>
-
+    <div class="empty-state" style="grid-column:1/-1;padding:40px 0;">
+      <div class="empty-icon">⏳</div>
+      <div class="empty-title">جاري التحميل...</div>
+    </div>
   </div>
 
   <!-- EMPTY STATE (hidden by default) -->
@@ -244,13 +196,61 @@ nav{position:fixed;top:0;right:0;left:0;z-index:100;display:flex;align-items:cen
 <script>
 const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
 
-// Fade in observer
+const catIconMap = {
+  'غذائيات': '🌾', 'ألبسة': '🧵', 'كهربائيات': '📱',
+  'بناء': '🏗️', 'بلاستيك': '🧴', 'طبية': '💊',
+};
+function getCatIcon(name) {
+  for (const [key, icon] of Object.entries(catIconMap)) {
+    if (name && name.includes(key)) return icon;
+  }
+  return '📦';
+}
+
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
 }, {threshold: 0.1});
 document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
-// Search
+async function loadCategories() {
+  const grid = document.getElementById('catsGrid');
+  try {
+    const res = await fetch(`${API_BASE}/api/categories`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const cats = data.categories || data || [];
+
+    if (!cats.length) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+        <div class="empty-icon">📂</div>
+        <div class="empty-title">لا توجد فئات بعد</div>
+      </div>`;
+      return;
+    }
+
+    grid.innerHTML = cats.map(cat => {
+      const icon = getCatIcon(cat.name_ar || cat.name || '');
+      const nameAr = cat.name_ar || cat.name || '';
+      return `
+        <a href="syriaexpress-products.html?cat=${cat.id}" class="cat-card" data-cat="active" data-name="${nameAr}">
+          <div class="cat-glow" style="background:radial-gradient(circle,rgba(201,168,76,0.15),transparent)"></div>
+          <span class="cat-icon">${icon}</span>
+          <div class="cat-name">${nameAr}</div>
+          <div class="cat-count">متاح • بائعون موثّقون</div>
+          <span class="cat-badge active">متاح</span>
+        </a>
+      `;
+    }).join('');
+
+  } catch(e) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      <div class="empty-icon">⚠️</div>
+      <div class="empty-title">تعذّر تحميل الفئات</div>
+      <div class="empty-sub">تأكد من الاتصال وحاول مجدداً</div>
+    </div>`;
+  }
+}
+
 function handleSearch(val) {
   const q = val.trim().toLowerCase();
   const cards = document.querySelectorAll('.cat-card');
@@ -265,7 +265,6 @@ function handleSearch(val) {
   document.getElementById('emptyState').style.display = visible === 0 ? 'block' : 'none';
 }
 
-// Filter chips
 function filterCats(type, el) {
   document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
@@ -273,29 +272,15 @@ function filterCats(type, el) {
   const cards = document.querySelectorAll('.cat-card');
   let visible = 0;
   cards.forEach(card => {
-    const cats = card.getAttribute('data-cat') || '';
     const name = card.getAttribute('data-name') || '';
-    const matchFilter = type === 'all' || cats.includes(type);
     const matchSearch = !q || name.includes(q);
-    const show = matchFilter && matchSearch;
-    card.classList.toggle('hidden', !show);
-    if(show) visible++;
+    card.classList.toggle('hidden', !matchSearch);
+    if(matchSearch) visible++;
   });
   document.getElementById('emptyState').style.display = visible === 0 ? 'block' : 'none';
 }
 
-// Load sellers from API (future)
-async function loadSellers() {
-  try {
-    const res = await fetch(`${API_BASE}/api/sellers/featured`);
-    if(!res.ok) return;
-    const data = await res.json();
-    // TODO: render sellers
-  } catch(e) {
-    // API not ready yet, empty state shown
-  }
-}
-loadSellers();
+loadCategories();
 </script>
 </body>
 </html>

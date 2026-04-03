@@ -223,26 +223,55 @@ nav.top-nav{position:fixed;top:0;right:0;left:0;z-index:100;display:flex;align-i
 const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
 
 const params = new URLSearchParams(window.location.search);
-const catId = params.get('cat') || 'food';
-const catMap = {
-  food:     { name:'مواد غذائية',       icon:'🌾' },
-  cleaning: { name:'كيماويات ومنظفات', icon:'🧴' },
-  textile:  { name:'نسيج وملابس',      icon:'🧵' },
-  building: { name:'مواد بناء',        icon:'🏗️' },
-  dairy:    { name:'منتجات ألبان',     icon:'🥛' },
-  elec:     { name:'إلكترونيات',       icon:'📱' },
-  furniture:{ name:'أثاث ومفروشات',   icon:'🛋️' },
+const catId = params.get('cat'); // UUID من الـ API
+
+// أيقونات fallback
+const catIconMap = {
+  'غذائيات': '🌾', 'ألبسة': '🧵', 'كهربائيات': '📱',
+  'بناء': '🏗️', 'بلاستيك': '🧴', 'طبية': '💊',
 };
-const cat = catMap[catId] || catMap['food'];
-document.getElementById('catName').textContent = cat.name;
-document.getElementById('catNameBread').textContent = cat.name;
-document.getElementById('catIcon').textContent = cat.icon;
-document.title = 'سوريا إكسبريس — ' + cat.name;
+function getCatIcon(name) {
+  for (const [key, icon] of Object.entries(catIconMap)) {
+    if (name && name.includes(key)) return icon;
+  }
+  return '📦';
+}
+
+let currentCatName = 'المنتجات';
+let currentCatIcon = '📦';
+let currentSort = 'default';
+let allProducts = [];
 
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
 }, {threshold: 0.1});
 document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+// أول شي: اجلب اسم الفئة
+async function loadCategoryInfo() {
+  if (!catId) {
+    document.getElementById('catName').textContent = 'الكل';
+    document.getElementById('catNameBread').textContent = 'الكل';
+    document.getElementById('catIcon').textContent = '📦';
+    document.title = 'سوريا إكسبريس — المنتجات';
+    return;
+  }
+  try {
+    const res = await fetch(`${API_BASE}/api/categories`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const cats = data.categories || data || [];
+    const cat = cats.find(c => c.id === catId);
+    if (cat) {
+      currentCatName = cat.name_ar || cat.name || 'المنتجات';
+      currentCatIcon = getCatIcon(currentCatName);
+      document.getElementById('catName').textContent = currentCatName;
+      document.getElementById('catNameBread').textContent = currentCatName;
+      document.getElementById('catIcon').textContent = currentCatIcon;
+      document.title = 'سوريا إكسبريس — ' + currentCatName;
+    }
+  } catch(e) {}
+}
 
 function setView(v) {
   document.getElementById('productsGrid').classList.toggle('list-view', v === 'list');
@@ -252,7 +281,7 @@ function setView(v) {
 
 function openSort() { document.getElementById('sortModal').classList.add('open'); }
 function closeSort(e) { if(e.target === e.currentTarget) document.getElementById('sortModal').classList.remove('open'); }
-let currentSort = 'default';
+
 function setSort(s) {
   document.querySelectorAll('.sort-check').forEach(el => el.style.display = 'none');
   document.getElementById('check-' + s).style.display = 'inline';
@@ -264,58 +293,104 @@ function setSort(s) {
 function filterProducts(type, el) {
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
-  loadProducts(type);
+  renderFiltered(type);
 }
 
 function handleSearch(val) {
-  // placeholder — will filter rendered cards
+  const q = val.trim().toLowerCase();
+  const cards = document.querySelectorAll('.prod-card');
+  cards.forEach(card => {
+    const name = (card.getAttribute('data-name') || '').toLowerCase();
+    card.style.display = (!q || name.includes(q)) ? '' : 'none';
+  });
 }
 
-async function loadProducts(filter = 'all') {
+async function loadProducts() {
+  const grid = document.getElementById('productsGrid');
+  grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">⏳</div><div class="empty-title">جاري التحميل...</div></div>`;
+
   try {
-    const res = await fetch(`${API_BASE}/api/products?category=${catId}&filter=${filter}&sort=${currentSort}`);
+    let url = `${API_BASE}/api/products?status=active`;
+    if (catId) url += `&category_id=${catId}`;
+    if (currentSort === 'price-asc') url += '&sort=price_asc';
+    else if (currentSort === 'price-desc') url += '&sort=price_desc';
+    else if (currentSort === 'newest') url += '&sort=newest';
+
+    const res = await fetch(url);
     if (!res.ok) throw new Error();
     const data = await res.json();
-    renderProducts(data.products || []);
-    document.getElementById('catCount').textContent = `${data.total || 0} منتج متاح`;
-    document.getElementById('resultsCount').textContent = `${data.total || 0} منتج`;
+    allProducts = data.products || data || [];
+
+    const total = allProducts.length;
+    document.getElementById('catCount').textContent = `${total} منتج متاح`;
+    document.getElementById('resultsCount').textContent = `${total} منتج`;
+    renderProducts(allProducts);
+
   } catch(e) {
-    document.getElementById('catCount').textContent = 'جاري ربط الـ API...';
+    document.getElementById('catCount').textContent = 'تعذّر التحميل';
     document.getElementById('resultsCount').textContent = '0 منتج';
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      <div class="empty-icon">⚠️</div>
+      <div class="empty-title">تعذّر تحميل المنتجات</div>
+      <div class="empty-sub">تأكد من الاتصال وحاول مجدداً</div>
+    </div>`;
   }
+}
+
+function renderFiltered(filter) {
+  let filtered = allProducts;
+  if (filter === 'verified') filtered = allProducts.filter(p => p.seller_verified);
+  else if (filter === 'local') filtered = allProducts.filter(p => p.ship_inside);
+  else if (filter === 'intl') filtered = allProducts.filter(p => p.ship_international);
+  renderProducts(filtered);
+  document.getElementById('resultsCount').textContent = `${filtered.length} منتج`;
 }
 
 function renderProducts(products) {
   const grid = document.getElementById('productsGrid');
   if (!products.length) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">📦</div><div class="empty-title">لا توجد منتجات بعد</div><div class="empty-sub">سيظهر هنا منتجات هذه الفئة بعد ربط الـ API</div></div>`;
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      <div class="empty-icon">📦</div>
+      <div class="empty-title">لا توجد منتجات بعد</div>
+      <div class="empty-sub">لم يُضف البائعون منتجات لهذه الفئة حتى الآن</div>
+    </div>`;
     return;
   }
-  grid.innerHTML = products.map(p => `
-    <a href="syriaexpress-product.html?id=${p.id}" class="prod-card">
-      <div class="prod-img">
-        ${p.image ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;">` : `<span style="font-size:48px">${cat.icon}</span>`}
-        ${p.is_new ? '<span class="prod-badge new-badge">جديد</span>' : ''}
-        ${p.is_hot ? '<span class="prod-badge hot-badge">🔥 رائج</span>' : ''}
-      </div>
-      <div class="prod-info">
-        <div class="prod-name">${p.name}</div>
-        <div class="prod-seller"><span class="prod-seller-dot"></span>${p.seller_name}</div>
-        <div class="prod-price-row">
-          <span class="prod-price">${p.price} ل.س</span>
-          <span class="prod-unit">/ ${p.unit || 'وحدة'}</span>
+  grid.innerHTML = products.map(p => {
+    const name = p.name_ar || p.name || 'منتج';
+    const price = p.price ? Number(p.price).toLocaleString() : '—';
+    const moq = p.min_order_quantity || p.moq || 1;
+    const unit = p.unit || 'وحدة';
+    const sellerName = p.seller_name || p.seller_business_name || 'بائع موثّق';
+    const imgHtml = p.image_url
+      ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover;" loading="lazy">`
+      : `<span style="font-size:48px">${currentCatIcon}</span>`;
+    return `
+      <a href="syriaexpress-product.html?id=${p.id}" class="prod-card" data-name="${name}">
+        <div class="prod-img">
+          ${imgHtml}
         </div>
-        <div class="prod-moq">الحد الأدنى: ${p.moq || 1} ${p.unit || 'وحدة'}</div>
-        <div class="prod-ship">
-          ${p.ship_local ? '<span class="ship-tag">محلي</span>' : ''}
-          ${p.ship_provincial ? '<span class="ship-tag">خارج المحافظة</span>' : ''}
-          ${p.ship_international ? '<span class="ship-tag">دولي</span>' : ''}
+        <div class="prod-info">
+          <div class="prod-name">${name}</div>
+          <div class="prod-seller"><span class="prod-seller-dot"></span>${sellerName}</div>
+          <div class="prod-price-row">
+            <span class="prod-price">${price} ل.س</span>
+            <span class="prod-unit">/ ${unit}</span>
+          </div>
+          <div class="prod-moq">الحد الأدنى: ${moq} ${unit}</div>
+          <div class="prod-ship">
+            ${p.ship_inside ? '<span class="ship-tag">محلي</span>' : ''}
+            ${p.ship_outside ? '<span class="ship-tag">خارج المحافظة</span>' : ''}
+            ${p.ship_international ? '<span class="ship-tag">دولي</span>' : ''}
+          </div>
         </div>
-      </div>
-    </a>
-  `).join('');
+      </a>
+    `;
+  }).join('');
 }
 
+// ابدأ
+loadCategoryInfo();
 loadProducts();
 </script>
 </body>
