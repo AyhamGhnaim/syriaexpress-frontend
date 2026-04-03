@@ -228,18 +228,34 @@ async function loadCategories() {
       return;
     }
 
+    // فقط غذائيات وكيماويات ومنظفات متاحتان الآن
+    const ACTIVE_CATS = ['غذائيات', 'كيماويات'];
+
     grid.innerHTML = cats.map(cat => {
-      const icon = getCatIcon(cat.name_ar || cat.name || '');
       const nameAr = cat.name_ar || cat.name || '';
-      return `
-        <a href="syriaexpress-products.html?cat=${cat.id}" class="cat-card" data-cat="active" data-name="${nameAr}">
-          <div class="cat-glow" style="background:radial-gradient(circle,rgba(201,168,76,0.15),transparent)"></div>
-          <span class="cat-icon">${icon}</span>
-          <div class="cat-name">${nameAr}</div>
-          <div class="cat-count">متاح • بائعون موثّقون</div>
-          <span class="cat-badge active">متاح</span>
-        </a>
-      `;
+      const icon = getCatIcon(nameAr);
+      const isActive = ACTIVE_CATS.some(a => nameAr.includes(a));
+
+      if (isActive) {
+        return `
+          <a href="syriaexpress-products.html?cat=${cat.id}" class="cat-card" data-cat="active" data-name="${nameAr}">
+            <div class="cat-glow" style="background:radial-gradient(circle,rgba(201,168,76,0.15),transparent)"></div>
+            <span class="cat-icon">${icon}</span>
+            <div class="cat-name">${nameAr}</div>
+            <div class="cat-count">متاح • بائعون موثّقون</div>
+            <span class="cat-badge active">متاح</span>
+          </a>
+        `;
+      } else {
+        return `
+          <div class="cat-card" style="opacity:0.6;cursor:default;" data-cat="soon" data-name="${nameAr}">
+            <span class="cat-icon">${icon}</span>
+            <div class="cat-name">${nameAr}</div>
+            <div class="cat-count">قريباً</div>
+            <span class="cat-badge soon">قريباً</span>
+          </div>
+        `;
+      }
     }).join('');
 
   } catch(e) {
