@@ -158,8 +158,21 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 .notif-text strong{color:var(--text)}
 .notif-time{font-size:11px;color:var(--text-dim)}
 
-/* ── TOP PRODUCTS ── */
-.top-product-list{display:flex;flex-direction:column;}
+/* ── MY PRODUCTS ── */
+.my-prod-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);
+}
+.my-prod-item:last-child{border-bottom:none}
+.my-prod-icon{font-size:28px;min-width:36px;text-align:center}
+.my-prod-info{flex:1;min-width:0}
+.my-prod-name{font-size:14px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.my-prod-meta{font-size:11px;color:var(--text-dim)}
+.my-prod-price{font-size:14px;font-weight:800;color:var(--gold);white-space:nowrap}
+.my-prod-actions{display:flex;gap:6px;margin-top:6px}
+.btn-edit-prod{background:rgba(201,168,76,0.12);color:var(--gold);border:1px solid var(--border-gold);padding:5px 12px;border-radius:6px;font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;cursor:pointer;}
+.btn-delete-prod{background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);padding:5px 10px;border-radius:6px;font-family:'Cairo',sans-serif;font-size:11px;cursor:pointer;}
+
 .top-product-item{
   display:flex;align-items:center;gap:12px;
   padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);
@@ -337,6 +350,20 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
     </div>
   </div>
 
+  <!-- MY PRODUCTS -->
+  <div class="box">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot gold"></span> منتجاتي</div>
+      <button class="btn-add" onclick="location.href='syriaexpress-add-product.html'">+ إضافة</button>
+    </div>
+    <div class="my-prod-list" id="myProductsList">
+      <div class="empty-state">
+        <div class="empty-icon">📦</div>
+        <div class="empty-text">جاري التحميل...</div>
+      </div>
+    </div>
+  </div>
+
   <!-- TOP PRODUCTS -->
   <div class="box">
     <div class="box-header">
@@ -356,9 +383,92 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 
 <script>
 const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
-// TODO: استدعاء /api/sellers/me/dashboard لتحميل البيانات الحقيقية
+const token = localStorage.getItem('token');
+const user = JSON.parse(localStorage.getItem('user') || '{}');
 
+if (!token) location.href = 'login.html';
 
+// تحميل البيانات عند الفتح
+loadDashboard();
+loadMyProducts();
+
+async function loadDashboard() {
+  try {
+    const res = await fetch(`${API_BASE}/api/sellers/me/stats`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) return;
+    const d = await res.json();
+    // Stats
+    const nums = document.querySelectorAll('.stat-num');
+    if (nums[0]) nums[0].textContent = d.completed_orders ?? 0;
+    if (nums[1]) nums[1].textContent = d.new_orders ?? 0;
+    if (nums[2]) nums[2].textContent = d.total_buyers ?? 0;
+    if (nums[3]) nums[3].textContent = d.active_products ?? 0;
+  } catch(e) {}
+}
+
+async function loadMyProducts() {
+  const list = document.getElementById('myProductsList');
+  try {
+    const res = await fetch(`${API_BASE}/api/products/my`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const products = data.products || data || [];
+
+    if (!products.length) {
+      list.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">📦</div>
+        <div class="empty-text">لا توجد منتجات بعد</div>
+        <div class="empty-sub">أضف أول منتج لك الآن</div>
+      </div>`;
+      return;
+    }
+
+    list.innerHTML = products.map(p => {
+      const name = p.name_ar || p.name || 'منتج';
+      const price = parseFloat(p.price) > 0 ? Number(p.price).toLocaleString() + ' ل.س' : '—';
+      const moq = p.min_order_quantity || 1;
+      const unit = p.unit || 'وحدة';
+      const catName = p.category_name_ar || '';
+      return `
+        <div class="my-prod-item">
+          <div class="my-prod-icon">📦</div>
+          <div class="my-prod-info">
+            <div class="my-prod-name">${name}</div>
+            <div class="my-prod-meta">${catName} • الحد الأدنى: ${moq} ${unit}</div>
+            <div class="my-prod-actions">
+              <button class="btn-edit-prod" onclick="location.href='syriaexpress-edit-product.html?id=${p.id}'">✏️ تعديل</button>
+              <button class="btn-delete-prod" onclick="deleteProduct('${p.id}', this)">🗑️</button>
+            </div>
+          </div>
+          <div class="my-prod-price">${price}</div>
+        </div>
+      `;
+    }).join('');
+
+  } catch(e) {
+    list.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">⚠️</div>
+      <div class="empty-text">تعذّر تحميل المنتجات</div>
+    </div>`;
+  }
+}
+
+async function deleteProduct(id, btn) {
+  if (!confirm('تأكيد حذف المنتج؟')) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/products/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+      btn.closest('.my-prod-item').remove();
+    }
+  } catch(e) {}
+}
 
 function logout() {
   localStorage.removeItem('token');
