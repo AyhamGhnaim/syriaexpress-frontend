@@ -179,24 +179,32 @@ const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
 const params = new URLSearchParams(window.location.search);
 const productId = params.get('id');
 
-// Cat icons map
 const catIcons = {
   food:'🌾', cleaning:'🧴', textile:'🧵', building:'🏗️',
   dairy:'🥛', elec:'📱', furniture:'🛋️'
 };
+function getCatIcon(name) {
+  if (!name) return '📦';
+  if (name.includes('غذا') || name.includes('غذائيات')) return '🌾';
+  if (name.includes('ألبسة') || name.includes('نسيج')) return '🧵';
+  if (name.includes('كهرب')) return '📱';
+  if (name.includes('بناء')) return '🏗️';
+  if (name.includes('بلاستيك') || name.includes('كيما') || name.includes('منظف')) return '🧴';
+  if (name.includes('طبية') || name.includes('طب')) return '💊';
+  return '📦';
+}
 
 let product = null;
 let quantity = 1;
 
 async function loadProduct() {
-  if (!productId) {
-    showError('ما في منتج محدد');
-    return;
-  }
+  if (!productId) { showError('ما في منتج محدد'); return; }
   try {
     const res = await fetch(`${API_BASE}/api/products/${productId}`);
     if (!res.ok) throw new Error();
     product = await res.json();
+    // الـ API ممكن يرجع { product: {...} } أو مباشرة {}
+    if (product.product) product = product.product;
     renderProduct(product);
   } catch(e) {
     showError('تعذّر تحميل المنتج');
@@ -204,7 +212,22 @@ async function loadProduct() {
 }
 
 function renderProduct(p) {
-  const icon = catIcons[p.category] || '📦';
+  // normalize الحقول — DB أسماؤها مختلفة
+  const nameAr      = p.name_ar || p.name || 'منتج';
+  const price       = p.price ? Number(p.price).toLocaleString() : '0';
+  const unit        = p.unit || 'عبوة';
+  const moq         = p.min_order_quantity || p.moq || 1;
+  const sellerName  = p.seller_name || p.seller_business_name || 'بائع موثّق';
+  const catName     = p.category_name || p.category_ar || '';
+  const catId       = p.category_id || p.category || '';
+  const icon        = getCatIcon(catName);
+  const descAr      = p.description_ar || p.description || '';
+  const imgUrl      = p.image_url || (p.images && p.images[0]) || '';
+  // شحن — DB: ship_inside / ship_outside / ship_international
+  const shipLocal   = p.ship_inside   || p.ship_local       || false;
+  const shipProv    = p.ship_outside  || p.ship_provincial  || false;
+  const shipIntl    = p.ship_international                  || false;
+
   const page = document.getElementById('pageContent');
   page.innerHTML = `
     <div class="breadcrumb">
@@ -212,61 +235,49 @@ function renderProduct(p) {
       <span class="breadcrumb-sep">›</span>
       <a href="syriaexpress-categories.html">الفئات</a>
       <span class="breadcrumb-sep">›</span>
-      <a href="syriaexpress-products.html?cat=${p.category}">${p.category_name || 'المنتجات'}</a>
+      <a href="syriaexpress-products.html?cat=${catId}">${catName || 'المنتجات'}</a>
       <span class="breadcrumb-sep">›</span>
-      <span class="breadcrumb-current">${p.name_ar || p.name}</span>
+      <span class="breadcrumb-current">${nameAr}</span>
     </div>
 
-    <!-- PRODUCT IMAGE -->
     <div class="prod-img-wrap">
-      ${p.image_url
-        ? `<img src="${p.image_url}" alt="${p.name_ar}">`
+      ${imgUrl
+        ? `<img src="${imgUrl}" alt="${nameAr}" style="width:100%;height:100%;object-fit:cover;">`
         : `<div class="prod-img-placeholder">${icon}</div>`
       }
-      <div class="prod-badge-wrap">
-        ${p.is_new ? '<span class="prod-badge badge-new">جديد</span>' : ''}
-        ${p.is_hot ? '<span class="prod-badge badge-hot">🔥 رائج</span>' : ''}
-      </div>
     </div>
 
     <div class="prod-info">
 
-      <div class="prod-cat">${p.category_name || p.category || ''}</div>
-      <h1 class="prod-name">${p.name_ar || p.name}</h1>
+      <div class="prod-cat">${catName}</div>
+      <h1 class="prod-name">${nameAr}</h1>
 
-      <!-- SELLER -->
       <div class="seller-row">
         <div class="seller-avatar">🏭</div>
-        <div>
-          <div class="seller-name">${p.seller_name || 'بائع موثّق'}</div>
-        </div>
+        <div><div class="seller-name">${sellerName}</div></div>
         <span class="seller-verified">✓ موثّق</span>
       </div>
 
-      <!-- PRICE -->
       <div class="price-box">
         <div class="price-main">
-          <span class="price-num">${p.price || '—'}</span>
-          <span class="price-unit">ل.س / ${p.unit || 'وحدة'}</span>
+          <span class="price-num">${price}</span>
+          <span class="price-unit">ل.س / ${unit}</span>
         </div>
         <div class="price-meta">
-          <div class="price-meta-item">الحد الأدنى: <span>${p.moq || 1} ${p.unit || 'وحدة'}</span></div>
-          ${p.stock ? `<div class="price-meta-item">المخزون: <span>${p.stock}</span></div>` : ''}
+          <div class="price-meta-item">الحد الأدنى: <span>${moq} ${unit}</span></div>
         </div>
       </div>
 
-      <!-- QUANTITY -->
       <div class="qty-row">
         <span class="qty-label">الكمية:</span>
         <div class="qty-ctrl">
           <button class="qty-btn" onclick="changeQty(-1)">−</button>
-          <input class="qty-num" id="qtyInput" type="number" value="1" min="${p.moq || 1}" readonly>
+          <input class="qty-num" id="qtyInput" type="number" value="${moq}" min="${moq}">
           <button class="qty-btn" onclick="changeQty(1)">+</button>
         </div>
-        <span class="qty-total">الإجمالي: <span id="totalPrice">${p.price || 0}</span> ل.س</span>
+        <span class="qty-total">الإجمالي: <span id="totalPrice">${Number(p.price||0) * moq}</span> ل.س</span>
       </div>
 
-      <!-- ACTION BUTTONS -->
       <div class="action-btns">
         <button class="btn-add-cart" onclick="addToCart()">🛒 أضف للسلة</button>
         <button class="btn-save" id="saveBtn" onclick="toggleSave()">🤍</button>
@@ -274,39 +285,34 @@ function renderProduct(p) {
 
       <div class="divider"></div>
 
-      <!-- SHIPPING -->
       <div class="section-title">🚛 خيارات الشحن</div>
       <div class="ship-tags">
-        <div class="ship-tag ${p.ship_local ? 'active' : ''}">
+        <div class="ship-tag ${shipLocal ? 'active' : ''}">
           <span class="ship-icon">🏙️</span> شحن محلي
         </div>
-        <div class="ship-tag ${p.ship_provincial ? 'active' : ''}">
+        <div class="ship-tag ${shipProv ? 'active' : ''}">
           <span class="ship-icon">🗺️</span> خارج المحافظة
         </div>
-        <div class="ship-tag ${p.ship_international ? 'active' : ''}">
+        <div class="ship-tag ${shipIntl ? 'active' : ''}">
           <span class="ship-icon">✈️</span> شحن دولي
         </div>
       </div>
 
       <div class="divider"></div>
 
-      <!-- DESCRIPTION -->
-      ${p.description ? `
+      ${descAr ? `
       <div class="section-title">📝 وصف المنتج</div>
-      <div class="desc-box">
-        <p class="desc-text">${p.description}</p>
-      </div>
+      <div class="desc-box"><p class="desc-text">${descAr}</p></div>
       <div class="divider"></div>
       ` : ''}
 
-      <!-- SELLER CARD -->
       <div class="section-title">🏭 معلومات البائع</div>
       <div class="seller-card">
         <div class="seller-card-header">
           <div class="seller-card-avatar">🏭</div>
           <div class="seller-card-info">
-            <div class="name">${p.seller_name || 'بائع موثّق'}</div>
-            <div class="meta">${p.seller_governorate || ''} ${p.seller_activity || ''}</div>
+            <div class="name">${sellerName}</div>
+            <div class="meta">${p.seller_governorate || ''} ${p.seller_activity_type || ''}</div>
           </div>
         </div>
         <div class="seller-stats">
@@ -323,30 +329,37 @@ function renderProduct(p) {
             <div class="seller-stat-label">التقييم</div>
           </div>
         </div>
-        <button class="btn-visit-seller" onclick="location.href='syriaexpress-products.html?seller=${p.seller_id}'">
-          عرض جميع منتجات البائع ←
+        <button class="btn-visit-seller" onclick="location.href='syriaexpress-products.html?cat=${catId}'">
+          عرض منتجات هذه الفئة ←
         </button>
       </div>
 
     </div>
   `;
-  // Set initial qty to MOQ
-  quantity = p.moq || 1;
-  document.getElementById('qtyInput').value = quantity;
+
+  quantity = moq;
+  // الـ input مش readonly هلق
+  const inp = document.getElementById('qtyInput');
+  if (inp) inp.addEventListener('change', () => {
+    quantity = Math.max(moq, parseInt(inp.value) || moq);
+    inp.value = quantity;
+    updateTotal();
+  });
   updateTotal();
 }
 
 function changeQty(delta) {
   if (!product) return;
-  const moq = product.moq || 1;
+  const moq = product.min_order_quantity || product.moq || 1;
   quantity = Math.max(moq, quantity + delta);
-  document.getElementById('qtyInput').value = quantity;
+  const inp = document.getElementById('qtyInput');
+  if (inp) inp.value = quantity;
   updateTotal();
 }
 
 function updateTotal() {
   if (!product) return;
-  const total = (product.price || 0) * quantity;
+  const total = (Number(product.price) || 0) * quantity;
   const el = document.getElementById('totalPrice');
   if (el) el.textContent = total.toLocaleString();
 }
@@ -358,7 +371,6 @@ function addToCart() {
     setTimeout(() => location.href = 'login.html', 1500);
     return;
   }
-  // TODO: POST /api/cart
   showToast('✅ تمت الإضافة للسلة');
 }
 
