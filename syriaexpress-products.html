@@ -358,10 +358,11 @@ function renderProducts(products) {
   }
   grid.innerHTML = products.map(p => {
     const name = p.name_ar || p.name || 'منتج';
-    const price = p.price ? Number(p.price).toLocaleString() : '—';
+    const priceNum = parseFloat(p.price) || 0;
+    const price = priceNum > 0 ? priceNum.toLocaleString() : '—';
     const moq = p.min_order_quantity || p.moq || 1;
     const unit = p.unit || 'وحدة';
-    const sellerName = p.seller_name || p.seller_business_name || 'بائع موثّق';
+    const sellerName = p.company_name_ar || p.seller_name || p.seller_business_name || 'بائع موثّق';
     const imgHtml = p.image_url
       ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover;" loading="lazy">`
       : `<span style="font-size:48px">${currentCatIcon}</span>`;
