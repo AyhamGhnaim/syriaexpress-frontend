@@ -271,10 +271,32 @@ function submitProduct() {
       btn.textContent = '➕ إضافة المنتج';
       return;
     }
-    showAlert('✅ تم إضافة المنتج بنجاح!', 'success');
-    setTimeout(function() {
-      window.location.href = 'syriaexpress-seller.html';
-    }, 1500);
+
+    var productId = data.product && data.product.id;
+    var imgFile = document.getElementById('imgInput').files[0];
+
+    // لو في صورة — ارفعها
+    if (productId && imgFile) {
+      btn.textContent = 'جاري رفع الصورة...';
+      var formData = new FormData();
+      formData.append('image', imgFile);
+      fetch(API_BASE + '/api/products/' + productId + '/image', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token },
+        body: formData
+      })
+      .then(function() {
+        showAlert('✅ تم إضافة المنتج والصورة بنجاح!', 'success');
+        setTimeout(function() { window.location.href = 'syriaexpress-seller.html'; }, 1500);
+      })
+      .catch(function() {
+        showAlert('✅ تم إضافة المنتج — لكن فشل رفع الصورة', 'success');
+        setTimeout(function() { window.location.href = 'syriaexpress-seller.html'; }, 1500);
+      });
+    } else {
+      showAlert('✅ تم إضافة المنتج بنجاح!', 'success');
+      setTimeout(function() { window.location.href = 'syriaexpress-seller.html'; }, 1500);
+    }
   })
   .catch(function() {
     showAlert('تعذّر الاتصال بالخادم', 'error');
