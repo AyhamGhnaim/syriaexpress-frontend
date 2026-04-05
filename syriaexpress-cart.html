@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>السلة — SyriaExpress</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C9A84C;--gold-light:#E8C96A;--gold-dim:#8B6914;
+  --bg:#0F0E0C;--bg2:#161410;--bg3:#1C1A16;--bg4:#221F19;
+  --text:#F5F0E8;--text-dim:#A89880;
+  --border:#2A2620;--border-gold:rgba(201,168,76,0.25);
+  --green:#4ade80;--blue:#60a5fa;--orange:#fb923c;--red:#f87171;
+}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);direction:rtl;min-height:100vh;}
+
+/* HEADER */
+.header{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;height:56px;
+  background:rgba(15,14,12,0.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border-gold);
+}
+.header-right{display:flex;align-items:center;gap:10px}
+.header-title{font-size:15px;font-weight:700;white-space:nowrap}
+.header-left{display:flex;align-items:center;gap:8px}
+.btn-back{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--text-dim);padding:7px 12px;border-radius:8px;
+  font-family:'Cairo',sans-serif;font-size:12px;cursor:pointer;
+  text-decoration:none;transition:all 0.2s;white-space:nowrap;
+}
+.btn-back:hover{border-color:var(--gold);color:var(--gold)}
+.btn-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
+.cart-count{
+  background:var(--gold);color:#0F0E0C;
+  font-size:11px;font-weight:900;
+  width:20px;height:20px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* MAIN */
+main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:16px;}
+
+/* BOX */
+.box{background:var(--bg3);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.box-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid var(--border);
+}
+.box-title{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;}
+.box-dot{width:8px;height:8px;border-radius:50%;background:var(--gold)}
+
+/* CART ITEMS */
+.cart-list{display:flex;flex-direction:column;}
+.cart-item{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;border-bottom:1px solid rgba(42,38,32,0.5);
+  transition:background 0.15s;
+}
+.cart-item:last-child{border-bottom:none}
+.cart-item:hover{background:rgba(201,168,76,0.03)}
+.item-img{
+  width:52px;height:52px;border-radius:10px;
+  background:var(--bg4);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;flex-shrink:0;overflow:hidden;
+}
+.item-img img{width:100%;height:100%;object-fit:cover;border-radius:10px;}
+.item-info{flex:1;min-width:0;}
+.item-name{font-size:13px;font-weight:700;margin-bottom:3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.item-company{font-size:11px;color:var(--text-dim);margin-bottom:6px;}
+.item-price{font-size:14px;font-weight:900;color:var(--gold);}
+.item-unit{font-size:10px;color:var(--text-dim);margin-right:4px;}
+.item-qty{display:flex;align-items:center;gap:0;margin-top:6px;}
+.qty-btn{
+  width:28px;height:28px;border-radius:6px;
+  background:var(--bg4);border:1px solid var(--border);
+  color:var(--text);font-size:16px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;flex-shrink:0;
+}
+.qty-btn:hover{border-color:var(--gold);color:var(--gold)}
+.qty-num{
+  min-width:36px;text-align:center;font-size:13px;font-weight:700;
+  padding:0 4px;
+}
+.item-delete{
+  background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.2);
+  color:var(--red);width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all 0.15s;flex-shrink:0;font-size:14px;
+}
+.item-delete:hover{background:rgba(248,113,113,0.2)}
+
+/* SUMMARY */
+.summary-box{background:var(--bg3);border:1px solid var(--border-gold);border-radius:14px;padding:16px;}
+.summary-title{font-size:15px;font-weight:700;margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;}
+.summary-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid rgba(42,38,32,0.4);
+  font-size:13px;
+}
+.summary-row:last-of-type{border-bottom:none}
+.summary-row.total{
+  font-size:15px;font-weight:900;color:var(--gold);
+  padding-top:12px;margin-top:4px;
+  border-top:1px solid var(--border-gold);
+}
+.summary-label{color:var(--text-dim)}
+.summary-val{font-weight:700;}
+
+/* SELLER GROUP */
+.seller-group{margin-bottom:2px;}
+.seller-label{
+  padding:10px 16px 6px;
+  font-size:11px;color:var(--text-dim);
+  display:flex;align-items:center;gap:6px;
+  border-bottom:1px solid rgba(42,38,32,0.3);
+}
+.seller-label span{color:var(--gold);font-weight:700;}
+
+/* SHIPPING SELECT */
+.shipping-section{padding:14px 16px;border-top:1px solid var(--border);}
+.shipping-title{font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text-dim);}
+.shipping-options{display:flex;flex-direction:column;gap:8px;}
+.ship-opt{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:10px;
+  border:1px solid var(--border);cursor:pointer;transition:all 0.15s;
+}
+.ship-opt.selected{border-color:var(--gold);background:rgba(201,168,76,0.06);}
+.ship-opt input[type=radio]{accent-color:var(--gold);width:16px;height:16px;flex-shrink:0;}
+.ship-opt-info{flex:1;}
+.ship-opt-name{font-size:13px;font-weight:700;}
+.ship-opt-desc{font-size:11px;color:var(--text-dim);}
+.ship-opt-price{font-size:13px;font-weight:700;color:var(--gold);}
+
+/* CHECKOUT BTN */
+.btn-checkout{
+  width:100%;padding:14px;border-radius:12px;
+  background:var(--gold);color:#0F0E0C;
+  border:none;font-family:'Cairo',sans-serif;
+  font-size:15px;font-weight:900;cursor:pointer;
+  transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-checkout:hover{background:var(--gold-light)}
+.btn-checkout:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-browse{
+  width:100%;padding:12px;border-radius:12px;
+  background:transparent;color:var(--gold);
+  border:1px solid var(--border-gold);font-family:'Cairo',sans-serif;
+  font-size:14px;font-weight:700;cursor:pointer;
+  transition:all 0.2s;margin-top:10px;
+}
+.btn-browse:hover{background:rgba(201,168,76,0.06)}
+
+/* EMPTY */
+.empty-state{padding:40px 16px;text-align:center;}
+.empty-icon{font-size:48px;margin-bottom:12px;}
+.empty-text{font-size:16px;font-weight:700;color:var(--text-dim);margin-bottom:8px;}
+.empty-sub{font-size:12px;color:var(--text-dim);opacity:0.6;line-height:1.6;}
+
+/* LOADING */
+.loading{padding:32px;text-align:center;color:var(--text-dim);font-size:13px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <a href="syriaexpress-buyer.html" class="btn-back">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      لوحتي
+    </a>
+  </div>
+  <div class="header-title">🛒 سلة المشتريات</div>
+  <div class="header-right">
+    <div class="cart-count" id="cartCount">0</div>
+  </div>
+</div>
+
+<main>
+
+  <!-- CART ITEMS -->
+  <div class="box" id="cartBox">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot"></span> المنتجات المختارة</div>
+      <button onclick="clearCart()" style="font-size:11px;color:var(--red);background:none;border:none;cursor:pointer;font-family:'Cairo',sans-serif;">مسح الكل</button>
+    </div>
+    <div class="cart-list" id="cartList">
+      <div class="loading">جاري التحميل...</div>
+    </div>
+  </div>
+
+  <!-- SHIPPING -->
+  <div class="box" id="shippingBox" style="display:none">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot"></span> خيار الشحن</div>
+    </div>
+    <div class="shipping-section">
+      <div class="shipping-options">
+        <label class="ship-opt selected" onclick="selectShipping(this,'inside',0)">
+          <input type="radio" name="ship" value="inside" checked>
+          <div class="ship-opt-info">
+            <div class="ship-opt-name">داخل المحافظة</div>
+            <div class="ship-opt-desc">1–2 يوم عمل</div>
+          </div>
+          <div class="ship-opt-price">مجاناً</div>
+        </label>
+        <label class="ship-opt" onclick="selectShipping(this,'outside',2500)">
+          <input type="radio" name="ship" value="outside">
+          <div class="ship-opt-info">
+            <div class="ship-opt-name">خارج المحافظة</div>
+            <div class="ship-opt-desc">2–4 أيام عمل</div>
+          </div>
+          <div class="ship-opt-price">2,500 ل.س</div>
+        </label>
+        <label class="ship-opt" onclick="selectShipping(this,'international',15000)">
+          <input type="radio" name="ship" value="international">
+          <div class="ship-opt-info">
+            <div class="ship-opt-name">خارج سوريا</div>
+            <div class="ship-opt-desc">7–14 يوم عمل</div>
+          </div>
+          <div class="ship-opt-price">15,000 ل.س</div>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary-box" id="summaryBox" style="display:none">
+    <div class="summary-title">🧾 ملخص الطلب</div>
+    <div class="summary-row">
+      <span class="summary-label">عدد المنتجات</span>
+      <span class="summary-val" id="sumItems">0</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">المجموع الفرعي</span>
+      <span class="summary-val" id="sumSubtotal">0 ل.س</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">الشحن</span>
+      <span class="summary-val" id="sumShipping">مجاناً</span>
+    </div>
+    <div class="summary-row total">
+      <span>الإجمالي</span>
+      <span id="sumTotal">0 ل.س</span>
+    </div>
+    <button class="btn-checkout" id="checkoutBtn" onclick="proceedToOrder()">
+      متابعة الطلب ←
+    </button>
+    <button class="btn-browse" onclick="location.href='syriaexpress-categories.html'">
+      + إضافة منتجات أخرى
+    </button>
+  </div>
+
+</main>
+
+<script>
+const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
+const token = localStorage.getItem('token');
+if (!token) location.href = 'login.html';
+
+let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+let shippingCost = 0;
+
+renderCart();
+
+function renderCart() {
+  const list = document.getElementById('cartList');
+  const count = document.getElementById('cartCount');
+  const shippingBox = document.getElementById('shippingBox');
+  const summaryBox = document.getElementById('summaryBox');
+  const clearBtn = document.querySelector('[onclick="clearCart()"]');
+
+  const totalQty = cart.reduce((s, i) => s + i.qty, 0);
+  count.textContent = totalQty;
+
+  if (!cart.length) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🛒</div>
+        <div class="empty-text">السلة فارغة</div>
+        <div class="empty-sub">أضف منتجات من صفحة الفئات</div>
+      </div>
+      <div style="padding:0 16px 16px">
+        <button class="btn-checkout" onclick="location.href='syriaexpress-categories.html'">
+          تصفح المنتجات
+        </button>
+      </div>
+    `;
+    shippingBox.style.display = 'none';
+    summaryBox.style.display = 'none';
+    if (clearBtn) clearBtn.style.display = 'none';
+    return;
+  }
+
+  if (clearBtn) clearBtn.style.display = '';
+  shippingBox.style.display = '';
+  summaryBox.style.display = '';
+
+  // Group by seller
+  const bySeller = {};
+  cart.forEach(item => {
+    const key = item.seller_id || 'unknown';
+    if (!bySeller[key]) bySeller[key] = { name: item.company_name_ar || 'بائع', items: [] };
+    bySeller[key].items.push(item);
+  });
+
+  let html = '';
+  Object.values(bySeller).forEach(group => {
+    html += `<div class="seller-label">🏭 <span>${group.name}</span></div>`;
+    group.items.forEach(item => {
+      const subtotal = (item.price * item.qty).toLocaleString('ar-SY');
+      const imgHtml = item.image_url
+        ? `<img src="${item.image_url}" alt="">`
+        : (item.emoji || '📦');
+      html += `
+        <div class="cart-item">
+          <div class="item-img">${item.image_url ? `<img src="${item.image_url}" alt="">` : (item.emoji || '📦')}</div>
+          <div class="item-info">
+            <div class="item-name">${item.name_ar || item.name || 'منتج'}</div>
+            <div class="item-company">${item.company_name_ar || ''}</div>
+            <div>
+              <span class="item-price">${Number(item.price || 0).toLocaleString('ar-SY')}</span>
+              <span class="item-unit">ل.س / ${item.unit || 'وحدة'}</span>
+            </div>
+            <div class="item-qty">
+              <button class="qty-btn" onclick="changeQty('${item.id}', -1)">−</button>
+              <span class="qty-num">${item.qty}</span>
+              <button class="qty-btn" onclick="changeQty('${item.id}', 1)">+</button>
+              <span style="font-size:11px;color:var(--text-dim);margin-right:8px">= ${subtotal} ل.س</span>
+            </div>
+          </div>
+          <button class="item-delete" onclick="removeItem('${item.id}')">🗑</button>
+        </div>
+      `;
+    });
+  });
+
+  list.innerHTML = html;
+  updateSummary();
+}
+
+function updateSummary() {
+  const subtotal = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+  const total = subtotal + shippingCost;
+  const totalQty = cart.reduce((s, i) => s + i.qty, 0);
+
+  document.getElementById('sumItems').textContent = totalQty + ' منتج';
+  document.getElementById('sumSubtotal').textContent = subtotal.toLocaleString('ar-SY') + ' ل.س';
+  document.getElementById('sumShipping').textContent = shippingCost > 0 ? shippingCost.toLocaleString('ar-SY') + ' ل.س' : 'مجاناً';
+  document.getElementById('sumTotal').textContent = total.toLocaleString('ar-SY') + ' ل.س';
+}
+
+function changeQty(id, delta) {
+  const item = cart.find(i => i.id === id);
+  if (!item) return;
+  const minQty = item.min_order_quantity || 1;
+  item.qty = Math.max(minQty, item.qty + delta);
+  saveCart();
+  renderCart();
+}
+
+function removeItem(id) {
+  cart = cart.filter(i => i.id !== id);
+  saveCart();
+  renderCart();
+}
+
+function clearCart() {
+  if (!confirm('هل تريد مسح السلة بالكامل؟')) return;
+  cart = [];
+  saveCart();
+  renderCart();
+}
+
+function selectShipping(el, type, cost) {
+  document.querySelectorAll('.ship-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  shippingCost = cost;
+  localStorage.setItem('shippingType', type);
+  localStorage.setItem('shippingCost', cost);
+  updateSummary();
+}
+
+function saveCart() {
+  localStorage.setItem('cart', JSON.stringify(cart));
+}
+
+function proceedToOrder() {
+  if (!cart.length) return;
+  localStorage.setItem('orderCart', JSON.stringify(cart));
+  localStorage.setItem('shippingCost', shippingCost);
+  location.href = 'syriaexpress-order.html';
+}
+</script>
+</body>
+</html>
