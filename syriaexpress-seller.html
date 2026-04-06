@@ -340,11 +340,10 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
       <div class="box-title"><span class="box-dot"></span> آخر الطلبات الواردة</div>
       <a href="syriaexpress-seller-orders.html" class="box-link">عرض الكل ←</a>
     </div>
-    <div class="orders-list">
+    <div class="orders-list" id="recentOrdersList">
       <div class="empty-state">
         <div class="empty-icon">📭</div>
-        <div class="empty-text">لا توجد طلبات بعد</div>
-        <div class="empty-sub">ستظهر الطلبات الواردة هنا فور وصولها</div>
+        <div class="empty-text">جاري التحميل...</div>
       </div>
     </div>
   </div>
@@ -406,21 +405,56 @@ if (!token) location.href = 'login.html';
 // تحميل البيانات عند الفتح
 loadDashboard();
 loadMyProducts();
+loadRecentOrders();
 
 async function loadDashboard() {
   try {
-    const res = await fetch(`${API_BASE}/api/sellers/me/stats`, {
+    const res = await fetch(`${API_BASE}/api/orders/seller`, {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!res.ok) return;
-    const d = await res.json();
-    // Stats
+    const data = await res.json();
+    const orders = data.orders || data || [];
+
+    const completed = orders.filter(o => o.status === 'delivered').length;
+    const newOrders = orders.filter(o => o.status === 'pending').length;
+    const buyers = new Set(orders.map(o => o.buyer_id)).size;
+
     const nums = document.querySelectorAll('.stat-num');
-    if (nums[0]) nums[0].textContent = d.completed_orders ?? 0;
-    if (nums[1]) nums[1].textContent = d.new_orders ?? 0;
-    if (nums[2]) nums[2].textContent = d.total_buyers ?? 0;
-    if (nums[3]) nums[3].textContent = d.active_products ?? 0;
+    if (nums[0]) nums[0].textContent = completed;
+    if (nums[1]) nums[1].textContent = newOrders;
+    if (nums[2]) nums[2].textContent = buyers;
   } catch(e) {}
+}
+
+async function loadRecentOrders() {
+  const list = document.getElementById('recentOrdersList');
+  try {
+    const res = await fetch(`${API_BASE}/api/orders/seller`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const orders = (data.orders || data || []).slice(0, 3);
+
+    if (!orders.length) {
+      list.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">لا توجد طلبات بعد</div><div class="empty-sub">ستظهر الطلبات الواردة هنا فور وصولها</div></div>`;
+      return;
+    }
+
+    const statusMap = { pending:'انتظار ⏳', confirmed:'مؤكد ✅', shipped:'مشحون 🚛', delivered:'مكتمل ✔️', cancelled:'ملغى ❌' };
+    list.innerHTML = orders.map(o => `
+      <div style="padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-size:13px;font-weight:700;">${o.product_name_ar || o.name_ar || 'طلب'}</div>
+          <div style="font-size:11px;color:var(--text-dim);">${o.buyer_name || ''} • ${o.quantity || ''} ${o.unit || ''}</div>
+        </div>
+        <span style="font-size:11px;padding:3px 8px;border-radius:20px;background:rgba(201,168,76,0.1);color:var(--gold);">${statusMap[o.status] || o.status}</span>
+      </div>
+    `).join('');
+  } catch(e) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">تعذّر تحميل الطلبات</div></div>`;
+  }
 }
 
 async function loadMyProducts() {
