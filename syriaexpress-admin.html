@@ -249,19 +249,19 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
       <div class="box-title"><span class="box-dot"></span> إجراءات سريعة</div>
     </div>
     <div class="quick-actions">
-      <div class="quick-btn">
+      <div class="quick-btn" onclick="location.href='syriaexpress-admin-verifications.html'">
         <div class="icon">✅</div>
         <div class="label">مراجعة التوثيق</div>
       </div>
-      <div class="quick-btn">
+      <div class="quick-btn" onclick="location.href='syriaexpress-admin-users.html'">
         <div class="icon">👥</div>
         <div class="label">إدارة المستخدمين</div>
       </div>
-      <div class="quick-btn">
+      <div class="quick-btn" onclick="location.href='syriaexpress-admin-analytics.html'">
         <div class="icon">📊</div>
         <div class="label">التحليلات</div>
       </div>
-      <div class="quick-btn">
+      <div class="quick-btn" onclick="location.href='syriaexpress-categories.html'">
         <div class="icon">🗂️</div>
         <div class="label">إدارة الفئات</div>
       </div>
@@ -272,7 +272,7 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
   <div class="box">
     <div class="box-header">
       <div class="box-title"><span class="box-dot orange"></span> طلبات التوثيق</div>
-    </div>
+      <a href="syriaexpress-admin-verifications.html" class="box-link">عرض الكل ←</a>
     <div class="verif-list" id="verifList">
       <div class="empty-state">
         <div class="empty-icon">📋</div>
@@ -285,8 +285,7 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
   <div class="box">
     <div class="box-header">
       <div class="box-title"><span class="box-dot blue"></span> المستخدمون</div>
-    </div>
-    <div class="users-list" id="usersList">
+      <a href="syriaexpress-admin-users.html" class="box-link">عرض الكل ←</a> id="usersList">
       <div class="empty-state">
         <div class="empty-icon">👥</div>
         <div class="empty-text">جاري التحميل...</div>
@@ -298,8 +297,7 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
   <div class="box">
     <div class="box-header">
       <div class="box-title"><span class="box-dot green"></span> التحليلات</div>
-    </div>
-    <div class="analytics-rows">
+      <a href="syriaexpress-admin-analytics.html" class="box-link">عرض الكل ←</a>
       <div class="analytics-row">
         <span class="analytics-label">إجمالي المبيعات</span>
         <span class="analytics-val">—</span>
