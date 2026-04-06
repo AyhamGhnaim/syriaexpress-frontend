@@ -379,6 +379,29 @@ function addToCart() {
     setTimeout(() => location.href = 'login.html', 1500);
     return;
   }
+  if (!product) { showToast('جاري تحميل المنتج...'); return; }
+
+  const qty = parseInt(document.getElementById('qtyValue')?.textContent || '1');
+  const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+
+  const existing = cart.find(i => i.id === product.id);
+  if (existing) {
+    existing.qty += qty;
+  } else {
+    cart.push({
+      id: product.id,
+      name_ar: product.name_ar || product.name || 'منتج',
+      company_name_ar: product.company_name_ar || '',
+      seller_id: product.seller_id,
+      price: parseFloat(product.price) || 0,
+      unit: product.unit || 'وحدة',
+      qty: qty,
+      min_order_quantity: product.min_order_quantity || 1,
+      image_url: product.image_url || ''
+    });
+  }
+
+  localStorage.setItem('cart', JSON.stringify(cart));
   showToast('✅ تمت الإضافة للسلة');
 }
 
