@@ -312,19 +312,19 @@ async function loadStats() {
     if (!res.ok) throw new Error('فشل التحميل');
     const data = await res.json();
 
-    const totalUsers = (data.total_buyers || 0) + (data.total_sellers || 0);
+    const s = data.stats || {};
+    const totalUsers = (s.buyers || 0) + (s.verified_sellers || 0);
     document.getElementById('stat-users').textContent = totalUsers;
     document.getElementById('stat-users-sub').textContent =
-      `مشتري: ${data.total_buyers || 0} | بائع: ${data.total_sellers || 0}`;
+      `مشتري: ${s.buyers || 0} | بائع: ${s.verified_sellers || 0}`;
 
-    document.getElementById('stat-sellers').textContent = data.active_sellers || 0;
-    document.getElementById('stat-sellers-sub').textContent = 'بائع نشط';
+    document.getElementById('stat-sellers').textContent = s.verified_sellers || 0;
+    document.getElementById('stat-sellers-sub').textContent = 'بائع موثق';
 
-    document.getElementById('stat-pending').textContent = data.pending_verifications || 0;
+    document.getElementById('stat-pending').textContent = s.pending_verif || 0;
 
-    document.getElementById('stat-orders').textContent = data.total_orders || 0;
-    document.getElementById('stat-orders-sub').textContent =
-      data.orders_this_month ? `هذا الشهر: ${data.orders_this_month}` : 'هذا الشهر: —';
+    document.getElementById('stat-orders').textContent = s.total_orders || 0;
+    document.getElementById('stat-orders-sub').textContent = 'إجمالي الطلبات';
 
   } catch(e) {
     ['stat-users','stat-sellers','stat-pending','stat-orders'].forEach(id => {
