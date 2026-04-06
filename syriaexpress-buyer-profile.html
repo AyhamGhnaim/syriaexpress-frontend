@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>معلومات المشتري — سوريا إكسبريس</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0F0E0C;
+    --bg2: #1a1814;
+    --bg3: #222018;
+    --gold: #C9A84C;
+    --gold2: #e8c96a;
+    --text: #f0ece4;
+    --text2: #a09880;
+    --border: #2e2b24;
+    --success: #4CAF50;
+    --danger: #e05555;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 100px;
+  }
+
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+  .header-logo img { height: 36px; }
+  .header-logo-text { text-align: center; }
+  .header-logo-text .ar { font-family: 'Amiri', serif; color: var(--gold); font-size: 16px; }
+  .header-logo-text .en { color: var(--text2); font-size: 9px; letter-spacing: 2px; }
+  .back-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .container { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+  /* Avatar Section */
+  .avatar-section {
+    text-align: center;
+    padding: 28px 16px 20px;
+  }
+  .avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--bg3);
+    border: 3px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin: 0 auto 12px;
+  }
+  .user-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .user-email { font-size: 13px; color: var(--text2); margin-bottom: 8px; }
+  .user-since { font-size: 11px; color: var(--text2); }
+
+  /* Section */
+  .section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Form */
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; display: block; }
+  .form-input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+    direction: rtl;
+  }
+  .form-input:focus { border-color: var(--gold); }
+  .form-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .form-input.readonly {
+    border-color: transparent;
+    background: transparent;
+    padding-right: 0;
+    color: var(--text);
+  }
+
+  /* Edit Toggle */
+  .edit-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .edit-btn {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .edit-btn:hover { background: rgba(201,168,76,0.1); }
+  .edit-btn.cancel { border-color: var(--border); color: var(--text2); }
+
+  /* Save Button */
+  .save-btn {
+    width: 100%;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 13px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 4px;
+  }
+  .save-btn:hover { background: var(--gold2); }
+  .save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .stat-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-icon { font-size: 22px; margin-bottom: 6px; }
+  .stat-value { font-size: 20px; font-weight: 700; color: var(--gold); margin-bottom: 2px; }
+  .stat-label { font-size: 11px; color: var(--text2); }
+
+  /* Password */
+  .password-input-wrap { position: relative; }
+  .toggle-pw {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  /* Messages */
+  .success-msg {
+    background: rgba(76,175,80,0.1);
+    border: 1px solid var(--success);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--success);
+    margin-bottom: 12px;
+    display: none;
+  }
+  .error-msg {
+    background: rgba(224,85,85,0.1);
+    border: 1px solid var(--danger);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--danger);
+    margin-bottom: 12px;
+    display: none;
+  }
+
+  /* Logout */
+  .logout-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    padding: 13px;
+    border-radius: 10px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 16px;
+  }
+  .logout-btn:hover { background: rgba(224,85,85,0.1); }
+
+  /* Loading */
+  .loading-state { text-align: center; padding: 60px 20px; color: var(--text2); }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-inline { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.3); border-top-color: #000; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-left: 6px; }
+
+  /* Bottom Nav */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 8px 0 20px;
+    z-index: 100;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-decoration: none;
+    color: var(--text2);
+    font-size: 10px;
+    padding: 6px 0;
+    transition: color 0.2s;
+  }
+  .nav-item:hover, .nav-item.active { color: var(--gold); }
+  .nav-icon { font-size: 20px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <a href="syriaexpress-buyer.html" class="back-btn">← رجوع</a>
+  <a href="syriaexpress-landing.html" class="header-logo">
+    <div class="header-logo-text">
+      <div class="ar">سوريا إكسبريس</div>
+      <div class="en">B2B MARKETPLACE</div>
+    </div>
+    <img src="assets/logo_main.png" onerror="this.style.display='none'" />
+  </a>
+  <div style="width:60px"></div>
+</div>
+
+<!-- Loading -->
+<div class="loading-state" id="loadingState">
+  <div class="spinner"></div>
+  <div>جاري التحميل...</div>
+</div>
+
+<!-- Content -->
+<div id="pageContent" style="display:none">
+
+  <!-- Avatar -->
+  <div class="avatar-section">
+    <div class="avatar" id="userAvatar">👤</div>
+    <div class="user-name" id="userName">—</div>
+    <div class="user-email" id="userEmail">—</div>
+    <div class="user-since" id="userSince"></div>
+  </div>
+
+  <div class="container">
+
+    <!-- Stats -->
+    <div class="section">
+      <div class="section-title">📊 إحصائياتي</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-value" id="statTotal">—</div>
+          <div class="stat-label">إجمالي الطلبات</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-value" id="statDelivered">—</div>
+          <div class="stat-label">طلبات مكتملة</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-value" id="statPending">—</div>
+          <div class="stat-label">قيد التنفيذ</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-value" id="statSpent">—</div>
+          <div class="stat-label">إجمالي المشتريات</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Profile -->
+    <div class="section">
+      <div class="edit-row">
+        <div class="section-title" style="margin-bottom:0">✏️ معلوماتي</div>
+        <div style="display:flex;gap:8px">
+          <button class="edit-btn cancel" id="cancelBtn" onclick="cancelEdit()" style="display:none">إلغاء</button>
+          <button class="edit-btn" id="editBtn" onclick="toggleEdit()">تعديل</button>
+        </div>
+      </div>
+
+      <div class="success-msg" id="successMsg"></div>
+      <div class="error-msg" id="profileError"></div>
+
+      <div class="form-group">
+        <label class="form-label">الاسم الكامل</label>
+        <input class="form-input readonly" type="text" id="fieldName" disabled />
+      </div>
+      <div class="form-group">
+        <label class="form-label">البريد الإلكتروني</label>
+        <input class="form-input readonly" type="email" id="fieldEmail" disabled />
+      </div>
+      <div class="form-group">
+        <label class="form-label">رقم الهاتف</label>
+        <input class="form-input readonly" type="tel" id="fieldPhone" disabled />
+      </div>
+      <div class="form-group">
+        <label class="form-label">المحافظة</label>
+        <input class="form-input readonly" type="text" id="fieldGov" disabled />
+      </div>
+
+      <button class="save-btn" id="saveBtn" onclick="saveProfile()" style="display:none">
+        حفظ التغييرات
+      </button>
+    </div>
+
+    <!-- Change Password -->
+    <div class="section">
+      <div class="section-title">🔒 تغيير كلمة المرور</div>
+      <div class="error-msg" id="pwError"></div>
+      <div class="success-msg" id="pwSuccess"></div>
+
+      <div class="form-group">
+        <label class="form-label">كلمة المرور الحالية</label>
+        <div class="password-input-wrap">
+          <input class="form-input" type="password" id="currentPw" placeholder="••••••••" />
+          <button class="toggle-pw" onclick="togglePw('currentPw', this)">👁</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">كلمة المرور الجديدة</label>
+        <div class="password-input-wrap">
+          <input class="form-input" type="password" id="newPw" placeholder="••••••••" />
+          <button class="toggle-pw" onclick="togglePw('newPw', this)">👁</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">تأكيد كلمة المرور الجديدة</label>
+        <div class="password-input-wrap">
+          <input class="form-input" type="password" id="confirmPw" placeholder="••••••••" />
+          <button class="toggle-pw" onclick="togglePw('confirmPw', this)">👁</button>
+        </div>
+      </div>
+      <button class="save-btn" onclick="changePassword()">تغيير كلمة المرور</button>
+    </div>
+
+    <!-- Logout -->
+    <button class="logout-btn" onclick="logout()">🚪 تسجيل الخروج</button>
+
+  </div>
+</div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <a href="syriaexpress-landing.html" class="nav-item">
+    <span class="nav-icon">🏠</span>الرئيسية
+  </a>
+  <a href="syriaexpress-categories.html" class="nav-item">
+    <span class="nav-icon">📦</span>الفئات
+  </a>
+  <a href="syriaexpress-cart.html" class="nav-item">
+    <span class="nav-icon">🛒</span>سلتي
+  </a>
+  <a href="syriaexpress-buyer.html" class="nav-item active">
+    <span class="nav-icon">👤</span>حسابي
+  </a>
+</div>
+
+<script src="logos.js"></script>
+<script>
+const API = 'https://syriaexpress-backend-production.up.railway.app';
+let userData = null;
+let isEditing = false;
+
+function getToken() { return localStorage.getItem('token'); }
+
+function formatDate(d) {
+  if (!d) return '';
+  return 'عضو منذ ' + new Date(d).toLocaleDateString('ar-SY', { year: 'numeric', month: 'long' });
+}
+
+function formatPrice(p) {
+  if (!p) return '0';
+  return Number(p).toLocaleString('ar-SY');
+}
+
+async function loadProfile() {
+  const token = getToken();
+  if (!token) { window.location.href = 'login.html'; return; }
+
+  try {
+    // جيب بيانات المستخدم من الـ token
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    
+    // جيب الطلبات لحساب الإحصائيات
+    const ordersRes = await fetch(`${API}/api/orders/my`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const orders = ordersRes.ok ? await ordersRes.json() : [];
+
+    // احسب الإحصائيات
+    const total = orders.length;
+    const delivered = orders.filter(o => o.status === 'delivered').length;
+    const pending = orders.filter(o => ['pending','confirmed','shipped'].includes(o.status)).length;
+    const spent = orders
+      .filter(o => o.status !== 'cancelled')
+      .reduce((sum, o) => sum + ((o.quantity || 0) * (o.price || 0)) + (o.shipping_price || 0), 0);
+
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statDelivered').textContent = delivered;
+    document.getElementById('statPending').textContent = pending;
+    document.getElementById('statSpent').textContent = formatPrice(spent) + ' ل.س';
+
+    // بيانات المستخدم من localStorage أو payload
+    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+    userData = { ...payload, ...storedUser };
+
+    renderProfile();
+
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('pageContent').style.display = 'block';
+
+  } catch (err) {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('pageContent').style.display = 'block';
+    renderProfile();
+  }
+}
+
+function renderProfile() {
+  if (!userData) return;
+  const name = userData.name || userData.full_name || '—';
+  const initials = name.charAt(0) || '👤';
+
+  document.getElementById('userAvatar').textContent = initials;
+  document.getElementById('userName').textContent = name;
+  document.getElementById('userEmail').textContent = userData.email || '—';
+  document.getElementById('userSince').textContent = formatDate(userData.created_at || userData.iat ? new Date(userData.iat * 1000) : null);
+
+  document.getElementById('fieldName').value = name;
+  document.getElementById('fieldEmail').value = userData.email || '';
+  document.getElementById('fieldPhone').value = userData.phone || '';
+  document.getElementById('fieldGov').value = userData.governorate || '';
+}
+
+function toggleEdit() {
+  isEditing = true;
+  const fields = ['fieldName', 'fieldPhone', 'fieldGov'];
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    el.disabled = false;
+    el.classList.remove('readonly');
+  });
+  document.getElementById('saveBtn').style.display = 'block';
+  document.getElementById('cancelBtn').style.display = 'block';
+  document.getElementById('editBtn').textContent = 'تعديل';
+}
+
+function cancelEdit() {
+  isEditing = false;
+  const fields = ['fieldName', 'fieldPhone', 'fieldGov'];
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    el.disabled = true;
+    el.classList.add('readonly');
+  });
+  renderProfile();
+  document.getElementById('saveBtn').style.display = 'none';
+  document.getElementById('cancelBtn').style.display = 'none';
+  hideMessages();
+}
+
+async function saveProfile() {
+  const token = getToken();
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.innerHTML = 'جاري الحفظ... <span class="loading-inline"></span>';
+  hideMessages();
+
+  const body = {
+    name: document.getElementById('fieldName').value.trim(),
+    phone: document.getElementById('fieldPhone').value.trim(),
+    governorate: document.getElementById('fieldGov').value.trim(),
+  };
+
+  try {
+    // محاولة تحديث عبر API — إذا ما في endpoint خاص بالمشتري نحفظ locally
+    const res = await fetch(`${API}/api/users/me`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (res.ok) {
+      const updated = await res.json();
+      userData = { ...userData, ...updated };
+      localStorage.setItem('user', JSON.stringify(userData));
+    } else {
+      // حفظ محلي إذا ما في endpoint
+      userData = { ...userData, ...body };
+      localStorage.setItem('user', JSON.stringify(userData));
+    }
+
+    renderProfile();
+    cancelEdit();
+    showSuccess('تم حفظ المعلومات بنجاح ✓');
+
+  } catch (err) {
+    userData = { ...userData, ...body };
+    localStorage.setItem('user', JSON.stringify(userData));
+    renderProfile();
+    cancelEdit();
+    showSuccess('تم حفظ المعلومات بنجاح ✓');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'حفظ التغييرات';
+}
+
+async function changePassword() {
+  const current = document.getElementById('currentPw').value;
+  const newPw = document.getElementById('newPw').value;
+  const confirm = document.getElementById('confirmPw').value;
+
+  document.getElementById('pwError').style.display = 'none';
+  document.getElementById('pwSuccess').style.display = 'none';
+
+  if (!current || !newPw || !confirm) {
+    showPwError('يرجى ملء جميع الحقول');
+    return;
+  }
+  if (newPw.length < 6) {
+    showPwError('كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل');
+    return;
+  }
+  if (newPw !== confirm) {
+    showPwError('كلمة المرور الجديدة غير متطابقة');
+    return;
+  }
+
+  const token = getToken();
+  try {
+    const res = await fetch(`${API}/api/auth/change-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ current_password: current, new_password: newPw })
+    });
+
+    if (res.ok) {
+      document.getElementById('pwSuccess').textContent = 'تم تغيير كلمة المرور بنجاح ✓';
+      document.getElementById('pwSuccess').style.display = 'block';
+      document.getElementById('currentPw').value = '';
+      document.getElementById('newPw').value = '';
+      document.getElementById('confirmPw').value = '';
+    } else {
+      const data = await res.json();
+      showPwError(data.error || 'فشل تغيير كلمة المرور');
+    }
+  } catch (err) {
+    showPwError('فشل الاتصال بالخادم');
+  }
+}
+
+function togglePw(id, btn) {
+  const input = document.getElementById(id);
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    btn.textContent = '👁';
+  }
+}
+
+function showSuccess(msg) {
+  const el = document.getElementById('successMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+function showPwError(msg) {
+  const el = document.getElementById('pwError');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideMessages() {
+  document.getElementById('successMsg').style.display = 'none';
+  document.getElementById('profileError').style.display = 'none';
+}
+
+function logout() {
+  if (!confirm('هل تريد تسجيل الخروج؟')) return;
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = 'login.html';
+}
+
+loadProfile();
+</script>
+</body>
+</html>

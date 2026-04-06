@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تقارير المبيعات — سوريا إكسبريس</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0F0E0C;
+    --bg2: #1a1814;
+    --bg3: #222018;
+    --gold: #C9A84C;
+    --gold2: #e8c96a;
+    --text: #f0ece4;
+    --text2: #a09880;
+    --border: #2e2b24;
+    --success: #4CAF50;
+    --warning: #FF9800;
+    --danger: #e05555;
+    --info: #2196F3;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 100px;
+  }
+
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+  .header-logo img { height: 36px; }
+  .header-logo-text .ar { font-family: 'Amiri', serif; color: var(--gold); font-size: 16px; }
+  .header-logo-text .en { color: var(--text2); font-size: 9px; letter-spacing: 2px; }
+  .back-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    text-decoration: none;
+  }
+
+  .container { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+  /* Period Filter */
+  .period-filter {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 6px;
+  }
+  .period-btn {
+    flex: 1;
+    padding: 8px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    font-family: 'Cairo', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+  }
+  .period-btn.active {
+    background: var(--gold);
+    color: #000;
+  }
+
+  /* KPI Cards */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .kpi-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .kpi-card.wide {
+    grid-column: span 2;
+  }
+  .kpi-icon { font-size: 20px; margin-bottom: 6px; }
+  .kpi-value { font-size: 22px; font-weight: 700; color: var(--gold); margin-bottom: 2px; }
+  .kpi-label { font-size: 11px; color: var(--text2); }
+  .kpi-change { font-size: 11px; margin-top: 4px; }
+  .kpi-change.up { color: var(--success); }
+  .kpi-change.down { color: var(--danger); }
+
+  /* Section */
+  .section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Chart */
+  .chart-wrap {
+    position: relative;
+    height: 160px;
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    padding-bottom: 24px;
+  }
+  .bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+    justify-content: flex-end;
+  }
+  .bar {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    background: var(--gold);
+    opacity: 0.7;
+    transition: opacity 0.2s, height 0.5s ease;
+    min-height: 2px;
+    cursor: pointer;
+    position: relative;
+  }
+  .bar:hover { opacity: 1; }
+  .bar-label { font-size: 9px; color: var(--text2); text-align: center; position: absolute; bottom: -20px; width: 100%; }
+  .bar-tooltip {
+    position: absolute;
+    top: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--gold);
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+    display: none;
+    z-index: 10;
+  }
+  .bar:hover .bar-tooltip { display: block; }
+
+  /* Top Products */
+  .product-rank {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .product-rank:last-child { border-bottom: none; }
+  .rank-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text2);
+    flex-shrink: 0;
+  }
+  .rank-num.gold { background: rgba(201,168,76,0.2); border-color: var(--gold); color: var(--gold); }
+  .rank-num.silver { background: rgba(160,152,128,0.2); border-color: #a09880; color: #a09880; }
+  .rank-num.bronze { background: rgba(160,100,60,0.2); border-color: #a0643c; color: #a0643c; }
+  .rank-info { flex: 1; }
+  .rank-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .rank-meta { font-size: 11px; color: var(--text2); }
+  .rank-revenue { font-size: 13px; font-weight: 700; color: var(--gold); }
+
+  /* Progress Bar */
+  .progress-wrap { margin-top: 6px; }
+  .progress-bg {
+    height: 4px;
+    background: var(--bg3);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+
+  /* Status Breakdown */
+  .status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .status-row:last-child { border-bottom: none; }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-left: 8px;
+    flex-shrink: 0;
+  }
+  .status-left { display: flex; align-items: center; }
+  .status-count { font-weight: 700; }
+  .status-pct { font-size: 11px; color: var(--text2); margin-right: 6px; }
+
+  /* Loading */
+  .loading-state { text-align: center; padding: 60px 20px; color: var(--text2); }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg {
+    background: rgba(224,85,85,0.1);
+    border: 1px solid var(--danger);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--danger);
+    margin-bottom: 12px;
+    display: none;
+    text-align: center;
+  }
+
+  /* Bottom Nav */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 8px 0 20px;
+    z-index: 100;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-decoration: none;
+    color: var(--text2);
+    font-size: 10px;
+    padding: 6px 0;
+    transition: color 0.2s;
+  }
+  .nav-item:hover, .nav-item.active { color: var(--gold); }
+  .nav-icon { font-size: 20px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <a href="syriaexpress-seller.html" class="back-btn">← رجوع</a>
+  <a href="syriaexpress-landing.html" class="header-logo">
+    <div class="header-logo-text">
+      <div class="ar">سوريا إكسبريس</div>
+      <div class="en">B2B MARKETPLACE</div>
+    </div>
+    <img src="assets/logo_main.png" onerror="this.style.display='none'" />
+  </a>
+  <div style="width:60px"></div>
+</div>
+
+<!-- Loading -->
+<div class="loading-state" id="loadingState">
+  <div class="spinner"></div>
+  <div>جاري تحميل التقارير...</div>
+</div>
+
+<!-- Content -->
+<div id="pageContent" style="display:none">
+<div class="container">
+
+  <!-- Period Filter -->
+  <div class="period-filter">
+    <button class="period-btn" onclick="setPeriod(7, this)">7 أيام</button>
+    <button class="period-btn active" onclick="setPeriod(30, this)">30 يوم</button>
+    <button class="period-btn" onclick="setPeriod(90, this)">3 أشهر</button>
+    <button class="period-btn" onclick="setPeriod(365, this)">سنة</button>
+  </div>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi-card wide">
+      <div class="kpi-icon">💰</div>
+      <div class="kpi-value" id="kpiRevenue">—</div>
+      <div class="kpi-label">إجمالي الإيرادات</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📦</div>
+      <div class="kpi-value" id="kpiOrders">—</div>
+      <div class="kpi-label">الطلبات</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">✅</div>
+      <div class="kpi-value" id="kpiDelivered">—</div>
+      <div class="kpi-label">مكتملة</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">⏳</div>
+      <div class="kpi-value" id="kpiPending">—</div>
+      <div class="kpi-label">قيد التنفيذ</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📊</div>
+      <div class="kpi-value" id="kpiAvg">—</div>
+      <div class="kpi-label">متوسط الطلب</div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="section">
+    <div class="section-title">📈 الإيرادات اليومية</div>
+    <div class="chart-wrap" id="chartWrap"></div>
+  </div>
+
+  <!-- Top Products -->
+  <div class="section">
+    <div class="section-title">🏆 أكثر المنتجات مبيعاً</div>
+    <div id="topProducts"></div>
+  </div>
+
+  <!-- Status Breakdown -->
+  <div class="section">
+    <div class="section-title">📋 توزيع الطلبات</div>
+    <div id="statusBreakdown"></div>
+  </div>
+
+</div>
+</div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <a href="syriaexpress-landing.html" class="nav-item">
+    <span class="nav-icon">🏠</span>الرئيسية
+  </a>
+  <a href="syriaexpress-add-product.html" class="nav-item">
+    <span class="nav-icon">➕</span>منتج
+  </a>
+  <a href="syriaexpress-seller-orders.html" class="nav-item">
+    <span class="nav-icon">📋</span>الطلبات
+  </a>
+  <a href="syriaexpress-seller.html" class="nav-item active">
+    <span class="nav-icon">👤</span>لوحتي
+  </a>
+</div>
+
+<script src="logos.js"></script>
+<script>
+const API = 'https://syriaexpress-backend-production.up.railway.app';
+let allOrders = [];
+let currentPeriod = 30;
+
+function getToken() { return localStorage.getItem('token'); }
+
+function formatPrice(p) {
+  if (!p && p !== 0) return '0 ل.س';
+  if (p >= 1000000) return (p / 1000000).toFixed(1) + 'م ل.س';
+  if (p >= 1000) return (p / 1000).toFixed(0) + 'ك ل.س';
+  return Number(p).toLocaleString('ar-SY') + ' ل.س';
+}
+
+function formatPriceFull(p) {
+  if (!p) return '0 ل.س';
+  return Number(p).toLocaleString('ar-SY') + ' ل.س';
+}
+
+async function loadOrders() {
+  const token = getToken();
+  if (!token) { window.location.href = 'login.html'; return; }
+
+  try {
+    const res = await fetch(`${API}/api/orders/seller`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('pageContent').style.display = 'block';
+
+    if (!res.ok) {
+      showError(data.error || 'حدث خطأ');
+      return;
+    }
+
+    allOrders = data;
+    renderAll();
+
+  } catch (err) {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('pageContent').style.display = 'block';
+    showError('فشل الاتصال بالخادم');
+  }
+}
+
+function getFilteredOrders() {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - currentPeriod);
+  return allOrders.filter(o => new Date(o.created_at) >= cutoff);
+}
+
+function setPeriod(days, btn) {
+  currentPeriod = days;
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+function renderAll() {
+  const orders = getFilteredOrders();
+  renderKPIs(orders);
+  renderChart(orders);
+  renderTopProducts(orders);
+  renderStatusBreakdown(orders);
+}
+
+function renderKPIs(orders) {
+  const active = orders.filter(o => o.status !== 'cancelled');
+  const delivered = orders.filter(o => o.status === 'delivered');
+  const pending = orders.filter(o => ['pending','confirmed','shipped'].includes(o.status));
+  const revenue = delivered.reduce((s, o) => s + ((o.quantity || 0) * (o.price || 0)) + (o.shipping_price || 0), 0);
+  const avg = delivered.length ? revenue / delivered.length : 0;
+
+  document.getElementById('kpiRevenue').textContent = formatPrice(revenue);
+  document.getElementById('kpiOrders').textContent = active.length;
+  document.getElementById('kpiDelivered').textContent = delivered.length;
+  document.getElementById('kpiPending').textContent = pending.length;
+  document.getElementById('kpiAvg').textContent = formatPrice(avg);
+}
+
+function renderChart(orders) {
+  const days = Math.min(currentPeriod, 14);
+  const buckets = {};
+
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    buckets[key] = 0;
+  }
+
+  orders.filter(o => o.status === 'delivered').forEach(o => {
+    const key = new Date(o.created_at).toISOString().slice(0, 10);
+    if (key in buckets) {
+      buckets[key] += ((o.quantity || 0) * (o.price || 0)) + (o.shipping_price || 0);
+    }
+  });
+
+  const vals = Object.values(buckets);
+  const keys = Object.keys(buckets);
+  const max = Math.max(...vals, 1);
+
+  const wrap = document.getElementById('chartWrap');
+  wrap.innerHTML = keys.map((k, i) => {
+    const h = Math.max((vals[i] / max) * 130, 2);
+    const label = k.slice(5);
+    const show = days <= 14 ? true : i % 3 === 0;
+    return `
+      <div class="bar-col">
+        <div class="bar" style="height:${h}px">
+          <div class="bar-tooltip">${formatPriceFull(vals[i])}</div>
+          ${show ? `<div class="bar-label">${label}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderTopProducts(orders) {
+  const productMap = {};
+  orders.filter(o => o.status !== 'cancelled').forEach(o => {
+    const id = o.product_id;
+    const name = o.name_ar || o.name_en || 'منتج';
+    if (!productMap[id]) productMap[id] = { name, qty: 0, revenue: 0, orders: 0 };
+    productMap[id].qty += o.quantity || 0;
+    productMap[id].revenue += ((o.quantity || 0) * (o.price || 0));
+    productMap[id].orders++;
+  });
+
+  const sorted = Object.values(productMap).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+  const maxRev = sorted[0]?.revenue || 1;
+
+  const rankClasses = ['gold', 'silver', 'bronze', '', ''];
+
+  const container = document.getElementById('topProducts');
+  if (!sorted.length) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px;font-size:13px">ما في مبيعات بهاي الفترة</div>';
+    return;
+  }
+
+  container.innerHTML = sorted.map((p, i) => `
+    <div class="product-rank">
+      <div class="rank-num ${rankClasses[i]}">${i + 1}</div>
+      <div class="rank-info">
+        <div class="rank-name">${p.name}</div>
+        <div class="rank-meta">${p.orders} طلب — ${p.qty} وحدة</div>
+        <div class="progress-wrap">
+          <div class="progress-bg">
+            <div class="progress-fill" style="width:${(p.revenue / maxRev * 100).toFixed(0)}%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="rank-revenue">${formatPrice(p.revenue)}</div>
+    </div>
+  `).join('');
+}
+
+function renderStatusBreakdown(orders) {
+  const statuses = [
+    { key: 'pending',   label: 'انتظار',    color: '#FF9800' },
+    { key: 'confirmed', label: 'مؤكد',      color: '#2196F3' },
+    { key: 'shipped',   label: 'مشحون',     color: '#CE93D8' },
+    { key: 'delivered', label: 'مكتمل',     color: '#4CAF50' },
+    { key: 'cancelled', label: 'ملغي',      color: '#e05555' },
+  ];
+
+  const total = orders.length || 1;
+  const container = document.getElementById('statusBreakdown');
+
+  container.innerHTML = statuses.map(s => {
+    const count = orders.filter(o => o.status === s.key).length;
+    const pct = ((count / total) * 100).toFixed(0);
+    return `
+      <div class="status-row">
+        <div class="status-left">
+          <div class="status-dot" style="background:${s.color}"></div>
+          <span>${s.label}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="status-pct">${pct}%</span>
+          <span class="status-count">${count}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+loadOrders();
+</script>
+</body>
+</html>

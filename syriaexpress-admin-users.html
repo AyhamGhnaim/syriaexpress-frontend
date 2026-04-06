@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إدارة المستخدمين — سوريا إكسبريس</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0F0E0C;
+    --bg2: #1a1814;
+    --bg3: #222018;
+    --gold: #C9A84C;
+    --gold2: #e8c96a;
+    --text: #f0ece4;
+    --text2: #a09880;
+    --border: #2e2b24;
+    --success: #4CAF50;
+    --warning: #FF9800;
+    --danger: #e05555;
+    --info: #2196F3;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 100px;
+  }
+
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+  .header-logo img { height: 36px; }
+  .header-logo-text .ar { font-family: 'Amiri', serif; color: var(--gold); font-size: 16px; }
+  .header-logo-text .en { color: var(--text2); font-size: 9px; letter-spacing: 2px; }
+  .back-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    text-decoration: none;
+  }
+
+  .container { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+  /* Stats */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+  .stat-value { font-size: 22px; font-weight: 700; color: var(--gold); }
+  .stat-label { font-size: 10px; color: var(--text2); margin-top: 2px; }
+
+  /* Search */
+  .search-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    outline: none;
+    direction: rtl;
+  }
+  .search-input::placeholder { color: var(--text2); }
+
+  /* Filters */
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .filters::-webkit-scrollbar { display: none; }
+  .filter-btn {
+    flex-shrink: 0;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+  }
+  .filter-btn.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #000;
+  }
+
+  /* User Card */
+  .user-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .user-main {
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .user-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--bg3);
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-email { font-size: 11px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-meta { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+  .type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .type-buyer  { background: rgba(33,150,243,0.15); color: var(--info); border: 1px solid rgba(33,150,243,0.3); }
+  .type-seller { background: rgba(201,168,76,0.15); color: var(--gold); border: 1px solid rgba(201,168,76,0.3); }
+  .type-admin  { background: rgba(224,85,85,0.15); color: var(--danger); border: 1px solid rgba(224,85,85,0.3); }
+
+  /* Expand */
+  .user-expand {
+    display: none;
+    padding: 0 14px 12px;
+    border-top: 1px solid var(--border);
+  }
+  .user-expand.open { display: block; }
+  .expand-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-top: 12px;
+  }
+  .expand-field .lbl { font-size: 11px; color: var(--text2); margin-bottom: 2px; }
+  .expand-field .val { font-size: 13px; font-weight: 600; }
+
+  /* Seller extra */
+  .seller-extra {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+  .seller-extra-title { font-size: 11px; color: var(--text2); margin-bottom: 8px; font-weight: 600; }
+  .ver-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  /* Actions */
+  .user-actions { display: flex; gap: 8px; }
+  .action-btn {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .btn-make-seller { background: rgba(201,168,76,0.15); color: var(--gold); border: 1px solid rgba(201,168,76,0.3); }
+  .btn-make-buyer  { background: rgba(33,150,243,0.15); color: var(--info); border: 1px solid rgba(33,150,243,0.3); }
+  .btn-make-admin  { background: rgba(224,85,85,0.1); color: var(--danger); border: 1px solid rgba(224,85,85,0.3); }
+  .btn-view-profile { background: var(--bg3); color: var(--text2); border: 1px solid var(--border); text-decoration: none; display: flex; align-items: center; justify-content: center; }
+  .action-btn:hover { opacity: 0.8; }
+
+  .expand-toggle {
+    background: none;
+    border: none;
+    color: var(--text2);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 0;
+    font-family: 'Cairo', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* Loading / Empty */
+  .loading-state { text-align: center; padding: 60px 20px; color: var(--text2); }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty-state { text-align: center; padding: 60px 20px; }
+  .empty-icon { font-size: 48px; margin-bottom: 14px; }
+  .empty-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .empty-sub { font-size: 13px; color: var(--text2); }
+
+  .error-msg {
+    background: rgba(224,85,85,0.1);
+    border: 1px solid var(--danger);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--danger);
+    margin-bottom: 12px;
+    display: none;
+    text-align: center;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 90px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg2);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 999;
+    display: none;
+    white-space: nowrap;
+  }
+
+  /* Bottom Nav */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 8px 0 20px;
+    z-index: 100;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-decoration: none;
+    color: var(--text2);
+    font-size: 10px;
+    padding: 6px 0;
+    transition: color 0.2s;
+  }
+  .nav-item:hover, .nav-item.active { color: var(--gold); }
+  .nav-icon { font-size: 20px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <a href="syriaexpress-admin.html" class="back-btn">← رجوع</a>
+  <a href="syriaexpress-landing.html" class="header-logo">
+    <div class="header-logo-text">
+      <div class="ar">سوريا إكسبريس</div>
+      <div class="en">B2B MARKETPLACE</div>
+    </div>
+    <img src="assets/logo_main.png" onerror="this.style.display='none'" />
+  </a>
+  <div style="width:60px"></div>
+</div>
+
+<div class="container">
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-value" id="sTotal">—</div>
+      <div class="stat-label">الكل</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="sSellers" style="color:var(--gold)">—</div>
+      <div class="stat-label">بائعين</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="sBuyers" style="color:var(--info)">—</div>
+      <div class="stat-label">مشترين</div>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <span>🔍</span>
+    <input class="search-input" type="text" id="searchInput" placeholder="ابحث بالاسم أو البريد..." oninput="renderUsers()" />
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <button class="filter-btn active" onclick="setFilter('all', this)">الكل</button>
+    <button class="filter-btn" onclick="setFilter('buyer', this)">🛒 مشترين</button>
+    <button class="filter-btn" onclick="setFilter('seller', this)">🏪 بائعين</button>
+    <button class="filter-btn" onclick="setFilter('admin', this)">⚙️ أدمن</button>
+  </div>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <!-- Loading -->
+  <div class="loading-state" id="loadingState">
+    <div class="spinner"></div>
+    <div>جاري التحميل...</div>
+  </div>
+
+  <!-- Users -->
+  <div id="usersContainer"></div>
+
+  <!-- Empty -->
+  <div class="empty-state" id="emptyState" style="display:none">
+    <div class="empty-icon">👥</div>
+    <div class="empty-title">ما في نتائج</div>
+    <div class="empty-sub">جرب بحث ثاني</div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <a href="syriaexpress-admin.html" class="nav-item">
+    <span class="nav-icon">🏠</span>الرئيسية
+  </a>
+  <a href="syriaexpress-admin-verifications.html" class="nav-item">
+    <span class="nav-icon">✅</span>التوثيق
+  </a>
+  <a href="syriaexpress-admin-users.html" class="nav-item active">
+    <span class="nav-icon">👥</span>المستخدمين
+  </a>
+  <a href="syriaexpress-admin-analytics.html" class="nav-item">
+    <span class="nav-icon">📊</span>التحليلات
+  </a>
+</div>
+
+<script src="logos.js"></script>
+<script>
+const API = 'https://syriaexpress-backend-production.up.railway.app';
+let allUsers = [];
+let currentFilter = 'all';
+
+function getToken() { return localStorage.getItem('token'); }
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('ar-SY', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function getTypeInfo(t) {
+  const map = {
+    buyer:  { label: 'مشتري', cls: 'type-buyer',  icon: '🛒' },
+    seller: { label: 'بائع',  cls: 'type-seller', icon: '🏪' },
+    admin:  { label: 'أدمن',  cls: 'type-admin',  icon: '⚙️' },
+  };
+  return map[t] || { label: t, cls: 'type-buyer', icon: '👤' };
+}
+
+function getVerLabel(s) {
+  const map = {
+    pending:  { label: 'انتظار',     color: 'var(--warning)' },
+    approved: { label: 'موثق',       color: 'var(--success)' },
+    rejected: { label: 'مرفوض',     color: 'var(--danger)' },
+  };
+  return map[s] || { label: s, color: 'var(--text2)' };
+}
+
+function buildCard(u) {
+  const type = getTypeInfo(u.user_type);
+  const initials = (u.name || u.full_name || '?').charAt(0).toUpperCase();
+  const isSeller = u.user_type === 'seller';
+  const ver = u.verification_status ? getVerLabel(u.verification_status) : null;
+
+  return `
+    <div class="user-card" id="user-${u.id}">
+      <div class="user-main">
+        <div class="user-avatar">${initials}</div>
+        <div class="user-info">
+          <div class="user-name">${u.name || u.full_name || '—'}</div>
+          <div class="user-email">${u.email || '—'}</div>
+          <div class="user-meta">انضم: ${formatDate(u.created_at)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <div class="type-badge ${type.cls}">${type.icon} ${type.label}</div>
+          <button class="expand-toggle" onclick="toggleExpand('${u.id}')">
+            تفاصيل ▾
+          </button>
+        </div>
+      </div>
+
+      <div class="user-expand" id="expand-${u.id}">
+        <div class="expand-grid">
+          <div class="expand-field">
+            <div class="lbl">الهاتف</div>
+            <div class="val">${u.phone || '—'}</div>
+          </div>
+          <div class="expand-field">
+            <div class="lbl">المحافظة</div>
+            <div class="val">${u.governorate || '—'}</div>
+          </div>
+          <div class="expand-field">
+            <div class="lbl">الحالة</div>
+            <div class="val" style="color:${u.is_active === false ? 'var(--danger)' : 'var(--success)'}">
+              ${u.is_active === false ? 'موقوف' : 'نشط'}
+            </div>
+          </div>
+          <div class="expand-field">
+            <div class="lbl">آخر دخول</div>
+            <div class="val">${formatDate(u.last_login)}</div>
+          </div>
+        </div>
+
+        ${isSeller && u.company_name_ar ? `
+        <div class="seller-extra">
+          <div class="seller-extra-title">معلومات الشركة</div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:4px">${u.company_name_ar}</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:6px">${u.activity_type || ''}</div>
+          ${ver ? `<span class="ver-status" style="background:${ver.color}22;color:${ver.color};border:1px solid ${ver.color}44">${ver.label}</span>` : ''}
+        </div>
+        ` : ''}
+
+        <div class="user-actions">
+          ${u.user_type !== 'admin' ? `<button class="action-btn btn-make-admin" onclick="changeType('${u.id}', 'admin')">⚙️ أدمن</button>` : ''}
+          ${u.user_type !== 'seller' ? `<button class="action-btn btn-make-seller" onclick="changeType('${u.id}', 'seller')">🏪 بائع</button>` : ''}
+          ${u.user_type !== 'buyer' ? `<button class="action-btn btn-make-buyer" onclick="changeType('${u.id}', 'buyer')">🛒 مشتري</button>` : ''}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function loadUsers() {
+  const token = getToken();
+  if (!token) { window.location.href = 'login.html'; return; }
+
+  document.getElementById('loadingState').style.display = 'block';
+  document.getElementById('usersContainer').innerHTML = '';
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('errorMsg').style.display = 'none';
+
+  try {
+    const res = await fetch(`${API}/api/admin/users`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    document.getElementById('loadingState').style.display = 'none';
+
+    if (!res.ok) {
+      showError(data.error || 'حدث خطأ — تأكد أنك مسجل كـ admin');
+      return;
+    }
+
+    allUsers = Array.isArray(data) ? data : (data.users || []);
+    updateStats();
+    renderUsers();
+
+  } catch (err) {
+    document.getElementById('loadingState').style.display = 'none';
+    showError('فشل الاتصال بالخادم');
+  }
+}
+
+function updateStats() {
+  document.getElementById('sTotal').textContent = allUsers.length;
+  document.getElementById('sSellers').textContent = allUsers.filter(u => u.user_type === 'seller').length;
+  document.getElementById('sBuyers').textContent = allUsers.filter(u => u.user_type === 'buyer').length;
+}
+
+function setFilter(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderUsers();
+}
+
+function renderUsers() {
+  const search = document.getElementById('searchInput').value.trim().toLowerCase();
+
+  let filtered = allUsers;
+  if (currentFilter !== 'all') {
+    filtered = filtered.filter(u => u.user_type === currentFilter);
+  }
+  if (search) {
+    filtered = filtered.filter(u =>
+      (u.name || '').toLowerCase().includes(search) ||
+      (u.full_name || '').toLowerCase().includes(search) ||
+      (u.email || '').toLowerCase().includes(search)
+    );
+  }
+
+  if (!filtered.length) {
+    document.getElementById('usersContainer').innerHTML = '';
+    document.getElementById('emptyState').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('usersContainer').innerHTML = filtered.map(buildCard).join('');
+}
+
+function toggleExpand(id) {
+  const el = document.getElementById(`expand-${id}`);
+  el.classList.toggle('open');
+}
+
+async function changeType(userId, newType) {
+  const user = allUsers.find(u => u.id === userId);
+  const typeName = { buyer: 'مشتري', seller: 'بائع', admin: 'أدمن' }[newType];
+  if (!confirm(`تحويل "${user?.name || user?.full_name}" إلى ${typeName}؟`)) return;
+
+  const token = getToken();
+  try {
+    const res = await fetch(`${API}/api/admin/users/${userId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ user_type: newType })
+    });
+
+    if (res.ok) {
+      showToast(`تم تغيير النوع إلى ${typeName} ✓`);
+      loadUsers();
+    } else {
+      const data = await res.json();
+      showError(data.error || 'فشل التغيير');
+    }
+  } catch (err) {
+    showError('فشل الاتصال بالخادم');
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 2500);
+}
+
+loadUsers();
+</script>
+</body>
+</html>

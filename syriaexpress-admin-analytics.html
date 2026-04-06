@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>التحليلات — سوريا إكسبريس</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0F0E0C;
+    --bg2: #1a1814;
+    --bg3: #222018;
+    --gold: #C9A84C;
+    --gold2: #e8c96a;
+    --text: #f0ece4;
+    --text2: #a09880;
+    --border: #2e2b24;
+    --success: #4CAF50;
+    --warning: #FF9800;
+    --danger: #e05555;
+    --info: #2196F3;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 100px;
+  }
+
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+  .header-logo img { height: 36px; }
+  .header-logo-text .ar { font-family: 'Amiri', serif; color: var(--gold); font-size: 16px; }
+  .header-logo-text .en { color: var(--text2); font-size: 9px; letter-spacing: 2px; }
+  .back-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    text-decoration: none;
+  }
+
+  .container { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+  /* Period */
+  .period-filter {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 5px;
+  }
+  .period-btn {
+    flex: 1;
+    padding: 8px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    font-family: 'Cairo', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+  }
+  .period-btn.active { background: var(--gold); color: #000; }
+
+  /* KPI Grid */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .kpi-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .kpi-card.wide { grid-column: span 2; }
+  .kpi-icon { font-size: 20px; margin-bottom: 6px; }
+  .kpi-value { font-size: 22px; font-weight: 700; color: var(--gold); margin-bottom: 2px; }
+  .kpi-label { font-size: 11px; color: var(--text2); }
+
+  /* Section */
+  .section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+
+  /* Chart */
+  .chart-wrap {
+    height: 150px;
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    padding-bottom: 24px;
+    position: relative;
+  }
+  .bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+    position: relative;
+  }
+  .bar {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    min-height: 2px;
+    cursor: pointer;
+    position: relative;
+    transition: opacity 0.2s;
+  }
+  .bar:hover { opacity: 0.8; }
+  .bar-label {
+    position: absolute;
+    bottom: -20px;
+    font-size: 9px;
+    color: var(--text2);
+    white-space: nowrap;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .bar-tooltip {
+    position: absolute;
+    top: -26px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--gold);
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+    display: none;
+    z-index: 10;
+  }
+  .bar:hover .bar-tooltip { display: block; }
+
+  /* Table */
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table th {
+    font-size: 11px;
+    color: var(--text2);
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+    font-weight: 600;
+  }
+  .data-table td {
+    font-size: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+
+  /* Progress */
+  .progress-bg {
+    height: 4px;
+    background: var(--bg3);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+
+  /* Category Donut (CSS only) */
+  .donut-wrap {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+  .donut-legend { flex: 1; }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    font-size: 12px;
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .legend-pct { margin-right: auto; color: var(--gold); font-weight: 700; font-size: 12px; }
+
+  /* Rank List */
+  .rank-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .rank-item:last-child { border-bottom: none; }
+  .rank-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--bg3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text2);
+    flex-shrink: 0;
+  }
+  .rank-num.g1 { background: rgba(201,168,76,0.2); color: var(--gold); }
+  .rank-num.g2 { background: rgba(160,152,128,0.2); color: #a09880; }
+  .rank-num.g3 { background: rgba(160,100,60,0.2); color: #cd7f32; }
+  .rank-info { flex: 1; }
+  .rank-name { font-size: 13px; font-weight: 600; }
+  .rank-sub { font-size: 11px; color: var(--text2); }
+  .rank-val { font-size: 13px; font-weight: 700; color: var(--gold); }
+
+  /* Loading */
+  .loading-state { text-align: center; padding: 60px 20px; color: var(--text2); }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg {
+    background: rgba(224,85,85,0.1);
+    border: 1px solid var(--danger);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--danger);
+    margin-bottom: 12px;
+    display: none;
+    text-align: center;
+  }
+
+  /* Bottom Nav */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 8px 0 20px;
+    z-index: 100;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-decoration: none;
+    color: var(--text2);
+    font-size: 10px;
+    padding: 6px 0;
+    transition: color 0.2s;
+  }
+  .nav-item:hover, .nav-item.active { color: var(--gold); }
+  .nav-icon { font-size: 20px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <a href="syriaexpress-admin.html" class="back-btn">← رجوع</a>
+  <a href="syriaexpress-landing.html" class="header-logo">
+    <div class="header-logo-text">
+      <div class="ar">سوريا إكسبريس</div>
+      <div class="en">B2B MARKETPLACE</div>
+    </div>
+    <img src="assets/logo_main.png" onerror="this.style.display='none'" />
+  </a>
+  <div style="width:60px"></div>
+</div>
+
+<!-- Loading -->
+<div class="loading-state" id="loadingState">
+  <div class="spinner"></div>
+  <div>جاري تحميل البيانات...</div>
+</div>
+
+<div id="pageContent" style="display:none">
+<div class="container">
+
+  <!-- Period -->
+  <div class="period-filter">
+    <button class="period-btn" onclick="setPeriod(7,this)">7 أيام</button>
+    <button class="period-btn active" onclick="setPeriod(30,this)">30 يوم</button>
+    <button class="period-btn" onclick="setPeriod(90,this)">3 أشهر</button>
+    <button class="period-btn" onclick="setPeriod(365,this)">سنة</button>
+  </div>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi-card wide">
+      <div class="kpi-icon">💰</div>
+      <div class="kpi-value" id="kpiGMV">—</div>
+      <div class="kpi-label">إجمالي قيمة المعاملات (GMV)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📦</div>
+      <div class="kpi-value" id="kpiOrders">—</div>
+      <div class="kpi-label">الطلبات</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">✅</div>
+      <div class="kpi-value" id="kpiCompleted">—</div>
+      <div class="kpi-label">مكتملة</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">👥</div>
+      <div class="kpi-value" id="kpiUsers">—</div>
+      <div class="kpi-label">مستخدمين جدد</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">🏪</div>
+      <div class="kpi-value" id="kpiSellers">—</div>
+      <div class="kpi-label">بائعين نشطين</div>
+    </div>
+  </div>
+
+  <!-- Revenue Chart -->
+  <div class="section">
+    <div class="section-title">📈 إيرادات المنصة</div>
+    <div class="chart-wrap" id="revenueChart"></div>
+  </div>
+
+  <!-- Orders Chart -->
+  <div class="section">
+    <div class="section-title">📊 الطلبات اليومية</div>
+    <div class="chart-wrap" id="ordersChart"></div>
+  </div>
+
+  <!-- Top Sellers -->
+  <div class="section">
+    <div class="section-title">🏆 أفضل البائعين</div>
+    <div id="topSellers"></div>
+  </div>
+
+  <!-- Category Breakdown -->
+  <div class="section">
+    <div class="section-title">🗂️ توزيع الطلبات بالفئة</div>
+    <div id="categoryBreakdown"></div>
+  </div>
+
+  <!-- Overview Table -->
+  <div class="section">
+    <div class="section-title">📋 ملخص الطلبات</div>
+    <table class="data-table" id="summaryTable"></table>
+  </div>
+
+</div>
+</div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <a href="syriaexpress-admin.html" class="nav-item">
+    <span class="nav-icon">🏠</span>الرئيسية
+  </a>
+  <a href="syriaexpress-admin-verifications.html" class="nav-item">
+    <span class="nav-icon">✅</span>التوثيق
+  </a>
+  <a href="syriaexpress-admin-users.html" class="nav-item">
+    <span class="nav-icon">👥</span>المستخدمين
+  </a>
+  <a href="syriaexpress-admin-analytics.html" class="nav-item active">
+    <span class="nav-icon">📊</span>التحليلات
+  </a>
+</div>
+
+<script src="logos.js"></script>
+<script>
+const API = 'https://syriaexpress-backend-production.up.railway.app';
+let allOrders = [];
+let allUsers  = [];
+let currentPeriod = 30;
+
+function getToken() { return localStorage.getItem('token'); }
+
+function formatPrice(p) {
+  if (!p) return '0 ل.س';
+  if (p >= 1000000) return (p/1000000).toFixed(1) + 'م ل.س';
+  if (p >= 1000) return (p/1000).toFixed(0) + 'ك ل.س';
+  return Number(p).toLocaleString('ar-SY') + ' ل.س';
+}
+function formatPriceFull(p) {
+  return Number(p||0).toLocaleString('ar-SY') + ' ل.س';
+}
+function formatDate(d) {
+  return new Date(d).toLocaleDateString('ar-SY', { month:'short', day:'numeric' });
+}
+
+async function loadData() {
+  const token = getToken();
+  if (!token) { window.location.href = 'login.html'; return; }
+
+  try {
+    const [ordersRes, usersRes] = await Promise.all([
+      fetch(`${API}/api/admin/overview`, { headers: { 'Authorization': `Bearer ${token}` } }),
+      fetch(`${API}/api/admin/users`,    { headers: { 'Authorization': `Bearer ${token}` } }),
+    ]);
+
+    // إذا overview ما رجع orders، جرب endpoint ثاني
+    let overview = {};
+    if (ordersRes.ok) overview = await ordersRes.json();
+
+    // جيب الطلبات من overview أو من مصدر ثاني
+    allOrders = overview.orders || overview.recent_orders || [];
+
+    // إذا overview ما عنده orders كافية، جرب sellers endpoint للحصول على بيانات
+    if (allOrders.length === 0) {
+      try {
+        const sellerOrdersRes = await fetch(`${API}/api/orders/seller`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (sellerOrdersRes.ok) allOrders = await sellerOrdersRes.json();
+      } catch(e) {}
+    }
+
+    allUsers = usersRes.ok ? (await usersRes.json()) : [];
+    if (!Array.isArray(allUsers)) allUsers = allUsers.users || [];
+
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('pageContent').style.display = 'block';
+
+    renderAll(overview);
+
+  } catch(err) {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('pageContent').style.display = 'block';
+    showError('فشل الاتصال بالخادم');
+    renderAll({});
+  }
+}
+
+function getFiltered() {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - currentPeriod);
+  return allOrders.filter(o => new Date(o.created_at) >= cutoff);
+}
+
+function setPeriod(days, btn) {
+  currentPeriod = days;
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll({});
+}
+
+function renderAll(overview) {
+  const orders = getFiltered();
+  renderKPIs(orders, overview);
+  renderChart('revenueChart', orders, 'revenue');
+  renderChart('ordersChart',  orders, 'count');
+  renderTopSellers(orders);
+  renderCategoryBreakdown(orders);
+  renderSummaryTable(orders);
+}
+
+function renderKPIs(orders, overview) {
+  const delivered = orders.filter(o => o.status === 'delivered');
+  const gmv = delivered.reduce((s,o) => s + ((o.quantity||0)*(o.price||0)) + (o.shipping_price||0), 0);
+
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - currentPeriod);
+  const newUsers = allUsers.filter(u => new Date(u.created_at) >= cutoff).length;
+  const activeSellers = [...new Set(orders.filter(o=>o.status!=='cancelled').map(o=>o.seller_id))].length;
+
+  document.getElementById('kpiGMV').textContent       = formatPrice(gmv);
+  document.getElementById('kpiOrders').textContent    = orders.filter(o=>o.status!=='cancelled').length;
+  document.getElementById('kpiCompleted').textContent = delivered.length;
+  document.getElementById('kpiUsers').textContent     = newUsers;
+  document.getElementById('kpiSellers').textContent   = activeSellers;
+}
+
+function renderChart(containerId, orders, type) {
+  const days = Math.min(currentPeriod, 14);
+  const buckets = {};
+  for (let i = days-1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    buckets[d.toISOString().slice(0,10)] = 0;
+  }
+
+  orders.filter(o => type === 'revenue' ? o.status === 'delivered' : o.status !== 'cancelled').forEach(o => {
+    const key = new Date(o.created_at).toISOString().slice(0,10);
+    if (key in buckets) {
+      buckets[key] += type === 'revenue'
+        ? ((o.quantity||0)*(o.price||0)) + (o.shipping_price||0)
+        : 1;
+    }
+  });
+
+  const vals = Object.values(buckets);
+  const keys = Object.keys(buckets);
+  const max  = Math.max(...vals, 1);
+  const color = type === 'revenue' ? 'var(--gold)' : 'var(--info)';
+
+  document.getElementById(containerId).innerHTML = keys.map((k,i) => {
+    const h = Math.max((vals[i]/max)*125, 2);
+    const label = k.slice(5);
+    const tip = type === 'revenue' ? formatPriceFull(vals[i]) : vals[i] + ' طلب';
+    return `
+      <div class="bar-col">
+        <div class="bar" style="height:${h}px;background:${color};opacity:0.75">
+          <div class="bar-tooltip">${tip}</div>
+          <div class="bar-label">${label}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderTopSellers(orders) {
+  const map = {};
+  orders.filter(o=>o.status!=='cancelled').forEach(o => {
+    const id = o.seller_id;
+    const name = o.company_name_ar || o.seller_name || 'بائع';
+    if (!map[id]) map[id] = { name, orders:0, revenue:0 };
+    map[id].orders++;
+    map[id].revenue += ((o.quantity||0)*(o.price||0)) + (o.shipping_price||0);
+  });
+
+  const sorted = Object.values(map).sort((a,b)=>b.revenue-a.revenue).slice(0,5);
+  const maxRev = sorted[0]?.revenue || 1;
+  const gClasses = ['g1','g2','g3','',''];
+
+  const el = document.getElementById('topSellers');
+  if (!sorted.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px;font-size:13px">ما في بيانات</div>';
+    return;
+  }
+  el.innerHTML = sorted.map((s,i) => `
+    <div class="rank-item">
+      <div class="rank-num ${gClasses[i]}">${i+1}</div>
+      <div class="rank-info">
+        <div class="rank-name">${s.name}</div>
+        <div class="rank-sub">${s.orders} طلب</div>
+        <div class="progress-bg">
+          <div class="progress-fill" style="width:${(s.revenue/maxRev*100).toFixed(0)}%;background:var(--gold)"></div>
+        </div>
+      </div>
+      <div class="rank-val">${formatPrice(s.revenue)}</div>
+    </div>
+  `).join('');
+}
+
+function renderCategoryBreakdown(orders) {
+  const map = {};
+  orders.filter(o=>o.status!=='cancelled').forEach(o => {
+    const cat = o.category_name_ar || o.category_ar || 'أخرى';
+    map[cat] = (map[cat]||0) + 1;
+  });
+
+  const total = Object.values(map).reduce((s,v)=>s+v,0) || 1;
+  const sorted = Object.entries(map).sort((a,b)=>b[1]-a[1]);
+  const colors = ['#C9A84C','#2196F3','#4CAF50','#FF9800','#CE93D8','#e05555'];
+
+  const el = document.getElementById('categoryBreakdown');
+  if (!sorted.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px;font-size:13px">ما في بيانات</div>';
+    return;
+  }
+  el.innerHTML = `
+    <div class="donut-legend">
+      ${sorted.map(([cat, count], i) => `
+        <div class="legend-item">
+          <div class="legend-dot" style="background:${colors[i%colors.length]}"></div>
+          <span>${cat}</span>
+          <span class="legend-pct">${((count/total)*100).toFixed(0)}%</span>
+        </div>
+        <div class="progress-bg" style="margin-bottom:6px">
+          <div class="progress-fill" style="width:${((count/total)*100).toFixed(0)}%;background:${colors[i%colors.length]}"></div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderSummaryTable(orders) {
+  const statuses = [
+    { key:'pending',   label:'انتظار',    color:'var(--warning)' },
+    { key:'confirmed', label:'مؤكد',      color:'var(--info)' },
+    { key:'shipped',   label:'مشحون',     color:'#CE93D8' },
+    { key:'delivered', label:'مكتمل',     color:'var(--success)' },
+    { key:'cancelled', label:'ملغي',      color:'var(--danger)' },
+  ];
+  const total = orders.length || 1;
+  document.getElementById('summaryTable').innerHTML = `
+    <thead>
+      <tr>
+        <th>الحالة</th>
+        <th style="text-align:center">العدد</th>
+        <th style="text-align:center">النسبة</th>
+        <th style="text-align:left">الإيرادات</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${statuses.map(s => {
+        const filtered = orders.filter(o=>o.status===s.key);
+        const count = filtered.length;
+        const rev = filtered.reduce((sum,o)=>sum+((o.quantity||0)*(o.price||0))+(o.shipping_price||0),0);
+        return `
+          <tr>
+            <td><span style="color:${s.color};font-weight:700">${s.label}</span></td>
+            <td style="text-align:center;font-weight:700">${count}</td>
+            <td style="text-align:center;color:var(--text2)">${((count/total)*100).toFixed(0)}%</td>
+            <td style="text-align:left;color:var(--gold)">${formatPrice(rev)}</td>
+          </tr>
+        `;
+      }).join('')}
+    </tbody>
+  `;
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+loadData();
+</script>
+</body>
+</html>

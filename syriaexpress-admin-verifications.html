@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>طلبات التوثيق — سوريا إكسبريس</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0F0E0C;
+    --bg2: #1a1814;
+    --bg3: #222018;
+    --gold: #C9A84C;
+    --gold2: #e8c96a;
+    --text: #f0ece4;
+    --text2: #a09880;
+    --border: #2e2b24;
+    --success: #4CAF50;
+    --warning: #FF9800;
+    --danger: #e05555;
+    --info: #2196F3;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 100px;
+  }
+
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+  .header-logo img { height: 36px; }
+  .header-logo-text .ar { font-family: 'Amiri', serif; color: var(--gold); font-size: 16px; }
+  .header-logo-text .en { color: var(--text2); font-size: 9px; letter-spacing: 2px; }
+  .back-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    text-decoration: none;
+  }
+
+  .container { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+  /* Stats */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+  .stat-value { font-size: 22px; font-weight: 700; }
+  .stat-label { font-size: 10px; color: var(--text2); margin-top: 2px; }
+
+  /* Filters */
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .filter-btn {
+    flex: 1;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 8px;
+    border-radius: 8px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+    text-align: center;
+  }
+  .filter-btn.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #000;
+  }
+
+  /* Verification Card */
+  .ver-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .ver-header {
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--border);
+  }
+  .ver-company { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+  .ver-company-en { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+  .ver-date { font-size: 11px; color: var(--text2); }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .status-pending  { background: rgba(255,152,0,0.15); color: var(--warning); border: 1px solid rgba(255,152,0,0.3); }
+  .status-approved { background: rgba(76,175,80,0.15); color: var(--success); border: 1px solid rgba(76,175,80,0.3); }
+  .status-rejected { background: rgba(224,85,85,0.15); color: var(--danger); border: 1px solid rgba(224,85,85,0.3); }
+
+  /* Seller Info */
+  .seller-info {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .info-field { font-size: 12px; }
+  .info-label { color: var(--text2); margin-bottom: 2px; }
+  .info-value { font-weight: 600; }
+
+  /* Documents */
+  .docs-section {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .docs-title {
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  .docs-grid {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .doc-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    text-decoration: none;
+    color: var(--text);
+  }
+  .doc-item:hover { border-color: var(--gold); color: var(--gold); }
+  .doc-icon { font-size: 16px; }
+
+  /* Notes */
+  .notes-section {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .notes-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+  .notes-text { font-size: 12px; }
+
+  /* Actions */
+  .ver-actions {
+    padding: 12px 14px;
+    display: flex;
+    gap: 8px;
+  }
+  .action-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+  .btn-approve { background: rgba(76,175,80,0.15); color: var(--success); border: 1px solid rgba(76,175,80,0.4); }
+  .btn-reject  { background: rgba(224,85,85,0.1); color: var(--danger); border: 1px solid rgba(224,85,85,0.3); }
+  .btn-approve:hover { background: rgba(76,175,80,0.25); }
+  .btn-reject:hover  { background: rgba(224,85,85,0.2); }
+
+  /* Reject Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    padding: 20px 16px 36px;
+    width: 100%;
+    max-width: 600px;
+  }
+  .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: var(--danger); }
+  .modal-sub { font-size: 12px; color: var(--text2); margin-bottom: 14px; }
+  .modal-textarea {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    padding: 10px 12px;
+    outline: none;
+    direction: rtl;
+    height: 90px;
+    resize: none;
+    margin-bottom: 12px;
+  }
+  .modal-textarea:focus { border-color: var(--danger); }
+  .modal-actions { display: flex; gap: 8px; }
+  .modal-actions button {
+    flex: 1;
+    padding: 11px;
+    border-radius: 8px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+  }
+  .modal-confirm { background: var(--danger); color: #fff; }
+  .modal-cancel-btn { background: var(--bg3); color: var(--text2); border: 1px solid var(--border) !important; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg2);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 999;
+    display: none;
+    white-space: nowrap;
+  }
+
+  /* Loading / Empty */
+  .loading-state { text-align: center; padding: 60px 20px; color: var(--text2); }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty-state { text-align: center; padding: 60px 20px; }
+  .empty-icon { font-size: 48px; margin-bottom: 14px; }
+  .empty-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .empty-sub { font-size: 13px; color: var(--text2); }
+
+  .error-msg {
+    background: rgba(224,85,85,0.1);
+    border: 1px solid var(--danger);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--danger);
+    margin-bottom: 12px;
+    display: none;
+    text-align: center;
+  }
+
+  /* Bottom Nav */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 8px 0 20px;
+    z-index: 100;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-decoration: none;
+    color: var(--text2);
+    font-size: 10px;
+    padding: 6px 0;
+    transition: color 0.2s;
+  }
+  .nav-item:hover, .nav-item.active { color: var(--gold); }
+  .nav-icon { font-size: 20px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <a href="syriaexpress-admin.html" class="back-btn">← رجوع</a>
+  <a href="syriaexpress-landing.html" class="header-logo">
+    <div class="header-logo-text">
+      <div class="ar">سوريا إكسبريس</div>
+      <div class="en">B2B MARKETPLACE</div>
+    </div>
+    <img src="assets/logo_main.png" onerror="this.style.display='none'" />
+  </a>
+  <div style="width:60px"></div>
+</div>
+
+<div class="container">
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--warning)" id="sPending">—</div>
+      <div class="stat-label">انتظار</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--success)" id="sApproved">—</div>
+      <div class="stat-label">موافق عليه</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--danger)" id="sRejected">—</div>
+      <div class="stat-label">مرفوض</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <button class="filter-btn active" onclick="setFilter('pending', this)">⏳ انتظار</button>
+    <button class="filter-btn" onclick="setFilter('approved', this)">✅ موافق</button>
+    <button class="filter-btn" onclick="setFilter('rejected', this)">✕ مرفوض</button>
+  </div>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <!-- Loading -->
+  <div class="loading-state" id="loadingState">
+    <div class="spinner"></div>
+    <div>جاري التحميل...</div>
+  </div>
+
+  <!-- Verifications -->
+  <div id="verContainer"></div>
+
+  <!-- Empty -->
+  <div class="empty-state" id="emptyState" style="display:none">
+    <div class="empty-icon">✅</div>
+    <div class="empty-title">ما في طلبات</div>
+    <div class="empty-sub">ما في طلبات توثيق بهاي الحالة</div>
+  </div>
+
+</div>
+
+<!-- Reject Modal -->
+<div class="modal-overlay" id="rejectModal">
+  <div class="modal">
+    <div class="modal-title">رفض طلب التوثيق</div>
+    <div class="modal-sub">أدخل سبب الرفض (سيُرسل للبائع)</div>
+    <textarea class="modal-textarea" id="rejectReason" placeholder="سبب الرفض..."></textarea>
+    <div class="modal-actions">
+      <button class="modal-confirm" onclick="confirmReject()">تأكيد الرفض</button>
+      <button class="modal-cancel-btn" onclick="closeModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <a href="syriaexpress-admin.html" class="nav-item">
+    <span class="nav-icon">🏠</span>الرئيسية
+  </a>
+  <a href="syriaexpress-admin-verifications.html" class="nav-item active">
+    <span class="nav-icon">✅</span>التوثيق
+  </a>
+  <a href="syriaexpress-admin-users.html" class="nav-item">
+    <span class="nav-icon">👥</span>المستخدمين
+  </a>
+  <a href="syriaexpress-admin-analytics.html" class="nav-item">
+    <span class="nav-icon">📊</span>التحليلات
+  </a>
+</div>
+
+<script src="logos.js"></script>
+<script>
+const API = 'https://syriaexpress-backend-production.up.railway.app';
+let allVerifications = [];
+let currentFilter = 'pending';
+let rejectTargetId = null;
+
+function getToken() { return localStorage.getItem('token'); }
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('ar-SY', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function getActivityLabel(t) {
+  const map = {
+    factory: 'مصنع',
+    manufacturer: 'منتج',
+    distributor: 'موزع',
+    wholesaler: 'تاجر جملة',
+    importer: 'مستورد'
+  };
+  return map[t] || t;
+}
+
+function getStatusInfo(s) {
+  const map = {
+    pending:  { label: 'انتظار',     icon: '⏳', cls: 'status-pending' },
+    approved: { label: 'موافق عليه', icon: '✅', cls: 'status-approved' },
+    rejected: { label: 'مرفوض',     icon: '✕',  cls: 'status-rejected' },
+  };
+  return map[s] || { label: s, icon: '•', cls: 'status-pending' };
+}
+
+function buildDocLinks(docs) {
+  if (!docs || !docs.length) {
+    return '<div style="font-size:12px;color:var(--text2)">ما في وثائق مرفوعة</div>';
+  }
+  return docs.map(d => `
+    <a href="${d.document_url || d.url || '#'}" target="_blank" class="doc-item">
+      <span class="doc-icon">📄</span>
+      <span>${d.document_type || d.type || 'وثيقة'}</span>
+    </a>
+  `).join('');
+}
+
+function buildCard(v) {
+  const st = getStatusInfo(v.verification_status || v.status);
+  const isPending = (v.verification_status || v.status) === 'pending';
+  const docs = v.documents || [];
+
+  return `
+    <div class="ver-card" id="ver-${v.id}">
+      <div class="ver-header">
+        <div>
+          <div class="ver-company">${v.company_name_ar || '—'}</div>
+          <div class="ver-company-en">${v.company_name_en || ''}</div>
+          <div class="ver-date">تاريخ الطلب: ${formatDate(v.created_at)}</div>
+        </div>
+        <div class="status-badge ${st.cls}">${st.icon} ${st.label}</div>
+      </div>
+
+      <div class="seller-info">
+        <div class="info-field">
+          <div class="info-label">نوع النشاط</div>
+          <div class="info-value">${getActivityLabel(v.activity_type)}</div>
+        </div>
+        <div class="info-field">
+          <div class="info-label">المحافظة</div>
+          <div class="info-value">${v.governorate || '—'}</div>
+        </div>
+        <div class="info-field">
+          <div class="info-label">صاحب الحساب</div>
+          <div class="info-value">${v.user_name || v.owner_name || '—'}</div>
+        </div>
+        <div class="info-field">
+          <div class="info-label">الهاتف</div>
+          <div class="info-value">${v.phone || v.user_phone || '—'}</div>
+        </div>
+        <div class="info-field">
+          <div class="info-label">البريد</div>
+          <div class="info-value" style="font-size:11px">${v.email || v.user_email || '—'}</div>
+        </div>
+        <div class="info-field">
+          <div class="info-label">تاريخ التأسيس</div>
+          <div class="info-value">${v.established_year || '—'}</div>
+        </div>
+      </div>
+
+      <div class="docs-section">
+        <div class="docs-title">📎 الوثائق المرفوعة</div>
+        <div class="docs-grid" id="docs-${v.id}">
+          ${buildDocLinks(docs)}
+        </div>
+      </div>
+
+      ${v.notes ? `
+      <div class="notes-section">
+        <div class="notes-label">ملاحظات البائع:</div>
+        <div class="notes-text">${v.notes}</div>
+      </div>` : ''}
+
+      ${v.rejection_reason ? `
+      <div class="notes-section">
+        <div class="notes-label" style="color:var(--danger)">سبب الرفض:</div>
+        <div class="notes-text">${v.rejection_reason}</div>
+      </div>` : ''}
+
+      ${isPending ? `
+      <div class="ver-actions">
+        <button class="action-btn btn-approve" onclick="approveVerification('${v.id}')">✅ موافقة</button>
+        <button class="action-btn btn-reject" onclick="openRejectModal('${v.id}')">✕ رفض</button>
+      </div>` : ''}
+    </div>
+  `;
+}
+
+async function loadVerifications() {
+  const token = getToken();
+  if (!token) { window.location.href = 'login.html'; return; }
+
+  document.getElementById('loadingState').style.display = 'block';
+  document.getElementById('verContainer').innerHTML = '';
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('errorMsg').style.display = 'none';
+
+  try {
+    const res = await fetch(`${API}/api/admin/verifications`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    document.getElementById('loadingState').style.display = 'none';
+
+    if (!res.ok) {
+      showError(data.error || 'حدث خطأ — تأكد أنك مسجل كـ admin');
+      return;
+    }
+
+    allVerifications = Array.isArray(data) ? data : (data.verifications || []);
+
+    // جيب وثائق كل بائع
+    await loadDocuments(token);
+
+    updateStats();
+    renderVerifications();
+
+  } catch (err) {
+    document.getElementById('loadingState').style.display = 'none';
+    showError('فشل الاتصال بالخادم');
+  }
+}
+
+async function loadDocuments(token) {
+  // جيب وثائق كل بائع بشكل متوازي
+  await Promise.all(allVerifications.map(async v => {
+    try {
+      const res = await fetch(`${API}/api/admin/sellers/${v.id}/documents`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const docs = await res.json();
+        v.documents = Array.isArray(docs) ? docs : [];
+      }
+    } catch (e) {
+      v.documents = [];
+    }
+  }));
+}
+
+function updateStats() {
+  document.getElementById('sPending').textContent  = allVerifications.filter(v => (v.verification_status || v.status) === 'pending').length;
+  document.getElementById('sApproved').textContent = allVerifications.filter(v => (v.verification_status || v.status) === 'approved').length;
+  document.getElementById('sRejected').textContent = allVerifications.filter(v => (v.verification_status || v.status) === 'rejected').length;
+}
+
+function setFilter(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderVerifications();
+}
+
+function renderVerifications() {
+  const filtered = allVerifications.filter(v => (v.verification_status || v.status) === currentFilter);
+
+  if (!filtered.length) {
+    document.getElementById('verContainer').innerHTML = '';
+    document.getElementById('emptyState').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('verContainer').innerHTML = filtered.map(buildCard).join('');
+}
+
+async function approveVerification(id) {
+  const token = getToken();
+  try {
+    const res = await fetch(`${API}/api/admin/verifications/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ status: 'approved' })
+    });
+
+    if (res.ok) {
+      showToast('تم قبول طلب التوثيق ✅');
+      loadVerifications();
+    } else {
+      const data = await res.json();
+      showError(data.error || 'فشل القبول');
+    }
+  } catch (err) {
+    showError('فشل الاتصال بالخادم');
+  }
+}
+
+function openRejectModal(id) {
+  rejectTargetId = id;
+  document.getElementById('rejectReason').value = '';
+  document.getElementById('rejectModal').classList.add('show');
+}
+
+async function confirmReject() {
+  const reason = document.getElementById('rejectReason').value.trim();
+  const token = getToken();
+  closeModal();
+
+  try {
+    const res = await fetch(`${API}/api/admin/verifications/${rejectTargetId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ status: 'rejected', rejection_reason: reason })
+    });
+
+    if (res.ok) {
+      showToast('تم رفض طلب التوثيق');
+      loadVerifications();
+    } else {
+      const data = await res.json();
+      showError(data.error || 'فشل الرفض');
+    }
+  } catch (err) {
+    showError('فشل الاتصال بالخادم');
+  }
+}
+
+function closeModal() {
+  document.getElementById('rejectModal').classList.remove('show');
+  rejectTargetId = null;
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 2500);
+}
+
+loadVerifications();
+</script>
+</body>
+</html>

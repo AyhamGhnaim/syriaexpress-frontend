@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تتبع الطلب — سوريا إكسبريس</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0F0E0C;
+    --bg2: #1a1814;
+    --bg3: #222018;
+    --gold: #C9A84C;
+    --gold2: #e8c96a;
+    --text: #f0ece4;
+    --text2: #a09880;
+    --border: #2e2b24;
+    --success: #4CAF50;
+    --warning: #FF9800;
+    --danger: #e05555;
+    --info: #2196F3;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 100px;
+  }
+
+  /* Header */
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+  .header-logo img { height: 36px; }
+  .header-logo-text { text-align: center; }
+  .header-logo-text .ar { font-family: 'Amiri', serif; color: var(--gold); font-size: 16px; }
+  .header-logo-text .en { color: var(--text2); font-size: 9px; letter-spacing: 2px; }
+  .back-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .container { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+  /* Search Box */
+  .search-section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .search-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .search-row {
+    display: flex;
+    gap: 8px;
+  }
+  .search-input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    padding: 10px 12px;
+    outline: none;
+    direction: rtl;
+    transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--gold); }
+  .search-btn {
+    background: var(--gold);
+    border: none;
+    border-radius: 8px;
+    color: #000;
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .search-btn:hover { background: var(--gold2); }
+
+  /* Order Card */
+  .order-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .order-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .order-id { font-size: 12px; color: var(--text2); }
+  .order-id span { color: var(--gold); font-weight: 700; }
+  .order-date { font-size: 11px; color: var(--text2); }
+
+  /* Status Badge */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .status-pending    { background: rgba(255,152,0,0.15); color: var(--warning); border: 1px solid rgba(255,152,0,0.3); }
+  .status-confirmed  { background: rgba(33,150,243,0.15); color: var(--info); border: 1px solid rgba(33,150,243,0.3); }
+  .status-shipped    { background: rgba(156,39,176,0.15); color: #CE93D8; border: 1px solid rgba(156,39,176,0.3); }
+  .status-delivered  { background: rgba(76,175,80,0.15); color: var(--success); border: 1px solid rgba(76,175,80,0.3); }
+  .status-cancelled  { background: rgba(224,85,85,0.15); color: var(--danger); border: 1px solid rgba(224,85,85,0.3); }
+
+  /* Product Row */
+  .order-product {
+    padding: 14px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .product-img {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--bg3);
+    flex-shrink: 0;
+  }
+  .product-placeholder {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    background: var(--bg3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .product-info { flex: 1; }
+  .product-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+  .product-company { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+  .product-meta { font-size: 12px; color: var(--text2); }
+  .product-meta span { color: var(--gold); font-weight: 600; }
+
+  /* Timeline */
+  .timeline {
+    padding: 16px;
+  }
+  .timeline-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text2);
+    margin-bottom: 16px;
+  }
+  .timeline-steps {
+    position: relative;
+    padding-right: 20px;
+  }
+  .timeline-steps::before {
+    content: '';
+    position: absolute;
+    right: 7px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .timeline-step {
+    position: relative;
+    padding-bottom: 20px;
+    padding-right: 24px;
+  }
+  .timeline-step:last-child { padding-bottom: 0; }
+  .timeline-dot {
+    position: absolute;
+    right: -6px;
+    top: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--bg3);
+    border: 2px solid var(--border);
+    z-index: 1;
+    transition: all 0.3s;
+  }
+  .timeline-step.active .timeline-dot {
+    background: var(--gold);
+    border-color: var(--gold);
+    box-shadow: 0 0 8px rgba(201,168,76,0.4);
+  }
+  .timeline-step.done .timeline-dot {
+    background: var(--success);
+    border-color: var(--success);
+  }
+  .timeline-step.cancelled .timeline-dot {
+    background: var(--danger);
+    border-color: var(--danger);
+  }
+  .timeline-step-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .timeline-step.active .timeline-step-title { color: var(--gold); }
+  .timeline-step.done .timeline-step-title { color: var(--success); }
+  .timeline-step.cancelled .timeline-step-title { color: var(--danger); }
+  .timeline-step:not(.active):not(.done):not(.cancelled) .timeline-step-title { color: var(--text2); }
+  .timeline-step-date { font-size: 11px; color: var(--text2); }
+
+  /* Order Details */
+  .order-details {
+    padding: 14px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-label { color: var(--text2); }
+  .detail-value { font-weight: 600; }
+  .detail-value.gold { color: var(--gold); }
+
+  /* Cancel Button */
+  .cancel-btn {
+    display: block;
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    padding: 10px;
+    border-radius: 8px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    margin: 14px 16px;
+    margin-top: 0;
+    width: calc(100% - 32px);
+    transition: all 0.2s;
+  }
+  .cancel-btn:hover { background: rgba(224,85,85,0.1); }
+
+  /* Loading */
+  .loading-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--text2);
+  }
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Empty */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .empty-sub { color: var(--text2); font-size: 14px; margin-bottom: 24px; }
+
+  /* Error */
+  .error-msg {
+    background: rgba(224,85,85,0.1);
+    border: 1px solid var(--danger);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 13px;
+    color: var(--danger);
+    text-align: center;
+    margin-bottom: 12px;
+    display: none;
+  }
+
+  /* Bottom Nav */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 8px 0 20px;
+    z-index: 100;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-decoration: none;
+    color: var(--text2);
+    font-size: 10px;
+    padding: 6px 0;
+    transition: color 0.2s;
+  }
+  .nav-item:hover, .nav-item.active { color: var(--gold); }
+  .nav-icon { font-size: 20px; }
+
+  .btn-gold {
+    background: var(--gold);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.2s;
+  }
+  .btn-gold:hover { background: var(--gold2); }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <a href="syriaexpress-buyer.html" class="back-btn">← رجوع</a>
+  <a href="syriaexpress-landing.html" class="header-logo">
+    <div class="header-logo-text">
+      <div class="ar">سوريا إكسبريس</div>
+      <div class="en">B2B MARKETPLACE</div>
+    </div>
+    <img src="assets/logo_main.png" onerror="this.style.display='none'" />
+  </a>
+  <div style="width:60px"></div>
+</div>
+
+<div class="container">
+
+  <!-- Search by Order ID -->
+  <div class="search-section">
+    <div class="search-title">🔍 تتبع طلب بالرقم</div>
+    <div class="search-row">
+      <input class="search-input" type="text" id="searchInput" placeholder="أدخل رقم الطلب..." />
+      <button class="search-btn" onclick="searchOrder()">تتبع</button>
+    </div>
+  </div>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <!-- Loading -->
+  <div class="loading-state" id="loadingState" style="display:none">
+    <div class="spinner"></div>
+    <div>جاري التحميل...</div>
+  </div>
+
+  <!-- Orders List -->
+  <div id="ordersContainer"></div>
+
+  <!-- Empty -->
+  <div class="empty-state" id="emptyState" style="display:none">
+    <div class="empty-icon">📦</div>
+    <div class="empty-title">ما في طلبات بعد</div>
+    <div class="empty-sub">لما تطلب منتج رح يظهر هون</div>
+    <a href="syriaexpress-categories.html" class="btn-gold">تسوق الآن</a>
+  </div>
+
+</div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <a href="syriaexpress-landing.html" class="nav-item">
+    <span class="nav-icon">🏠</span>الرئيسية
+  </a>
+  <a href="syriaexpress-categories.html" class="nav-item">
+    <span class="nav-icon">📦</span>الفئات
+  </a>
+  <a href="syriaexpress-cart.html" class="nav-item">
+    <span class="nav-icon">🛒</span>سلتي
+  </a>
+  <a href="syriaexpress-buyer.html" class="nav-item active">
+    <span class="nav-icon">👤</span>حسابي
+  </a>
+</div>
+
+<script src="logos.js"></script>
+<script>
+const API = 'https://syriaexpress-backend-production.up.railway.app';
+
+function getToken() { return localStorage.getItem('token'); }
+
+function formatPrice(p) {
+  if (!p && p !== 0) return '—';
+  return Number(p).toLocaleString('ar-SY') + ' ل.س';
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('ar-SY', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function getStatusInfo(status) {
+  const map = {
+    pending:   { label: 'قيد الانتظار', icon: '⏳', cls: 'status-pending' },
+    confirmed: { label: 'مؤكد',         icon: '✅', cls: 'status-confirmed' },
+    shipped:   { label: 'تم الشحن',     icon: '🚚', cls: 'status-shipped' },
+    delivered: { label: 'تم التسليم',   icon: '✓',  cls: 'status-delivered' },
+    cancelled: { label: 'ملغي',         icon: '✕',  cls: 'status-cancelled' },
+  };
+  return map[status] || { label: status, icon: '•', cls: 'status-pending' };
+}
+
+function getShippingLabel(type) {
+  const map = { inside: 'شحن محلي', outside: 'خارج المحافظة', international: 'شحن دولي' };
+  return map[type] || type;
+}
+
+function buildTimeline(order) {
+  const steps = [
+    { key: 'pending',   label: 'تم استلام الطلب',  date: order.created_at },
+    { key: 'confirmed', label: 'تأكيد الطلب',       date: order.confirmed_at },
+    { key: 'shipped',   label: 'تم الشحن',           date: order.shipped_at },
+    { key: 'delivered', label: 'تم التسليم',         date: order.delivered_at },
+  ];
+
+  const statusOrder = ['pending', 'confirmed', 'shipped', 'delivered'];
+  const currentIdx = statusOrder.indexOf(order.status);
+  const isCancelled = order.status === 'cancelled';
+
+  if (isCancelled) {
+    return `
+      <div class="timeline">
+        <div class="timeline-title">مسار الطلب</div>
+        <div class="timeline-steps">
+          <div class="timeline-step done">
+            <div class="timeline-dot"></div>
+            <div class="timeline-step-title">تم استلام الطلب</div>
+            <div class="timeline-step-date">${formatDate(order.created_at)}</div>
+          </div>
+          <div class="timeline-step cancelled">
+            <div class="timeline-dot"></div>
+            <div class="timeline-step-title">تم إلغاء الطلب</div>
+            <div class="timeline-step-date">${formatDate(order.cancelled_at)}${order.cancel_reason ? ' — ' + order.cancel_reason : ''}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="timeline">
+      <div class="timeline-title">مسار الطلب</div>
+      <div class="timeline-steps">
+        ${steps.map((s, i) => {
+          let cls = '';
+          if (i < currentIdx) cls = 'done';
+          else if (i === currentIdx) cls = 'active';
+          return `
+            <div class="timeline-step ${cls}">
+              <div class="timeline-dot"></div>
+              <div class="timeline-step-title">${s.label}</div>
+              <div class="timeline-step-date">${s.date ? formatDate(s.date) : '—'}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function buildOrderCard(order) {
+  const st = getStatusInfo(order.status);
+  const canCancel = order.status === 'pending';
+
+  return `
+    <div class="order-card" id="order-${order.id}">
+      <div class="order-header">
+        <div>
+          <div class="order-id">رقم الطلب: <span>#${order.id.slice(0,8)}</span></div>
+          <div class="order-date">${formatDate(order.created_at)}</div>
+        </div>
+        <div class="status-badge ${st.cls}">${st.icon} ${st.label}</div>
+      </div>
+
+      <div class="order-product">
+        ${order.product_image
+          ? `<img class="product-img" src="${order.product_image}" onerror="this.style.display='none'" />`
+          : `<div class="product-placeholder">📦</div>`}
+        <div class="product-info">
+          <div class="product-name">${order.name_ar || order.name_en || 'منتج'}</div>
+          <div class="product-company">${order.company_name_ar || ''}</div>
+          <div class="product-meta">
+            الكمية: <span>${order.quantity} ${order.unit || ''}</span> &nbsp;|&nbsp;
+            الشحن: <span>${getShippingLabel(order.shipping_type)}</span>
+          </div>
+        </div>
+      </div>
+
+      ${buildTimeline(order)}
+
+      <div class="order-details">
+        <div class="detail-row">
+          <span class="detail-label">عنوان التسليم</span>
+          <span class="detail-value">${order.shipping_address || '—'}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">سعر الشحن</span>
+          <span class="detail-value">${order.shipping_price ? formatPrice(order.shipping_price) : 'مجاني'}</span>
+        </div>
+        ${order.notes ? `
+        <div class="detail-row">
+          <span class="detail-label">ملاحظات</span>
+          <span class="detail-value">${order.notes}</span>
+        </div>` : ''}
+        <div class="detail-row">
+          <span class="detail-label">الإجمالي</span>
+          <span class="detail-value gold">${formatPrice((order.quantity * (order.price || 0)) + (order.shipping_price || 0))}</span>
+        </div>
+      </div>
+
+      ${canCancel ? `
+        <button class="cancel-btn" onclick="cancelOrder('${order.id}')">إلغاء الطلب</button>
+      ` : ''}
+    </div>
+  `;
+}
+
+async function loadOrders() {
+  const token = getToken();
+  if (!token) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  showLoading(true);
+
+  try {
+    const res = await fetch(`${API}/api/orders/my`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    showLoading(false);
+
+    if (!res.ok) {
+      showError(data.error || 'حدث خطأ');
+      return;
+    }
+
+    if (!data.length) {
+      document.getElementById('emptyState').style.display = 'block';
+      return;
+    }
+
+    document.getElementById('ordersContainer').innerHTML = data.map(buildOrderCard).join('');
+
+  } catch (err) {
+    showLoading(false);
+    showError('فشل الاتصال بالخادم');
+  }
+}
+
+async function searchOrder() {
+  const id = document.getElementById('searchInput').value.trim();
+  if (!id) return;
+
+  const token = getToken();
+  if (!token) { window.location.href = 'login.html'; return; }
+
+  showLoading(true);
+  hideError();
+  document.getElementById('ordersContainer').innerHTML = '';
+  document.getElementById('emptyState').style.display = 'none';
+
+  try {
+    const res = await fetch(`${API}/api/orders/${id}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    showLoading(false);
+
+    if (!res.ok) {
+      showError(data.error || 'الطلب غير موجود');
+      return;
+    }
+
+    document.getElementById('ordersContainer').innerHTML = buildOrderCard(data);
+
+  } catch (err) {
+    showLoading(false);
+    showError('فشل الاتصال بالخادم');
+  }
+}
+
+async function cancelOrder(orderId) {
+  if (!confirm('هل أنت متأكد من إلغاء الطلب؟')) return;
+  const token = getToken();
+
+  try {
+    const res = await fetch(`${API}/api/orders/${orderId}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ status: 'cancelled', cancel_reason: 'إلغاء من المشتري' })
+    });
+
+    if (res.ok) {
+      loadOrders();
+    } else {
+      const data = await res.json();
+      showError(data.error || 'فشل الإلغاء');
+    }
+  } catch (err) {
+    showError('فشل الاتصال بالخادم');
+  }
+}
+
+function showLoading(v) {
+  document.getElementById('loadingState').style.display = v ? 'block' : 'none';
+}
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideError() {
+  document.getElementById('errorMsg').style.display = 'none';
+}
+
+// تحقق إذا في order_id بالـ URL
+const params = new URLSearchParams(window.location.search);
+const orderId = params.get('id');
+if (orderId) {
+  document.getElementById('searchInput').value = orderId;
+  searchOrder();
+} else {
+  loadOrders();
+}
+</script>
+</body>
+</html>

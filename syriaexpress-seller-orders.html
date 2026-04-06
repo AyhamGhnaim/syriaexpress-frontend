@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الطلبات الواردة — سوريا إكسبريس</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0F0E0C;
+    --bg2: #1a1814;
+    --bg3: #222018;
+    --gold: #C9A84C;
+    --gold2: #e8c96a;
+    --text: #f0ece4;
+    --text2: #a09880;
+    --border: #2e2b24;
+    --success: #4CAF50;
+    --warning: #FF9800;
+    --danger: #e05555;
+    --info: #2196F3;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 100px;
+  }
+
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+  .header-logo img { height: 36px; }
+  .header-logo-text .ar { font-family: 'Amiri', serif; color: var(--gold); font-size: 16px; }
+  .header-logo-text .en { color: var(--text2); font-size: 9px; letter-spacing: 2px; }
+  .back-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    text-decoration: none;
+  }
+
+  .container { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+  /* Stats */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .stat-value { font-size: 18px; font-weight: 700; color: var(--gold); }
+  .stat-label { font-size: 10px; color: var(--text2); margin-top: 2px; }
+
+  /* Filters */
+  .filters {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin-bottom: 16px;
+    scrollbar-width: none;
+  }
+  .filters::-webkit-scrollbar { display: none; }
+  .filter-btn {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .filter-btn.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #000;
+    font-weight: 700;
+  }
+
+  /* Order Card */
+  .order-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .order-header {
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .order-meta { }
+  .order-id { font-size: 11px; color: var(--text2); }
+  .order-id span { color: var(--gold); font-weight: 700; }
+  .order-date { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .status-pending   { background: rgba(255,152,0,0.15); color: var(--warning); border: 1px solid rgba(255,152,0,0.3); }
+  .status-confirmed { background: rgba(33,150,243,0.15); color: var(--info); border: 1px solid rgba(33,150,243,0.3); }
+  .status-shipped   { background: rgba(156,39,176,0.15); color: #CE93D8; border: 1px solid rgba(156,39,176,0.3); }
+  .status-delivered { background: rgba(76,175,80,0.15); color: var(--success); border: 1px solid rgba(76,175,80,0.3); }
+  .status-cancelled { background: rgba(224,85,85,0.15); color: var(--danger); border: 1px solid rgba(224,85,85,0.3); }
+
+  /* Product Info */
+  .order-product {
+    padding: 12px 14px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .product-img {
+    width: 50px; height: 50px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--bg3);
+    flex-shrink: 0;
+  }
+  .product-placeholder {
+    width: 50px; height: 50px;
+    border-radius: 8px;
+    background: var(--bg3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .product-info { flex: 1; }
+  .product-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+  .product-qty { font-size: 12px; color: var(--text2); }
+  .product-qty span { color: var(--gold); font-weight: 600; }
+  .product-total { font-size: 13px; color: var(--gold); font-weight: 700; margin-top: 2px; }
+
+  /* Buyer Info */
+  .buyer-info {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .buyer-field { font-size: 12px; }
+  .buyer-field .lbl { color: var(--text2); margin-left: 4px; }
+  .buyer-field .val { font-weight: 600; }
+
+  /* Actions */
+  .order-actions {
+    padding: 10px 14px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .action-btn {
+    flex: 1;
+    min-width: 80px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .btn-confirm  { background: rgba(33,150,243,0.15); color: var(--info); border: 1px solid rgba(33,150,243,0.4); }
+  .btn-ship     { background: rgba(156,39,176,0.15); color: #CE93D8; border: 1px solid rgba(156,39,176,0.4); }
+  .btn-deliver  { background: rgba(76,175,80,0.15); color: var(--success); border: 1px solid rgba(76,175,80,0.4); }
+  .btn-cancel   { background: rgba(224,85,85,0.1); color: var(--danger); border: 1px solid rgba(224,85,85,0.3); }
+  .action-btn:hover { opacity: 0.8; transform: translateY(-1px); }
+
+  /* Notes */
+  .order-notes {
+    padding: 8px 14px;
+    font-size: 12px;
+    color: var(--text2);
+    border-top: 1px solid var(--border);
+  }
+  .order-notes span { color: var(--text); }
+
+  /* Loading / Empty */
+  .loading-state { text-align: center; padding: 60px 20px; color: var(--text2); }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty-state { text-align: center; padding: 60px 20px; }
+  .empty-icon { font-size: 48px; margin-bottom: 14px; }
+  .empty-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .empty-sub { font-size: 13px; color: var(--text2); }
+
+  .error-msg {
+    background: rgba(224,85,85,0.1);
+    border: 1px solid var(--danger);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--danger);
+    margin-bottom: 12px;
+    display: none;
+    text-align: center;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg2);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 999;
+    display: none;
+    white-space: nowrap;
+  }
+
+  /* Cancel Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    padding: 20px 16px 36px;
+    width: 100%;
+    max-width: 600px;
+  }
+  .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; color: var(--danger); }
+  .modal-input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    padding: 10px 12px;
+    outline: none;
+    direction: rtl;
+    margin-bottom: 12px;
+  }
+  .modal-input:focus { border-color: var(--danger); }
+  .modal-actions { display: flex; gap: 8px; }
+  .modal-actions button {
+    flex: 1;
+    padding: 11px;
+    border-radius: 8px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+  }
+  .modal-confirm { background: var(--danger); color: #fff; }
+  .modal-cancel-btn { background: var(--bg3); color: var(--text2); border: 1px solid var(--border) !important; }
+
+  /* Bottom Nav */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 8px 0 20px;
+    z-index: 100;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-decoration: none;
+    color: var(--text2);
+    font-size: 10px;
+    padding: 6px 0;
+    transition: color 0.2s;
+  }
+  .nav-item:hover, .nav-item.active { color: var(--gold); }
+  .nav-icon { font-size: 20px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <a href="syriaexpress-seller.html" class="back-btn">← رجوع</a>
+  <a href="syriaexpress-landing.html" class="header-logo">
+    <div class="header-logo-text">
+      <div class="ar">سوريا إكسبريس</div>
+      <div class="en">B2B MARKETPLACE</div>
+    </div>
+    <img src="assets/logo_main.png" onerror="this.style.display='none'" />
+  </a>
+  <div style="width:60px"></div>
+</div>
+
+<div class="container">
+
+  <!-- Stats -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card"><div class="stat-value" id="sTotal">—</div><div class="stat-label">الكل</div></div>
+    <div class="stat-card"><div class="stat-value" id="sPending" style="color:var(--warning)">—</div><div class="stat-label">انتظار</div></div>
+    <div class="stat-card"><div class="stat-value" id="sConfirmed" style="color:var(--info)">—</div><div class="stat-label">مؤكد</div></div>
+    <div class="stat-card"><div class="stat-value" id="sDelivered" style="color:var(--success)">—</div><div class="stat-label">مكتمل</div></div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <button class="filter-btn active" onclick="setFilter('all', this)">الكل</button>
+    <button class="filter-btn" onclick="setFilter('pending', this)">⏳ انتظار</button>
+    <button class="filter-btn" onclick="setFilter('confirmed', this)">✅ مؤكد</button>
+    <button class="filter-btn" onclick="setFilter('shipped', this)">🚚 مشحون</button>
+    <button class="filter-btn" onclick="setFilter('delivered', this)">✓ مكتمل</button>
+    <button class="filter-btn" onclick="setFilter('cancelled', this)">✕ ملغي</button>
+  </div>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <!-- Loading -->
+  <div class="loading-state" id="loadingState">
+    <div class="spinner"></div>
+    <div>جاري التحميل...</div>
+  </div>
+
+  <!-- Orders -->
+  <div id="ordersContainer"></div>
+
+  <!-- Empty -->
+  <div class="empty-state" id="emptyState" style="display:none">
+    <div class="empty-icon">📭</div>
+    <div class="empty-title">ما في طلبات</div>
+    <div class="empty-sub">لما يطلب أحد منتجاتك رح تظهر هون</div>
+  </div>
+
+</div>
+
+<!-- Cancel Modal -->
+<div class="modal-overlay" id="cancelModal">
+  <div class="modal">
+    <div class="modal-title">إلغاء الطلب</div>
+    <input class="modal-input" type="text" id="cancelReason" placeholder="سبب الإلغاء (اختياري)" />
+    <div class="modal-actions">
+      <button class="modal-confirm" onclick="confirmCancel()">تأكيد الإلغاء</button>
+      <button class="modal-cancel-btn" onclick="closeModal()">رجوع</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <a href="syriaexpress-landing.html" class="nav-item">
+    <span class="nav-icon">🏠</span>الرئيسية
+  </a>
+  <a href="syriaexpress-add-product.html" class="nav-item">
+    <span class="nav-icon">➕</span>منتج
+  </a>
+  <a href="syriaexpress-seller-orders.html" class="nav-item active">
+    <span class="nav-icon">📋</span>الطلبات
+  </a>
+  <a href="syriaexpress-seller.html" class="nav-item">
+    <span class="nav-icon">👤</span>لوحتي
+  </a>
+</div>
+
+<script src="logos.js"></script>
+<script>
+const API = 'https://syriaexpress-backend-production.up.railway.app';
+let allOrders = [];
+let currentFilter = 'all';
+let cancelOrderId = null;
+
+function getToken() { return localStorage.getItem('token'); }
+
+function formatPrice(p) {
+  if (!p && p !== 0) return '—';
+  return Number(p).toLocaleString('ar-SY') + ' ل.س';
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('ar-SY', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function getStatusInfo(s) {
+  const map = {
+    pending:   { label: 'انتظار',      icon: '⏳', cls: 'status-pending' },
+    confirmed: { label: 'مؤكد',        icon: '✅', cls: 'status-confirmed' },
+    shipped:   { label: 'مشحون',       icon: '🚚', cls: 'status-shipped' },
+    delivered: { label: 'مكتمل',       icon: '✓',  cls: 'status-delivered' },
+    cancelled: { label: 'ملغي',        icon: '✕',  cls: 'status-cancelled' },
+  };
+  return map[s] || { label: s, icon: '•', cls: 'status-pending' };
+}
+
+function getShippingLabel(t) {
+  return { inside: 'محلي', outside: 'خارج المحافظة', international: 'دولي' }[t] || t;
+}
+
+function getNextActions(status) {
+  const actions = {
+    pending:   [
+      { label: 'تأكيد الطلب ✅', cls: 'btn-confirm', status: 'confirmed' },
+      { label: 'إلغاء ✕', cls: 'btn-cancel', status: 'cancelled' }
+    ],
+    confirmed: [
+      { label: 'تم الشحن 🚚', cls: 'btn-ship', status: 'shipped' },
+      { label: 'إلغاء ✕', cls: 'btn-cancel', status: 'cancelled' }
+    ],
+    shipped:   [
+      { label: 'تم التسليم ✓', cls: 'btn-deliver', status: 'delivered' }
+    ],
+  };
+  return actions[status] || [];
+}
+
+function buildOrderCard(order) {
+  const st = getStatusInfo(order.status);
+  const actions = getNextActions(order.status);
+  const total = (order.quantity || 0) * (order.price || 0) + (order.shipping_price || 0);
+
+  return `
+    <div class="order-card" id="order-${order.id}">
+      <div class="order-header">
+        <div class="order-meta">
+          <div class="order-id">طلب <span>#${order.id.slice(0,8)}</span></div>
+          <div class="order-date">${formatDate(order.created_at)}</div>
+        </div>
+        <div class="status-badge ${st.cls}">${st.icon} ${st.label}</div>
+      </div>
+
+      <div class="order-product">
+        ${order.product_image
+          ? `<img class="product-img" src="${order.product_image}" onerror="this.style.display='none'" />`
+          : `<div class="product-placeholder">📦</div>`}
+        <div class="product-info">
+          <div class="product-name">${order.name_ar || order.name_en || 'منتج'}</div>
+          <div class="product-qty">الكمية: <span>${order.quantity} ${order.unit || ''}</span> &nbsp;|&nbsp; ${getShippingLabel(order.shipping_type)}</div>
+          <div class="product-total">${formatPrice(total)}</div>
+        </div>
+      </div>
+
+      <div class="buyer-info">
+        <div class="buyer-field"><span class="lbl">المشتري:</span><span class="val">${order.buyer_name || '—'}</span></div>
+        <div class="buyer-field"><span class="lbl">الهاتف:</span><span class="val">${order.buyer_phone || '—'}</span></div>
+        <div class="buyer-field"><span class="lbl">العنوان:</span><span class="val">${order.shipping_address || '—'}</span></div>
+      </div>
+
+      ${order.notes ? `
+      <div class="order-notes">ملاحظة: <span>${order.notes}</span></div>
+      ` : ''}
+
+      ${actions.length ? `
+      <div class="order-actions">
+        ${actions.map(a => `
+          <button class="action-btn ${a.cls}" onclick="updateStatus('${order.id}', '${a.status}')">
+            ${a.label}
+          </button>
+        `).join('')}
+      </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+async function loadOrders() {
+  const token = getToken();
+  if (!token) { window.location.href = 'login.html'; return; }
+
+  document.getElementById('loadingState').style.display = 'block';
+  document.getElementById('ordersContainer').innerHTML = '';
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('errorMsg').style.display = 'none';
+
+  try {
+    const res = await fetch(`${API}/api/orders/seller`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    document.getElementById('loadingState').style.display = 'none';
+
+    if (!res.ok) {
+      showError(data.error || 'حدث خطأ');
+      return;
+    }
+
+    allOrders = data;
+    updateStats();
+    renderOrders();
+
+  } catch (err) {
+    document.getElementById('loadingState').style.display = 'none';
+    showError('فشل الاتصال بالخادم');
+  }
+}
+
+function updateStats() {
+  document.getElementById('sTotal').textContent = allOrders.length;
+  document.getElementById('sPending').textContent = allOrders.filter(o => o.status === 'pending').length;
+  document.getElementById('sConfirmed').textContent = allOrders.filter(o => o.status === 'confirmed').length;
+  document.getElementById('sDelivered').textContent = allOrders.filter(o => o.status === 'delivered').length;
+}
+
+function renderOrders() {
+  const filtered = currentFilter === 'all'
+    ? allOrders
+    : allOrders.filter(o => o.status === currentFilter);
+
+  if (!filtered.length) {
+    document.getElementById('ordersContainer').innerHTML = '';
+    document.getElementById('emptyState').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('ordersContainer').innerHTML = filtered.map(buildOrderCard).join('');
+}
+
+function setFilter(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderOrders();
+}
+
+async function updateStatus(orderId, status) {
+  if (status === 'cancelled') {
+    cancelOrderId = orderId;
+    document.getElementById('cancelReason').value = '';
+    document.getElementById('cancelModal').classList.add('show');
+    return;
+  }
+
+  const token = getToken();
+  try {
+    const res = await fetch(`${API}/api/orders/${orderId}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ status })
+    });
+
+    if (res.ok) {
+      showToast('تم تحديث حالة الطلب ✓');
+      loadOrders();
+    } else {
+      const data = await res.json();
+      showError(data.error || 'فشل التحديث');
+    }
+  } catch (err) {
+    showError('فشل الاتصال بالخادم');
+  }
+}
+
+async function confirmCancel() {
+  const reason = document.getElementById('cancelReason').value.trim();
+  const token = getToken();
+  closeModal();
+
+  try {
+    const res = await fetch(`${API}/api/orders/${cancelOrderId}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ status: 'cancelled', cancel_reason: reason || 'إلغاء من البائع' })
+    });
+
+    if (res.ok) {
+      showToast('تم إلغاء الطلب');
+      loadOrders();
+    } else {
+      const data = await res.json();
+      showError(data.error || 'فشل الإلغاء');
+    }
+  } catch (err) {
+    showError('فشل الاتصال بالخادم');
+  }
+}
+
+function closeModal() {
+  document.getElementById('cancelModal').classList.remove('show');
+  cancelOrderId = null;
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 2500);
+}
+
+loadOrders();
+</script>
+</body>
+</html>
