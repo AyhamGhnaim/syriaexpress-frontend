@@ -64,6 +64,17 @@ main{padding:16px;max-width:480px;margin:0 auto;padding-bottom:40px;}
 .verif-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;}
 .verif-badge.verified{background:rgba(74,222,128,0.12);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
 .verif-badge.pending{background:rgba(251,146,60,0.12);color:#fb923c;border:1px solid rgba(251,146,60,0.3);}
+
+/* DOCUMENTS */
+.doc-item{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid rgba(42,38,32,0.5);}
+.doc-item:last-child{border-bottom:none}
+.doc-name{font-size:13px;flex:1;}
+.doc-status{font-size:11px;color:var(--text-dim);}
+.upload-area{margin:12px 16px;border:1px dashed var(--border-gold);border-radius:10px;padding:14px;text-align:center;cursor:pointer;background:rgba(201,168,76,0.03);}
+.upload-area:hover{background:rgba(201,168,76,0.07);}
+.upload-label{font-size:13px;color:var(--text-dim);margin-top:6px;}
+.btn-upload{background:var(--gold);color:#0F0E0C;border:none;padding:9px 20px;border-radius:8px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin:8px 16px 14px;width:calc(100% - 32px);}
+.btn-upload:disabled{opacity:0.6;cursor:not-allowed;}
 </style>
 </head>
 <body>
@@ -124,6 +135,10 @@ main{padding:16px;max-width:480px;margin:0 auto;padding-bottom:40px;}
         <span class="info-val" id="view_phone">—</span>
       </div>
       <div class="info-row">
+        <span class="info-label">تاريخ التأسيس</span>
+        <span class="info-val" id="view_established">—</span>
+      </div>
+      <div class="info-row">
         <span class="info-label">وصف الشركة</span>
         <span class="info-val" id="view_desc">—</span>
       </div>
@@ -175,6 +190,10 @@ main{padding:16px;max-width:480px;margin:0 auto;padding-bottom:40px;}
         <input type="text" class="form-input" id="phone" placeholder="+963 xxx xxx xxx">
       </div>
       <div class="form-group">
+        <div class="form-label">تاريخ التأسيس (السنة)</div>
+        <input type="number" class="form-input" id="established_year" placeholder="مثال: 2010" min="1900" max="2026">
+      </div>
+      <div class="form-group">
         <div class="form-label">وصف الشركة</div>
         <textarea class="form-textarea" id="description" placeholder="اكتب وصفاً مختصراً عن نشاطك التجاري..."></textarea>
       </div>
@@ -182,6 +201,32 @@ main{padding:16px;max-width:480px;margin:0 auto;padding-bottom:40px;}
       <button class="btn-save" id="saveBtn" onclick="saveProfile()">💾 حفظ التعديلات</button>
       <button class="btn-cancel" onclick="toggleEdit()">إلغاء</button>
     </div>
+  </div>
+
+
+  <!-- الوثائق -->
+  <div class="box">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot gold"></span> وثائق التوثيق</div>
+    </div>
+    <div id="docsList">
+      <div style="padding:16px;text-align:center;color:var(--text-dim);font-size:13px;">جاري التحميل...</div>
+    </div>
+    <div class="upload-area" onclick="document.getElementById('docFile').click()">
+      <input type="file" id="docFile" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleDocSelect(this)">
+      <div style="font-size:24px;">📎</div>
+      <div class="upload-label" id="docLabel">اضغط لرفع وثيقة جديدة</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">PDF أو صورة — حد أقصى 5MB</div>
+    </div>
+    <div style="padding:0 16px 4px;">
+      <select class="form-select" id="docType" style="margin-bottom:10px;">
+        <option value="trade_license">سجل تجاري / ترخيص</option>
+        <option value="owner_id">هوية صاحب الشركة</option>
+        <option value="extra">وثيقة إضافية</option>
+      </select>
+    </div>
+    <button class="btn-upload" id="uploadDocBtn" onclick="uploadDoc()" disabled>رفع الوثيقة</button>
+    <div class="alert" id="docAlert" style="margin:0 16px 12px;"></div>
   </div>
 
 </main>
@@ -231,6 +276,7 @@ function renderView() {
   set('view_company_en', s.company_name_en);
   set('view_gov', s.governorate);
   set('view_activity', activityLabels[s.activity_type] || s.activity_type);
+  set('view_established', s.established_year ? s.established_year.toString() : null);
   set('view_phone', s.phone);
   set('view_desc', s.description);
 
@@ -261,6 +307,7 @@ function toggleEdit() {
     document.getElementById('company_name_en').value = s.company_name_en || '';
     document.getElementById('governorate').value = s.governorate || '';
     document.getElementById('activity_type').value = s.activity_type || '';
+    document.getElementById('established_year').value = s.established_year || '';
     document.getElementById('phone').value = s.phone || '';
     document.getElementById('description').value = s.description || '';
     editMode.style.display = 'block';
@@ -279,6 +326,7 @@ async function saveProfile() {
     company_name_en: document.getElementById('company_name_en').value.trim(),
     governorate: document.getElementById('governorate').value,
     activity_type: document.getElementById('activity_type').value,
+    established_year: parseInt(document.getElementById('established_year').value) || null,
     phone: document.getElementById('phone').value.trim(),
     description: document.getElementById('description').value.trim()
   };
@@ -314,6 +362,96 @@ function showAlert(msg, type) {
   el.style.display = 'block';
   setTimeout(() => el.style.display = 'none', 3000);
 }
+
+// ─── وثائق التوثيق ───────────────────────────────────────
+let selectedDocFile = null;
+
+async function loadDocs() {
+  try {
+    const res = await fetch(`${API_BASE}/api/sellers/me`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    const seller = data.seller || data;
+    const sellerId = seller.id;
+    if (!sellerId) return;
+
+    const res2 = await fetch(`${API_BASE}/api/admin/sellers/${sellerId}/documents`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data2 = await res2.json();
+    const docs = data2.documents || [];
+    const list = document.getElementById('docsList');
+
+    if (!docs.length) {
+      list.innerHTML = '<div style="padding:14px 16px;font-size:13px;color:var(--text-dim);">ما في وثائق مرفوعة بعد</div>';
+      return;
+    }
+
+    const typeLabels = { trade_license: 'سجل تجاري', owner_id: 'هوية صاحب الشركة', extra: 'وثيقة إضافية' };
+    list.innerHTML = docs.map(d => {
+      const url = d.file_url || d.url || '';
+      const name = typeLabels[d.doc_type] || d.doc_type || 'وثيقة';
+      return `<div class="doc-item">
+        <span style="font-size:20px;">📄</span>
+        <span class="doc-name">${name}</span>
+        ${url ? `<a href="${url}" target="_blank" style="color:var(--gold);font-size:12px;">فتح</a>` : '<span style="color:var(--text-dim);font-size:12px;">لا يوجد رابط</span>'}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('docsList').innerHTML = '<div style="padding:14px 16px;font-size:13px;color:var(--text-dim);">تعذّر تحميل الوثائق</div>';
+  }
+}
+
+function handleDocSelect(input) {
+  if (input.files && input.files[0]) {
+    selectedDocFile = input.files[0];
+    document.getElementById('docLabel').textContent = '✅ ' + input.files[0].name;
+    document.getElementById('uploadDocBtn').disabled = false;
+  }
+}
+
+async function uploadDoc() {
+  if (!selectedDocFile) return;
+  const btn = document.getElementById('uploadDocBtn');
+  btn.disabled = true;
+  btn.textContent = 'جاري الرفع...';
+
+  try {
+    const formData = new FormData();
+    formData.append('document', selectedDocFile);
+    formData.append('doc_type', document.getElementById('docType').value);
+
+    const res = await fetch(`${API_BASE}/api/sellers/documents`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'خطأ');
+
+    showDocAlert('✅ تم رفع الوثيقة بنجاح', 'success');
+    document.getElementById('docLabel').textContent = 'اضغط لرفع وثيقة جديدة';
+    document.getElementById('docFile').value = '';
+    selectedDocFile = null;
+    loadDocs();
+  } catch(e) {
+    showDocAlert(e.message || 'تعذّر الرفع', 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'رفع الوثيقة';
+}
+
+function showDocAlert(msg, type) {
+  const el = document.getElementById('docAlert');
+  el.textContent = msg;
+  el.className = 'alert ' + type;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 3000);
+}
+
+loadDocs();
 </script>
 </body>
 </html>
