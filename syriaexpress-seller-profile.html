@@ -212,11 +212,11 @@ main{padding:16px;max-width:480px;margin:0 auto;padding-bottom:40px;}
     <div id="docsList">
       <div style="padding:16px;text-align:center;color:var(--text-dim);font-size:13px;">جاري التحميل...</div>
     </div>
-    <div class="upload-area" onclick="document.getElementById('docFile').click()">
-      <input type="file" id="docFile" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleDocSelect(this)">
+    <div class="upload-area">
       <div style="font-size:24px;">📎</div>
-      <div class="upload-label" id="docLabel">اضغط لرفع وثيقة جديدة</div>
-      <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">PDF أو صورة — حد أقصى 5MB</div>
+      <div class="upload-label" id="docLabel">اختر ملف للرفع</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:8px;">PDF أو صورة — حد أقصى 5MB</div>
+      <input type="file" id="docFile" accept="image/*,.pdf" style="margin-top:10px;width:100%;color:var(--text-dim);font-size:13px;font-family:'Cairo',sans-serif;" onchange="handleDocSelect(this)">
     </div>
     <div style="padding:0 16px 4px;">
       <select class="form-select" id="docType" style="margin-bottom:10px;">
