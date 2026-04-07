@@ -780,22 +780,30 @@
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
-      // إرسال طلب توثيق للبائع
+      // رفع وثائق البائع
       if (selectedType === 'seller' && data.token) {
-        try {
-          await fetch(`${API_BASE}/api/sellers/verification-request`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${data.token}`
-            },
-            body: JSON.stringify({
-              notes: 'طلب توثيق جديد من البائع'
-            })
-          });
-        } catch(e) {
-          // ما يوقف التسجيل إذا فشل طلب التوثيق
-          console.log('verification request failed', e);
+        const docFiles = [
+          { id: 'doc_trade', type: 'trade_license' },
+          { id: 'doc_id',    type: 'owner_id' },
+          { id: 'doc_extra', type: 'extra' }
+        ];
+
+        for (const doc of docFiles) {
+          const input = document.getElementById(doc.id);
+          if (input && input.files && input.files[0]) {
+            try {
+              const formData = new FormData();
+              formData.append('document', input.files[0]);
+              formData.append('doc_type', doc.type);
+              await fetch(`${API_BASE}/api/sellers/documents`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${data.token}` },
+                body: formData
+              });
+            } catch(e) {
+              console.log('document upload failed', doc.id, e);
+            }
+          }
         }
       }
 
