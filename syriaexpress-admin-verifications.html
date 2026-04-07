@@ -555,18 +555,25 @@ async function loadVerifications() {
   document.getElementById('errorMsg').style.display = 'none';
 
   try {
-    const res = await fetch(`${API}/api/admin/verifications`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const data = await res.json();
+    const [resPending, resApproved, resRejected] = await Promise.all([
+      fetch(`${API}/api/admin/verifications?status=pending`,  { headers: { 'Authorization': `Bearer ${token}` } }),
+      fetch(`${API}/api/admin/verifications?status=approved`, { headers: { 'Authorization': `Bearer ${token}` } }),
+      fetch(`${API}/api/admin/verifications?status=rejected`, { headers: { 'Authorization': `Bearer ${token}` } })
+    ]);
     document.getElementById('loadingState').style.display = 'none';
 
-    if (!res.ok) {
-      showError(data.error || 'حدث خطأ — تأكد أنك مسجل كـ admin');
+    if (!resPending.ok) {
+      const errData = await resPending.json();
+      showError(errData.error || 'حدث خطأ — تأكد أنك مسجل كـ admin');
       return;
     }
 
-    allVerifications = Array.isArray(data) ? data : (data.verifications || []);
+    const [dPending, dApproved, dRejected] = await Promise.all([
+      resPending.json(), resApproved.json(), resRejected.json()
+    ]);
+
+    const toArr = d => Array.isArray(d) ? d : (d.verifications || []);
+    allVerifications = [...toArr(dPending), ...toArr(dApproved), ...toArr(dRejected)];
 
     // جيب وثائق كل بائع
     await loadDocuments(token);
