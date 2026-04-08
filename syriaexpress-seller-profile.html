@@ -229,6 +229,27 @@ main{padding:16px;max-width:480px;margin:0 auto;padding-bottom:40px;}
     <div class="alert" id="docAlert" style="margin:0 16px 12px;"></div>
   </div>
 
+  <!-- تغيير كلمة المرور -->
+  <div class="box">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot gold"></span> تغيير كلمة المرور</div>
+    </div>
+    <div class="form-group">
+      <div class="form-label">كلمة المرور الحالية</div>
+      <input type="password" class="form-input" id="currentPassword" placeholder="أدخل كلمة المرور الحالية">
+    </div>
+    <div class="form-group">
+      <div class="form-label">كلمة المرور الجديدة</div>
+      <input type="password" class="form-input" id="newPassword" placeholder="6 أحرف على الأقل">
+    </div>
+    <div class="form-group">
+      <div class="form-label">تأكيد كلمة المرور الجديدة</div>
+      <input type="password" class="form-input" id="confirmPassword" placeholder="أعد إدخال كلمة المرور الجديدة">
+    </div>
+    <div class="alert" id="pwdAlert" style="margin:8px 16px;"></div>
+    <button class="btn-save" id="changePwdBtn" onclick="changePassword()">🔒 تغيير كلمة المرور</button>
+  </div>
+
 </main>
 
 <script>
@@ -361,6 +382,61 @@ function showAlert(msg, type) {
   el.className = 'alert ' + type;
   el.style.display = 'block';
   setTimeout(() => el.style.display = 'none', 3000);
+}
+
+// ─── تغيير كلمة المرور ────────────────────────────────────
+async function changePassword() {
+  const currentPassword = document.getElementById('currentPassword').value.trim();
+  const newPassword = document.getElementById('newPassword').value.trim();
+  const confirmPassword = document.getElementById('confirmPassword').value.trim();
+  const btn = document.getElementById('changePwdBtn');
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    showPwdAlert('يرجى ملء جميع الحقول', 'error'); return;
+  }
+  if (newPassword.length < 6) {
+    showPwdAlert('كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل', 'error'); return;
+  }
+  if (newPassword !== confirmPassword) {
+    showPwdAlert('كلمة المرور الجديدة وتأكيدها غير متطابقتين', 'error'); return;
+  }
+  if (currentPassword === newPassword) {
+    showPwdAlert('كلمة المرور الجديدة يجب أن تكون مختلفة عن الحالية', 'error'); return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'جاري التغيير...';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/change-password`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'خطأ');
+
+    showPwdAlert('✅ تم تغيير كلمة المرور بنجاح', 'success');
+    document.getElementById('currentPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+  } catch(e) {
+    showPwdAlert(e.message || 'تعذّر تغيير كلمة المرور', 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🔒 تغيير كلمة المرور';
+}
+
+function showPwdAlert(msg, type) {
+  const el = document.getElementById('pwdAlert');
+  el.textContent = msg;
+  el.className = 'alert ' + type;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 4000);
 }
 
 // ─── وثائق التوثيق ───────────────────────────────────────
