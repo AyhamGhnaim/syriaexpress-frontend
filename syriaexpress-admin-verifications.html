@@ -643,7 +643,7 @@ async function approveVerification(id) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ status: 'approved' })
+      body: JSON.stringify({ action: 'approved' })
     });
 
     if (res.ok) {
@@ -676,7 +676,7 @@ async function confirmReject() {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ status: 'rejected', rejection_reason: reason })
+      body: JSON.stringify({ action: 'rejected', admin_notes: reason })
     });
 
     if (res.ok) {
