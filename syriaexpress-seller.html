@@ -424,6 +424,29 @@ async function loadDashboard() {
     if (nums[0]) nums[0].textContent = completed;
     if (nums[1]) nums[1].textContent = newOrders;
     if (nums[2]) nums[2].textContent = buyers;
+
+    // ── م14: إحصائيات هذا الشهر ──
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+    const monthOrders = orders.filter(o => {
+      const d = new Date(o.created_at);
+      return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+    });
+
+    const monthIncoming = monthOrders.length;
+    const monthDelivered = monthOrders.filter(o => o.status === 'delivered').length;
+    const monthShipping = monthOrders.filter(o => o.status === 'confirmed' || o.status === 'shipped').length;
+    const monthSatisfaction = monthOrders.length > 0
+      ? Math.round((monthDelivered / monthOrders.length) * 100) + '%'
+      : '—';
+
+    const monthVals = document.querySelectorAll('.month-row-val');
+    if (monthVals[0]) monthVals[0].textContent = monthIncoming;
+    if (monthVals[1]) monthVals[1].textContent = monthDelivered;
+    if (monthVals[2]) monthVals[2].textContent = monthShipping;
+    if (monthVals[3]) monthVals[3].textContent = monthSatisfaction;
+
   } catch(e) {}
 }
 
@@ -482,9 +505,13 @@ async function loadMyProducts() {
       const moq = p.min_order_quantity || 1;
       const unit = p.unit || 'وحدة';
       const catName = p.category_name_ar || '';
+      const imgSrc = p.image_url || '';
+      const imgHtml = imgSrc
+        ? `<img src="${imgSrc}" style="width:48px;height:48px;border-radius:8px;object-fit:cover;border:1px solid var(--border);" onerror="this.outerHTML='<div class=\\'my-prod-icon\\'>📦</div>'">`
+        : '<div class="my-prod-icon">📦</div>';
       return `
         <div class="my-prod-item">
-          <div class="my-prod-icon">📦</div>
+          ${imgHtml}
           <div class="my-prod-info">
             <div class="my-prod-name">${name}</div>
             <div class="my-prod-meta">${catName} • الحد الأدنى: ${moq} ${unit}</div>
@@ -497,6 +524,11 @@ async function loadMyProducts() {
         </div>
       `;
     }).join('');
+
+    // تحديث بطاقة "منتج نشط"
+    const activeCount = products.filter(p => p.status === 'active' || !p.status).length;
+    const nums = document.querySelectorAll('.stat-num');
+    if (nums[3]) nums[3].textContent = activeCount;
 
   } catch(e) {
     list.innerHTML = `<div class="empty-state">
