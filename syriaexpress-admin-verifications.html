@@ -593,12 +593,14 @@ async function loadDocuments(token) {
   // جيب وثائق كل بائع بشكل متوازي
   await Promise.all(allVerifications.map(async v => {
     try {
-      const res = await fetch(`${API}/api/admin/sellers/${v.id}/documents`, {
+      const sid = v.seller_id;
+      if (!sid) return;
+      const res = await fetch(`${API}/api/admin/sellers/${sid}/documents`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
-        const docs = await res.json();
-        v.documents = Array.isArray(docs) ? docs : [];
+        const data = await res.json();
+        v.documents = data.documents || (Array.isArray(data) ? data : []);
       }
     } catch (e) {
       v.documents = [];
