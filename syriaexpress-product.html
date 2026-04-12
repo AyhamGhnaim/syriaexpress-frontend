@@ -260,11 +260,11 @@ function renderProduct(p) {
       <div class="prod-cat">${catName}</div>
       <h1 class="prod-name">${nameAr}</h1>
 
-      <div class="seller-row">
+      <a href="syriaexpress-seller-public.html?id=${p.seller_id}" class="seller-row" style="text-decoration:none;color:inherit;">
         <div class="seller-avatar">🏭</div>
         <div><div class="seller-name">${sellerName}</div></div>
         <span class="seller-verified">✓ موثّق</span>
-      </div>
+      </a>
 
       <div class="price-box">
         <div class="price-main">
@@ -337,9 +337,14 @@ function renderProduct(p) {
             <div class="seller-stat-label">التقييم</div>
           </div>
         </div>
-        <button class="btn-visit-seller" onclick="location.href='syriaexpress-products.html?cat=${catId}'">
-          عرض منتجات هذه الفئة ←
+        <button class="btn-visit-seller" onclick="location.href='syriaexpress-seller-public.html?id=${p.seller_id}'">
+          زيارة صفحة البائع ←
         </button>
+        ${(p.seller_phone || p.phone) ? `
+        <div style="display:flex;gap:10px;margin-top:10px;">
+          <a href="https://wa.me/${(p.seller_phone || p.phone).replace(/[^0-9]/g,'')}" target="_blank" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;background:#25D366;color:#fff;text-decoration:none;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;">📱 واتساب</a>
+          <a href="tel:${p.seller_phone || p.phone}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;background:var(--gold);color:var(--bg);text-decoration:none;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;">📞 اتصال</a>
+        </div>` : ''}
       </div>
 
     </div>

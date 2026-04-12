@@ -373,7 +373,7 @@ function renderProducts(products) {
         </div>
         <div class="prod-info">
           <div class="prod-name">${name}</div>
-          <div class="prod-seller"><span class="prod-seller-dot"></span>${sellerName}</div>
+          <div class="prod-seller" onclick="event.preventDefault();event.stopPropagation();location.href='syriaexpress-seller-public.html?id=${p.seller_id}'" style="cursor:pointer;"><span class="prod-seller-dot"></span>${sellerName}</div>
           <div class="prod-price-row">
             <span class="prod-price">${price} ل.س</span>
             <span class="prod-unit">/ ${unit}</span>
