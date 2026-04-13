@@ -381,7 +381,7 @@
         <span>سوريا إكسبريس</span>
         <span>B2B MARKETPLACE</span>
       </div>
-      <img id="headerLogo" src="" alt="logo">
+      <img id="headerLogo" src="" alt="logo" style="display:none" onerror="this.style.display='none'">
     </div>
     <button class="header-back" onclick="history.back()">← رجوع</button>
   </div>
@@ -400,7 +400,9 @@
 
     // Logo
     if (typeof LOGOS !== 'undefined' && LOGOS.main) {
-      document.getElementById('headerLogo').src = LOGOS.main;
+      const logoEl = document.getElementById('headerLogo');
+      logoEl.src = LOGOS.main;
+      logoEl.style.display = 'block';
     }
 
     // Get seller ID from URL
@@ -415,16 +417,26 @@
 
     async function loadSeller() {
       try {
-        // Fetch seller info + products in parallel
-        const [sellerRes, productsRes] = await Promise.all([
-          fetch(`${API_BASE}/api/sellers/${sellerId}`),
-          fetch(`${API_BASE}/api/sellers/${sellerId}/products`)
-        ]);
-
+        // Fetch seller info
+        const sellerRes = await fetch(`${API_BASE}/api/sellers/${sellerId}`);
         if (!sellerRes.ok) throw new Error('البائع غير موجود');
 
-        const seller = await sellerRes.json();
-        const products = productsRes.ok ? await productsRes.json() : [];
+        const sellerData = await sellerRes.json();
+        
+        // Handle different response formats
+        const seller = sellerData.seller || sellerData;
+        let products = seller.products || [];
+
+        // If no products in seller response, try dedicated endpoint
+        if (!products.length) {
+          try {
+            const productsRes = await fetch(`${API_BASE}/api/sellers/${sellerId}/products`);
+            if (productsRes.ok) {
+              const prodData = await productsRes.json();
+              products = prodData.products || prodData || [];
+            }
+          } catch(e) { /* ignore */ }
+        }
 
         renderPage(seller, products);
       } catch (err) {
@@ -503,26 +515,27 @@
       }
 
       // Avatar: show logo if available, otherwise first letter
+      const companyName = seller.company_name_ar || seller.company_name || seller.business_name || 'ب';
       const avatarContent = seller.logo_url
-        ? `<img src="${seller.logo_url}" alt="${seller.company_name || ''}" onerror="this.outerHTML='${(seller.company_name || seller.business_name || 'ب')[0]}'">`
-        : (seller.company_name || seller.business_name || 'ب')[0];
-      }
+        ? `<img src="${seller.logo_url}" alt="${companyName}" onerror="this.outerHTML='${companyName[0]}'">`
+        : companyName[0];
 
       document.getElementById('content').innerHTML = `
         <!-- Seller Card -->
         <div class="seller-card">
           <div class="seller-top">
             <div class="seller-avatar">${avatarContent}</div>
-            <div class="seller-name">${seller.company_name || seller.business_name || '—'}</div>
+            <div class="seller-name">${companyName}</div>
             <div class="seller-activity">${getActivityLabel(seller.activity_type)}</div>
-            ${seller.is_verified ? '<span class="seller-badge badge-verified">✓ بائع موثّق</span>' : ''}
+            ${(seller.is_verified || seller.verification_status === 'verified') ? '<span class="seller-badge badge-verified">✓ بائع موثّق</span>' : ''}
             ${getTierBadge(seller.partner_tier)}
           </div>
           <div class="seller-info">
-            ${seller.city ? `<div class="info-row"><span class="icon">📍</span><span class="label">المحافظة</span><span class="value">${seller.city}</span></div>` : ''}
-            ${seller.year_established ? `<div class="info-row"><span class="icon">📅</span><span class="label">التأسيس</span><span class="value">${seller.year_established}</span></div>` : ''}
+            ${(seller.governorate || seller.city) ? `<div class="info-row"><span class="icon">📍</span><span class="label">المحافظة</span><span class="value">${seller.governorate || seller.city}</span></div>` : ''}
+            ${(seller.year_established || seller.established_year) ? `<div class="info-row"><span class="icon">📅</span><span class="label">التأسيس</span><span class="value">${seller.year_established || seller.established_year}</span></div>` : ''}
             ${seller.activity_type ? `<div class="info-row"><span class="icon">🏭</span><span class="label">النشاط</span><span class="value">${getActivityLabel(seller.activity_type)}</span></div>` : ''}
             ${phone ? `<div class="info-row"><span class="icon">📞</span><span class="label">الاتصال</span><span class="value" dir="ltr">${seller.phone}</span></div>` : ''}
+            ${seller.description ? `<div class="info-row"><span class="icon">📝</span><span class="label">الوصف</span><span class="value">${seller.description}</span></div>` : ''}
           </div>
         </div>
 

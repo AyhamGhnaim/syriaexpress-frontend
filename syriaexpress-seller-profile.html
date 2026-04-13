@@ -292,7 +292,7 @@
       <div class="ar">سوريا إكسبريس</div>
       <div class="en">B2B MARKETPLACE</div>
     </div>
-    <img id="headerLogo" src="" alt="logo">
+    <img id="headerLogo" src="" alt="logo" style="display:none" onerror="this.style.display='none'">
   </a>
   <a href="syriaexpress-seller.html" class="back-btn">← رجوع</a>
 </div>
@@ -487,7 +487,9 @@ if (!token) location.href = 'login.html';
 
 // Logo
 if (typeof LOGOS !== 'undefined' && LOGOS.main) {
-  document.getElementById('headerLogo').src = LOGOS.main;
+  const logoEl = document.getElementById('headerLogo');
+  logoEl.src = LOGOS.main;
+  logoEl.style.display = 'block';
 }
 
 const activityLabels = {
