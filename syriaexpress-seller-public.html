@@ -44,12 +44,15 @@
       z-index: 100;
     }
     .header-back {
-      background: none;
-      border: none;
-      color: var(--gold);
-      font-size: 22px;
+      background: var(--bg3);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text2);
+      font-family: 'Cairo', sans-serif;
+      font-size: 13px;
       cursor: pointer;
-      padding: 4px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      white-space: nowrap;
     }
     .header-logo {
       display: flex;
@@ -331,13 +334,48 @@
       grid-column: 1 / -1;
     }
     .empty-products .icon { font-size: 40px; margin-bottom: 8px; }
+
+    /* Owner Edit Button */
+    .owner-actions {
+      display: flex;
+      gap: 10px;
+      padding: 0 16px 16px;
+    }
+    .btn-edit-profile {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--gold-dim);
+      background: rgba(201,168,76,0.1);
+      font-family: 'Cairo', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gold);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .2s;
+    }
+    .btn-edit-profile:hover { background: rgba(201,168,76,0.2); }
+    .btn-edit-profile:active { transform: scale(.97); }
+
+    /* Seller Logo */
+    .seller-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
   </style>
 </head>
 <body>
 
   <!-- Header -->
   <div class="header">
-    <button class="header-back" onclick="history.back()">→</button>
+    <div class="header-spacer"></div>
     <div class="header-logo">
       <div class="header-logo-text">
         <span>سوريا إكسبريس</span>
@@ -345,7 +383,7 @@
       </div>
       <img id="headerLogo" src="" alt="logo">
     </div>
-    <div class="header-spacer"></div>
+    <button class="header-back" onclick="history.back()">← رجوع</button>
   </div>
 
   <!-- Content -->
@@ -430,6 +468,14 @@
       const phone = formatPhone(seller.phone);
       const whatsappNum = phone ? phone.replace(/[^0-9]/g, '') : null;
 
+      // Check if current user is the seller (owner)
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      let isOwner = false;
+      if (token && user.id) {
+        isOwner = (user.id === seller.user_id || user.id === seller.id);
+      }
+
       let contactHTML = '';
       if (phone) {
         contactHTML = `
@@ -445,11 +491,28 @@
           </div>`;
       }
 
+      // Owner edit button
+      let ownerHTML = '';
+      if (isOwner) {
+        ownerHTML = `
+          <div class="owner-actions">
+            <a class="btn-edit-profile" href="syriaexpress-seller-profile.html">
+              ✏️ تعديل المعلومات
+            </a>
+          </div>`;
+      }
+
+      // Avatar: show logo if available, otherwise first letter
+      const avatarContent = seller.logo_url
+        ? `<img src="${seller.logo_url}" alt="${seller.company_name || ''}" onerror="this.outerHTML='${(seller.company_name || seller.business_name || 'ب')[0]}'">`
+        : (seller.company_name || seller.business_name || 'ب')[0];
+      }
+
       document.getElementById('content').innerHTML = `
         <!-- Seller Card -->
         <div class="seller-card">
           <div class="seller-top">
-            <div class="seller-avatar">${(seller.company_name || seller.business_name || 'ب')[0]}</div>
+            <div class="seller-avatar">${avatarContent}</div>
             <div class="seller-name">${seller.company_name || seller.business_name || '—'}</div>
             <div class="seller-activity">${getActivityLabel(seller.activity_type)}</div>
             ${seller.is_verified ? '<span class="seller-badge badge-verified">✓ بائع موثّق</span>' : ''}
@@ -462,6 +525,9 @@
             ${phone ? `<div class="info-row"><span class="icon">📞</span><span class="label">الاتصال</span><span class="value" dir="ltr">${seller.phone}</span></div>` : ''}
           </div>
         </div>
+
+        <!-- Owner Edit Button -->
+        ${ownerHTML}
 
         <!-- Contact Buttons -->
         ${contactHTML}

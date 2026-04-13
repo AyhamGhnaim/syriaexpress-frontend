@@ -6,157 +6,374 @@
 <title>معلوماتي — SyriaExpress</title>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --gold:#C9A84C;--gold-light:#E8C96A;--gold-dim:#8B6914;
-  --bg:#0F0E0C;--bg2:#161410;--bg3:#1C1A16;--bg4:#221F19;
-  --text:#F5F0E8;--text-dim:#A89880;
-  --border:#2A2620;--border-gold:rgba(201,168,76,0.25);
-  --green:#4ade80;
-}
-body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);direction:rtl;min-height:100vh;}
+  :root {
+    --bg: #0F0E0C;
+    --bg2: #1a1814;
+    --bg3: #222018;
+    --gold: #C9A84C;
+    --gold2: #e8c96a;
+    --gold-dim: #8B6914;
+    --text: #f0ece4;
+    --text2: #a09880;
+    --border: #2e2b24;
+    --border-gold: rgba(201,168,76,0.25);
+    --success: #4CAF50;
+    --danger: #e05555;
+    --green: #4ade80;
+    --blue: #60a5fa;
+    --orange: #fb923c;
+    --purple: #a78bfa;
+  }
 
-/* HEADER */
-.header{display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:56px;background:rgba(15,14,12,0.97);border-bottom:1px solid var(--border-gold);position:sticky;top:0;z-index:100;}
-.header-right{display:flex;align-items:center;gap:10px;}
-.header-left{display:flex;align-items:center;gap:10px;}
-.btn-back{background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:7px 14px;border-radius:8px;font-family:'Cairo',sans-serif;font-size:12px;cursor:pointer;}
-.header-title{font-family:'Amiri',serif;font-size:18px;color:var(--gold);}
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* MAIN */
-main{padding:16px;max-width:480px;margin:0 auto;padding-bottom:40px;}
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
 
-/* BOX */
-.box{background:var(--bg3);border:1px solid var(--border);border-radius:16px;margin-bottom:16px;overflow:hidden;}
-.box-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);}
-.box-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;}
-.box-dot{width:8px;height:8px;border-radius:50%;background:var(--border);display:inline-block;}
-.box-dot.gold{background:var(--gold);}
+  /* Header */
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+  .header-logo img { height: 36px; }
+  .header-logo-text { text-align: center; }
+  .header-logo-text .ar { font-family: 'Amiri', serif; color: var(--gold); font-size: 16px; }
+  .header-logo-text .en { color: var(--text2); font-size: 9px; letter-spacing: 2px; }
+  .back-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+  }
 
-/* PROFILE INFO (read mode) */
-.info-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);}
-.info-row:last-child{border-bottom:none}
-.info-label{font-size:12px;color:var(--text-dim);}
-.info-val{font-size:14px;font-weight:600;color:var(--text);text-align:left;}
-.info-val.empty{color:var(--text-dim);font-weight:400;font-style:italic;}
+  .container { padding: 16px; max-width: 600px; margin: 0 auto; }
 
-/* FORM */
-.form-group{padding:12px 16px;border-bottom:1px solid rgba(42,38,32,0.5);}
-.form-group:last-child{border-bottom:none}
-.form-label{font-size:12px;color:var(--text-dim);margin-bottom:6px;}
-.form-input{width:100%;background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Cairo',sans-serif;font-size:14px;color:var(--text);outline:none;}
-.form-input:focus{border-color:var(--border-gold);}
-.form-select{width:100%;background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Cairo',sans-serif;font-size:14px;color:var(--text);outline:none;}
-.form-textarea{width:100%;background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Cairo',sans-serif;font-size:14px;color:var(--text);outline:none;resize:none;min-height:90px;}
+  /* Avatar Section */
+  .avatar-section {
+    text-align: center;
+    padding: 28px 16px 20px;
+  }
+  .avatar-wrap {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 12px;
+  }
+  .avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: var(--bg3);
+    border: 3px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    overflow: hidden;
+    color: var(--gold);
+  }
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .avatar-upload-btn {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 2px solid var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: transform 0.2s;
+  }
+  .avatar-upload-btn:hover { transform: scale(1.1); }
+  .avatar-upload-btn input {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .company-name { font-family: 'Amiri', serif; font-size: 22px; font-weight: 700; color: var(--gold); margin-bottom: 4px; }
+  .company-activity { font-size: 13px; color: var(--text2); margin-bottom: 8px; }
+  .company-email { font-size: 12px; color: var(--text2); }
 
-/* BUTTONS */
-.btn-edit{background:rgba(201,168,76,0.12);color:var(--gold);border:1px solid var(--border-gold);padding:7px 18px;border-radius:8px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
-.btn-save{width:calc(100% - 32px);margin:14px 16px;background:var(--gold);border:none;color:#0F0E0C;padding:13px;border-radius:10px;font-family:'Cairo',sans-serif;font-size:15px;font-weight:700;cursor:pointer;}
-.btn-save:disabled{opacity:0.6;cursor:not-allowed;}
-.btn-cancel{width:calc(100% - 32px);margin:0 16px 14px;background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:11px;border-radius:10px;font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer;}
+  /* Verification Badge */
+  .verif-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 8px;
+  }
+  .verif-badge.verified { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+  .verif-badge.pending { background: rgba(251,146,60,0.12); color: #fb923c; border: 1px solid rgba(251,146,60,0.3); }
 
-/* ALERT */
-.alert{margin:8px 16px;padding:10px 14px;border-radius:8px;font-size:13px;display:none;}
-.alert.success{background:rgba(74,222,128,0.12);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
-.alert.error{background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.3);}
+  /* Section */
+  .section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
-/* VERIFICATION BADGE */
-.verif-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;}
-.verif-badge.verified{background:rgba(74,222,128,0.12);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
-.verif-badge.pending{background:rgba(251,146,60,0.12);color:#fb923c;border:1px solid rgba(251,146,60,0.3);}
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .stat-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-icon { font-size: 22px; margin-bottom: 6px; }
+  .stat-value { font-size: 20px; font-weight: 700; color: var(--gold); margin-bottom: 2px; }
+  .stat-label { font-size: 11px; color: var(--text2); }
 
-/* DOCUMENTS */
-.doc-item{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid rgba(42,38,32,0.5);}
-.doc-item:last-child{border-bottom:none}
-.doc-name{font-size:13px;flex:1;}
-.doc-status{font-size:11px;color:var(--text-dim);}
-.upload-area{margin:12px 16px;border:1px dashed var(--border-gold);border-radius:10px;padding:14px;text-align:center;cursor:pointer;background:rgba(201,168,76,0.03);}
-.upload-area:hover{background:rgba(201,168,76,0.07);}
-.upload-label{font-size:13px;color:var(--text-dim);margin-top:6px;}
-.btn-upload{background:var(--gold);color:#0F0E0C;border:none;padding:9px 20px;border-radius:8px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin:8px 16px 14px;width:calc(100% - 32px);}
-.btn-upload:disabled{opacity:0.6;cursor:not-allowed;}
+  /* Form */
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; display: block; }
+  .form-input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+    direction: rtl;
+  }
+  .form-input:focus { border-color: var(--gold); }
+  .form-input:disabled { opacity: 0.5; cursor: not-allowed; }
+  .form-input.readonly { border-color: transparent; background: transparent; padding-right: 0; color: var(--text); opacity: 1; }
+  .form-select {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    padding: 10px 12px;
+    outline: none;
+  }
+  .form-select:disabled { opacity: 0.5; cursor: not-allowed; }
+  .form-select.readonly { border-color: transparent; background: transparent; -webkit-appearance: none; -moz-appearance: none; appearance: none; opacity: 1; }
+  .form-textarea {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    padding: 10px 12px;
+    outline: none;
+    resize: none;
+    min-height: 80px;
+  }
+  .form-textarea:disabled { opacity: 0.5; cursor: not-allowed; }
+  .form-textarea.readonly { border-color: transparent; background: transparent; padding-right: 0; opacity: 1; }
+
+  /* Edit Toggle */
+  .edit-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .edit-btn {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .edit-btn:hover { background: rgba(201,168,76,0.1); }
+  .edit-btn.cancel { border-color: var(--border); color: var(--text2); }
+
+  /* Save Button */
+  .save-btn {
+    width: 100%;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 13px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 4px;
+  }
+  .save-btn:hover { background: var(--gold2); }
+  .save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Password */
+  .password-input-wrap { position: relative; }
+  .toggle-pw {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: var(--text2); cursor: pointer; font-size: 16px;
+  }
+
+  /* Messages */
+  .success-msg { background: rgba(76,175,80,0.1); border: 1px solid var(--success); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--success); margin-bottom: 12px; display: none; }
+  .error-msg { background: rgba(224,85,85,0.1); border: 1px solid var(--danger); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--danger); margin-bottom: 12px; display: none; }
+
+  /* Documents */
+  .doc-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(46,43,36,0.5); }
+  .doc-item:last-child { border-bottom: none; }
+  .upload-area { border: 1px dashed var(--border-gold); border-radius: 10px; padding: 14px; text-align: center; cursor: pointer; background: rgba(201,168,76,0.03); margin-top: 12px; }
+  .upload-area:hover { background: rgba(201,168,76,0.07); }
+
+  /* Logout */
+  .logout-btn { width: 100%; background: transparent; border: 1px solid var(--danger); color: var(--danger); padding: 13px; border-radius: 10px; font-family: 'Cairo', sans-serif; font-size: 14px; cursor: pointer; transition: all 0.2s; margin-bottom: 16px; }
+  .logout-btn:hover { background: rgba(224,85,85,0.1); }
+
+  /* Loading */
+  .loading-state { text-align: center; padding: 60px 20px; color: var(--text2); }
+  .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-inline { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.3); border-top-color: #000; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-left: 6px; }
 </style>
 </head>
 <body>
 
+<!-- Header -->
 <div class="header">
-  <div class="header-left">
-    <button class="btn-back" onclick="location.href='syriaexpress-seller.html'">← رجوع</button>
-  </div>
-  <div class="header-right">
-    <span class="header-title">معلوماتي</span>
-  </div>
+  <div style="width:60px"></div>
+  <a href="syriaexpress-landing.html" class="header-logo">
+    <div class="header-logo-text">
+      <div class="ar">سوريا إكسبريس</div>
+      <div class="en">B2B MARKETPLACE</div>
+    </div>
+    <img id="headerLogo" src="" alt="logo">
+  </a>
+  <a href="syriaexpress-seller.html" class="back-btn">← رجوع</a>
 </div>
 
-<main>
+<!-- Loading -->
+<div class="loading-state" id="loadingState">
+  <div class="spinner"></div>
+  <div>جارٍ التحميل...</div>
+</div>
 
-  <!-- حالة التوثيق -->
-  <div class="box">
-    <div class="box-header">
-      <div class="box-title"><span class="box-dot gold"></span> حالة الحساب</div>
+<!-- Content -->
+<div id="pageContent" style="display:none">
+
+  <!-- Avatar Section -->
+  <div class="avatar-section">
+    <div class="avatar-wrap">
+      <div class="avatar" id="sellerAvatar">🏭</div>
+      <label class="avatar-upload-btn" title="تغيير الصورة">
+        📷
+        <input type="file" accept="image/*" onchange="uploadLogo(this)">
+      </label>
     </div>
-    <div class="info-row">
-      <span class="info-label">حالة التوثيق</span>
-      <span class="info-val" id="verifStatus">—</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">البريد الإلكتروني</span>
-      <span class="info-val" id="emailVal">—</span>
-    </div>
+    <div class="company-name" id="companyName">—</div>
+    <div class="company-activity" id="companyActivity">—</div>
+    <div class="company-email" id="companyEmail">—</div>
+    <div id="verifBadge"></div>
   </div>
 
-  <!-- معلومات الشركة -->
-  <div class="box">
-    <div class="box-header">
-      <div class="box-title"><span class="box-dot gold"></span> معلومات الشركة</div>
-      <button class="btn-edit" id="editBtn" onclick="toggleEdit()">✏️ تعديل</button>
-    </div>
+  <div class="container">
 
-    <!-- وضع العرض -->
-    <div id="viewMode">
-      <div class="info-row">
-        <span class="info-label">اسم الشركة (عربي)</span>
-        <span class="info-val" id="view_company_ar">—</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">اسم الشركة (إنجليزي)</span>
-        <span class="info-val" id="view_company_en">—</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">المحافظة</span>
-        <span class="info-val" id="view_gov">—</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">نوع النشاط</span>
-        <span class="info-val" id="view_activity">—</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">رقم الهاتف</span>
-        <span class="info-val" id="view_phone">—</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">تاريخ التأسيس</span>
-        <span class="info-val" id="view_established">—</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">وصف الشركة</span>
-        <span class="info-val" id="view_desc">—</span>
+    <!-- Stats -->
+    <div class="section">
+      <div class="section-title">📊 إحصائياتي</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-value" id="statCompleted">—</div>
+          <div class="stat-label">طلبات مكتملة</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-value" id="statNew">—</div>
+          <div class="stat-label">طلبات جديدة</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-value" id="statBuyers">—</div>
+          <div class="stat-label">عدد المشترين</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏷️</div>
+          <div class="stat-value" id="statProducts">—</div>
+          <div class="stat-label">منتجات نشطة</div>
+        </div>
       </div>
     </div>
 
-    <!-- وضع التعديل -->
-    <div id="editMode" style="display:none;">
+    <!-- Company Info -->
+    <div class="section">
+      <div class="edit-row">
+        <div class="section-title" style="margin-bottom:0">🏢 معلومات الشركة</div>
+        <div style="display:flex;gap:8px">
+          <button class="edit-btn cancel" id="cancelBtn" onclick="cancelEdit()" style="display:none">إلغاء</button>
+          <button class="edit-btn" id="editBtn" onclick="toggleEdit()">تعديل</button>
+        </div>
+      </div>
+
+      <div class="success-msg" id="successMsg"></div>
+      <div class="error-msg" id="errorMsg"></div>
+
       <div class="form-group">
-        <div class="form-label">اسم الشركة (عربي)</div>
-        <input type="text" class="form-input" id="company_name_ar" placeholder="مثال: شركة الأمل للتجارة">
+        <label class="form-label">اسم الشركة (عربي)</label>
+        <input class="form-input readonly" type="text" id="fieldCompanyAr" disabled>
       </div>
       <div class="form-group">
-        <div class="form-label">اسم الشركة (إنجليزي)</div>
-        <input type="text" class="form-input" id="company_name_en" placeholder="e.g. Al Amal Trading Co.">
+        <label class="form-label">اسم الشركة (إنجليزي)</label>
+        <input class="form-input readonly" type="text" id="fieldCompanyEn" disabled>
       </div>
       <div class="form-group">
-        <div class="form-label">المحافظة</div>
-        <select class="form-select" id="governorate">
+        <label class="form-label">المحافظة</label>
+        <select class="form-select readonly" id="fieldGov" disabled>
           <option value="">اختر المحافظة</option>
           <option value="دمشق">دمشق</option>
           <option value="ريف دمشق">ريف دمشق</option>
@@ -175,83 +392,92 @@ main{padding:16px;max-width:480px;margin:0 auto;padding-bottom:40px;}
         </select>
       </div>
       <div class="form-group">
-        <div class="form-label">نوع النشاط</div>
-        <select class="form-select" id="activity_type">
+        <label class="form-label">نوع النشاط</label>
+        <select class="form-select readonly" id="fieldActivity" disabled>
           <option value="">اختر نوع النشاط</option>
           <option value="factory">مصنع</option>
           <option value="manufacturer">مُصنّع</option>
-          <option value="distributor">موزع</option>
+          <option value="distributor">موزّع</option>
           <option value="wholesaler">تاجر جملة</option>
           <option value="importer">مستورد</option>
         </select>
       </div>
       <div class="form-group">
-        <div class="form-label">رقم الهاتف</div>
-        <input type="text" class="form-input" id="phone" placeholder="+963 xxx xxx xxx">
+        <label class="form-label">رقم الهاتف</label>
+        <input class="form-input readonly" type="text" id="fieldPhone" disabled placeholder="+963 xxx xxx xxx">
       </div>
       <div class="form-group">
-        <div class="form-label">تاريخ التأسيس (السنة)</div>
-        <input type="number" class="form-input" id="established_year" placeholder="مثال: 2010" min="1900" max="2026">
+        <label class="form-label">سنة التأسيس</label>
+        <input class="form-input readonly" type="number" id="fieldYear" disabled placeholder="مثال: 2010" min="1900" max="2026">
       </div>
       <div class="form-group">
-        <div class="form-label">وصف الشركة</div>
-        <textarea class="form-textarea" id="description" placeholder="اكتب وصفاً مختصراً عن نشاطك التجاري..."></textarea>
+        <label class="form-label">وصف الشركة</label>
+        <textarea class="form-textarea readonly" id="fieldDesc" disabled placeholder="اكتب وصفاً مختصراً عن نشاطك التجاري..."></textarea>
       </div>
-      <div class="alert" id="alertBox"></div>
-      <button class="btn-save" id="saveBtn" onclick="saveProfile()">💾 حفظ التعديلات</button>
-      <button class="btn-cancel" onclick="toggleEdit()">إلغاء</button>
+
+      <button class="save-btn" id="saveBtn" onclick="saveProfile()" style="display:none">حفظ التعديلات</button>
     </div>
+
+    <!-- Documents -->
+    <div class="section">
+      <div class="section-title">📄 وثائق التوثيق</div>
+      <div id="docsList">
+        <div style="text-align:center;color:var(--text2);font-size:13px;padding:8px 0;">جارٍ التحميل...</div>
+      </div>
+      <div class="upload-area" onclick="document.getElementById('docFile').click()">
+        <div style="font-size:24px;">📎</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:6px;" id="docLabel">اختر ملفاً للرفع</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:8px;">PDF أو صورة — حد أقصى 5MB</div>
+        <input type="file" id="docFile" accept="image/*,.pdf" style="display:none" onchange="handleDocSelect(this)">
+      </div>
+      <div style="margin-top:10px;">
+        <select class="form-select" id="docType">
+          <option value="trade_license">سجل تجاري / ترخيص</option>
+          <option value="owner_id">هوية صاحب الشركة</option>
+          <option value="extra">وثيقة إضافية</option>
+        </select>
+      </div>
+      <button class="save-btn" id="uploadDocBtn" onclick="uploadDoc()" disabled style="margin-top:10px;">رفع الوثيقة</button>
+      <div class="success-msg" id="docSuccessMsg" style="margin-top:8px;"></div>
+      <div class="error-msg" id="docErrorMsg" style="margin-top:8px;"></div>
+    </div>
+
+    <!-- Change Password -->
+    <div class="section">
+      <div class="section-title">🔒 تغيير كلمة المرور</div>
+      <div class="error-msg" id="pwError"></div>
+      <div class="success-msg" id="pwSuccess"></div>
+      <div class="form-group">
+        <label class="form-label">كلمة المرور الحالية</label>
+        <div class="password-input-wrap">
+          <input class="form-input" type="password" id="currentPw" placeholder="••••••••">
+          <button class="toggle-pw" onclick="togglePw('currentPw', this)">👁</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">كلمة المرور الجديدة</label>
+        <div class="password-input-wrap">
+          <input class="form-input" type="password" id="newPw" placeholder="••••••••">
+          <button class="toggle-pw" onclick="togglePw('newPw', this)">👁</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">تأكيد كلمة المرور الجديدة</label>
+        <div class="password-input-wrap">
+          <input class="form-input" type="password" id="confirmPw" placeholder="••••••••">
+          <button class="toggle-pw" onclick="togglePw('confirmPw', this)">👁</button>
+        </div>
+      </div>
+      <button class="save-btn" onclick="changePassword()">تغيير كلمة المرور</button>
+    </div>
+
+    <!-- Logout -->
+    <button class="logout-btn" onclick="logout()">🚪 تسجيل الخروج</button>
+
   </div>
+</div>
 
-
-  <!-- الوثائق -->
-  <div class="box">
-    <div class="box-header">
-      <div class="box-title"><span class="box-dot gold"></span> وثائق التوثيق</div>
-    </div>
-    <div id="docsList">
-      <div style="padding:16px;text-align:center;color:var(--text-dim);font-size:13px;">جاري التحميل...</div>
-    </div>
-    <div class="upload-area">
-      <div style="font-size:24px;">📎</div>
-      <div class="upload-label" id="docLabel">اختر ملف للرفع</div>
-      <div style="font-size:11px;color:var(--text-dim);margin-top:8px;">PDF أو صورة — حد أقصى 5MB</div>
-      <input type="file" id="docFile" accept="image/*,.pdf" style="margin-top:10px;width:100%;color:var(--text-dim);font-size:13px;font-family:'Cairo',sans-serif;" onchange="handleDocSelect(this)">
-    </div>
-    <div style="padding:0 16px 4px;">
-      <select class="form-select" id="docType" style="margin-bottom:10px;">
-        <option value="trade_license">سجل تجاري / ترخيص</option>
-        <option value="owner_id">هوية صاحب الشركة</option>
-        <option value="extra">وثيقة إضافية</option>
-      </select>
-    </div>
-    <button class="btn-upload" id="uploadDocBtn" onclick="uploadDoc()" disabled>رفع الوثيقة</button>
-    <div class="alert" id="docAlert" style="margin:0 16px 12px;"></div>
-  </div>
-
-  <!-- تغيير كلمة المرور -->
-  <div class="box">
-    <div class="box-header">
-      <div class="box-title"><span class="box-dot gold"></span> تغيير كلمة المرور</div>
-    </div>
-    <div class="form-group">
-      <div class="form-label">كلمة المرور الحالية</div>
-      <input type="password" class="form-input" id="currentPassword" placeholder="أدخل كلمة المرور الحالية">
-    </div>
-    <div class="form-group">
-      <div class="form-label">كلمة المرور الجديدة</div>
-      <input type="password" class="form-input" id="newPassword" placeholder="6 أحرف على الأقل">
-    </div>
-    <div class="form-group">
-      <div class="form-label">تأكيد كلمة المرور الجديدة</div>
-      <input type="password" class="form-input" id="confirmPassword" placeholder="أعد إدخال كلمة المرور الجديدة">
-    </div>
-    <div class="alert" id="pwdAlert" style="margin:8px 16px;"></div>
-    <button class="btn-save" id="changePwdBtn" onclick="changePassword()">🔒 تغيير كلمة المرور</button>
-  </div>
-
-</main>
-
+<script src="logos.js"></script>
 <script>
 const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
 const token = localStorage.getItem('token');
@@ -259,12 +485,18 @@ const user = JSON.parse(localStorage.getItem('user') || '{}');
 
 if (!token) location.href = 'login.html';
 
+// Logo
+if (typeof LOGOS !== 'undefined' && LOGOS.main) {
+  document.getElementById('headerLogo').src = LOGOS.main;
+}
+
 const activityLabels = {
   factory: 'مصنع', manufacturer: 'مُصنّع',
-  distributor: 'موزع', wholesaler: 'تاجر جملة', importer: 'مستورد'
+  distributor: 'موزّع', wholesaler: 'تاجر جملة', importer: 'مستورد'
 };
 
 let sellerData = {};
+let isEditing = false;
 
 loadProfile();
 
@@ -276,206 +508,278 @@ async function loadProfile() {
     if (!res.ok) throw new Error();
     const data = await res.json();
     sellerData = data.seller || data;
-    renderView();
+
+    // Orders stats
+    const ordersRes = await fetch(`${API_BASE}/api/orders/seller`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (ordersRes.ok) {
+      const od = await ordersRes.json();
+      const orders = od.orders || od || [];
+      document.getElementById('statCompleted').textContent = orders.filter(o => o.status === 'delivered').length;
+      document.getElementById('statNew').textContent = orders.filter(o => o.status === 'pending').length;
+      document.getElementById('statBuyers').textContent = new Set(orders.map(o => o.buyer_id)).size;
+    }
+
+    // Products count
+    const prodRes = await fetch(`${API_BASE}/api/products/my`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (prodRes.ok) {
+      const pd = await prodRes.json();
+      document.getElementById('statProducts').textContent = (pd.products || pd || []).length;
+    }
+
+    renderProfile();
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('pageContent').style.display = 'block';
+
   } catch(e) {
-    // إذا ما في بيانات بعد، خلي العرض فاضي
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('pageContent').style.display = 'block';
   }
 
-  // بيانات ثابتة من الـ token
-  document.getElementById('emailVal').textContent = user.email || '—';
+  document.getElementById('companyEmail').textContent = user.email || '—';
+  loadDocs();
 }
 
-function renderView() {
+function renderProfile() {
   const s = sellerData;
-  const set = (id, val) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (val) { el.textContent = val; el.className = 'info-val'; }
-    else { el.textContent = 'غير محدد'; el.className = 'info-val empty'; }
-  };
-  set('view_company_ar', s.company_name_ar);
-  set('view_company_en', s.company_name_en);
-  set('view_gov', s.governorate);
-  set('view_activity', activityLabels[s.activity_type] || s.activity_type);
-  set('view_established', s.established_year ? s.established_year.toString() : null);
-  set('view_phone', s.phone);
-  set('view_desc', s.description);
 
-  // حالة التوثيق
-  const vs = s.verification_status || 'pending';
-  const verifEl = document.getElementById('verifStatus');
-  if (vs === 'verified') {
-    verifEl.innerHTML = '<span class="verif-badge verified">✓ موثّق</span>';
+  // Avatar
+  const avatarEl = document.getElementById('sellerAvatar');
+  if (s.logo_url) {
+    avatarEl.innerHTML = `<img src="${s.logo_url}" alt="logo" onerror="this.outerHTML='🏭'">`;
   } else {
-    verifEl.innerHTML = '<span class="verif-badge pending">⏳ قيد المراجعة</span>';
+    avatarEl.textContent = (s.company_name_ar || s.company_name || '🏭')[0];
   }
+
+  // Header info
+  document.getElementById('companyName').textContent = s.company_name_ar || s.company_name || '—';
+  document.getElementById('companyActivity').textContent = activityLabels[s.activity_type] || s.activity_type || '—';
+
+  // Verification
+  const vs = s.verification_status || s.is_verified;
+  const badgeEl = document.getElementById('verifBadge');
+  if (vs === 'verified' || vs === true) {
+    badgeEl.innerHTML = '<span class="verif-badge verified">✓ بائع موثّق</span>';
+  } else {
+    badgeEl.innerHTML = '<span class="verif-badge pending">⏳ قيد المراجعة</span>';
+  }
+
+  // Form fields
+  document.getElementById('fieldCompanyAr').value = s.company_name_ar || '';
+  document.getElementById('fieldCompanyEn').value = s.company_name_en || '';
+  document.getElementById('fieldGov').value = s.governorate || '';
+  document.getElementById('fieldActivity').value = s.activity_type || '';
+  document.getElementById('fieldPhone').value = s.phone || '';
+  document.getElementById('fieldYear').value = s.established_year || s.year_established || '';
+  document.getElementById('fieldDesc').value = s.description || '';
 }
 
 function toggleEdit() {
-  const editMode = document.getElementById('editMode');
-  const viewMode = document.getElementById('viewMode');
-  const btn = document.getElementById('editBtn');
-  const isEditing = editMode.style.display !== 'none';
+  isEditing = true;
+  ['fieldCompanyAr','fieldCompanyEn','fieldPhone','fieldYear'].forEach(id => {
+    const el = document.getElementById(id);
+    el.disabled = false; el.classList.remove('readonly');
+  });
+  ['fieldGov','fieldActivity'].forEach(id => {
+    const el = document.getElementById(id);
+    el.disabled = false; el.classList.remove('readonly');
+  });
+  ['fieldDesc'].forEach(id => {
+    const el = document.getElementById(id);
+    el.disabled = false; el.classList.remove('readonly');
+  });
+  document.getElementById('saveBtn').style.display = 'block';
+  document.getElementById('cancelBtn').style.display = 'block';
+  document.getElementById('editBtn').style.display = 'none';
+}
 
-  if (isEditing) {
-    editMode.style.display = 'none';
-    viewMode.style.display = 'block';
-    btn.textContent = '✏️ تعديل';
-  } else {
-    // حشو الحقول بالبيانات الحالية
-    const s = sellerData;
-    document.getElementById('company_name_ar').value = s.company_name_ar || '';
-    document.getElementById('company_name_en').value = s.company_name_en || '';
-    document.getElementById('governorate').value = s.governorate || '';
-    document.getElementById('activity_type').value = s.activity_type || '';
-    document.getElementById('established_year').value = s.established_year || '';
-    document.getElementById('phone').value = s.phone || '';
-    document.getElementById('description').value = s.description || '';
-    editMode.style.display = 'block';
-    viewMode.style.display = 'none';
-    btn.textContent = '✕ إلغاء';
-  }
+function cancelEdit() {
+  isEditing = false;
+  ['fieldCompanyAr','fieldCompanyEn','fieldPhone','fieldYear'].forEach(id => {
+    const el = document.getElementById(id);
+    el.disabled = true; el.classList.add('readonly');
+  });
+  ['fieldGov','fieldActivity'].forEach(id => {
+    const el = document.getElementById(id);
+    el.disabled = true; el.classList.add('readonly');
+  });
+  ['fieldDesc'].forEach(id => {
+    const el = document.getElementById(id);
+    el.disabled = true; el.classList.add('readonly');
+  });
+  renderProfile();
+  document.getElementById('saveBtn').style.display = 'none';
+  document.getElementById('cancelBtn').style.display = 'none';
+  document.getElementById('editBtn').style.display = 'block';
+  hideMessages();
 }
 
 async function saveProfile() {
   const btn = document.getElementById('saveBtn');
   btn.disabled = true;
-  btn.textContent = 'جاري الحفظ...';
+  btn.innerHTML = 'جارٍ الحفظ... <span class="loading-inline"></span>';
+  hideMessages();
 
   const body = {
-    company_name_ar: document.getElementById('company_name_ar').value.trim(),
-    company_name_en: document.getElementById('company_name_en').value.trim(),
-    governorate: document.getElementById('governorate').value,
-    activity_type: document.getElementById('activity_type').value,
-    established_year: parseInt(document.getElementById('established_year').value) || null,
-    phone: document.getElementById('phone').value.trim(),
-    description: document.getElementById('description').value.trim()
+    company_name_ar: document.getElementById('fieldCompanyAr').value.trim(),
+    company_name_en: document.getElementById('fieldCompanyEn').value.trim(),
+    governorate: document.getElementById('fieldGov').value,
+    activity_type: document.getElementById('fieldActivity').value,
+    established_year: parseInt(document.getElementById('fieldYear').value) || null,
+    phone: document.getElementById('fieldPhone').value.trim(),
+    description: document.getElementById('fieldDesc').value.trim()
   };
 
   try {
     const res = await fetch(`${API_BASE}/api/sellers/me`, {
       method: 'PUT',
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'خطأ');
 
     sellerData = { ...sellerData, ...body };
-    renderView();
-    toggleEdit();
-    showAlert('✅ تم حفظ المعلومات بنجاح', 'success');
+    renderProfile();
+    cancelEdit();
+    showMsg('successMsg', '✅ تم حفظ المعلومات بنجاح');
   } catch(e) {
-    showAlert(e.message || 'تعذّر الحفظ، حاول مجدداً', 'error');
+    showMsg('errorMsg', e.message || 'تعذّر الحفظ، حاول مجدداً');
   }
 
   btn.disabled = false;
-  btn.textContent = '💾 حفظ التعديلات';
+  btn.textContent = 'حفظ التعديلات';
 }
 
-function showAlert(msg, type) {
-  const el = document.getElementById('alertBox');
-  el.textContent = msg;
-  el.className = 'alert ' + type;
-  el.style.display = 'block';
-  setTimeout(() => el.style.display = 'none', 3000);
+// ─── Logo Upload ────────────────────────────────────
+async function uploadLogo(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+
+  if (file.size > 5 * 1024 * 1024) {
+    alert('حجم الصورة يجب أن يكون أقل من 5MB');
+    return;
+  }
+
+  const avatarEl = document.getElementById('sellerAvatar');
+  avatarEl.innerHTML = '<div class="spinner" style="width:30px;height:30px;border-width:2px;"></div>';
+
+  try {
+    // Try dedicated logo endpoint first
+    const formData = new FormData();
+    formData.append('logo', file);
+
+    const res = await fetch(`${API_BASE}/api/sellers/me/logo`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: formData
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      sellerData.logo_url = data.logo_url || data.url;
+      renderProfile();
+      showMsg('successMsg', '✅ تم تحديث صورة الشركة');
+      return;
+    }
+
+    // Fallback: upload as document with type "logo"
+    const fd2 = new FormData();
+    fd2.append('document', file);
+    fd2.append('doc_type', 'logo');
+
+    const res2 = await fetch(`${API_BASE}/api/sellers/documents`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: fd2
+    });
+    const data2 = await res2.json();
+    if (res2.ok && (data2.url || data2.file_url)) {
+      sellerData.logo_url = data2.url || data2.file_url;
+      renderProfile();
+      showMsg('successMsg', '✅ تم تحديث صورة الشركة');
+      return;
+    }
+
+    throw new Error('تعذّر رفع الصورة');
+  } catch(e) {
+    renderProfile();
+    showMsg('errorMsg', e.message || 'تعذّر رفع الصورة — قد تحتاج إضافة endpoint خاص');
+  }
 }
 
-// ─── تغيير كلمة المرور ────────────────────────────────────
+// ─── Change Password ────────────────────────────────
 async function changePassword() {
-  const currentPassword = document.getElementById('currentPassword').value.trim();
-  const newPassword = document.getElementById('newPassword').value.trim();
-  const confirmPassword = document.getElementById('confirmPassword').value.trim();
-  const btn = document.getElementById('changePwdBtn');
+  const current = document.getElementById('currentPw').value;
+  const newPw = document.getElementById('newPw').value;
+  const confirm = document.getElementById('confirmPw').value;
 
-  if (!currentPassword || !newPassword || !confirmPassword) {
-    showPwdAlert('يرجى ملء جميع الحقول', 'error'); return;
-  }
-  if (newPassword.length < 6) {
-    showPwdAlert('كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل', 'error'); return;
-  }
-  if (newPassword !== confirmPassword) {
-    showPwdAlert('كلمة المرور الجديدة وتأكيدها غير متطابقتين', 'error'); return;
-  }
-  if (currentPassword === newPassword) {
-    showPwdAlert('كلمة المرور الجديدة يجب أن تكون مختلفة عن الحالية', 'error'); return;
-  }
+  document.getElementById('pwError').style.display = 'none';
+  document.getElementById('pwSuccess').style.display = 'none';
 
-  btn.disabled = true;
-  btn.textContent = 'جاري التغيير...';
+  if (!current || !newPw || !confirm) { showMsg('pwError', 'يرجى ملء جميع الحقول'); return; }
+  if (newPw.length < 6) { showMsg('pwError', 'كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل'); return; }
+  if (newPw !== confirm) { showMsg('pwError', 'كلمة المرور الجديدة غير متطابقة'); return; }
 
   try {
     const res = await fetch(`${API_BASE}/api/auth/change-password`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
-      },
-      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword })
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ current_password: current, new_password: newPw })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'خطأ');
 
-    showPwdAlert('✅ تم تغيير كلمة المرور بنجاح', 'success');
-    document.getElementById('currentPassword').value = '';
-    document.getElementById('newPassword').value = '';
-    document.getElementById('confirmPassword').value = '';
+    showMsg('pwSuccess', '✅ تم تغيير كلمة المرور بنجاح');
+    document.getElementById('currentPw').value = '';
+    document.getElementById('newPw').value = '';
+    document.getElementById('confirmPw').value = '';
   } catch(e) {
-    showPwdAlert(e.message || 'تعذّر تغيير كلمة المرور', 'error');
+    showMsg('pwError', e.message || 'تعذّر تغيير كلمة المرور');
   }
-
-  btn.disabled = false;
-  btn.textContent = '🔒 تغيير كلمة المرور';
 }
 
-function showPwdAlert(msg, type) {
-  const el = document.getElementById('pwdAlert');
-  el.textContent = msg;
-  el.className = 'alert ' + type;
-  el.style.display = 'block';
-  setTimeout(() => el.style.display = 'none', 4000);
+function togglePw(id, btn) {
+  const input = document.getElementById(id);
+  if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
+  else { input.type = 'password'; btn.textContent = '👁'; }
 }
 
-// ─── وثائق التوثيق ───────────────────────────────────────
+// ─── Documents ──────────────────────────────────────
 let selectedDocFile = null;
 
 async function loadDocs() {
   try {
-    const res = await fetch(`${API_BASE}/api/sellers/me`, {
+    const sellerId = sellerData.id;
+    if (!sellerId) return;
+
+    const res = await fetch(`${API_BASE}/api/admin/sellers/${sellerId}/documents`, {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     const data = await res.json();
-    const seller = data.seller || data;
-    const sellerId = seller.id;
-    if (!sellerId) return;
-
-    const res2 = await fetch(`${API_BASE}/api/admin/sellers/${sellerId}/documents`, {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    const data2 = await res2.json();
-    const docs = data2.documents || [];
+    const docs = data.documents || [];
     const list = document.getElementById('docsList');
 
     if (!docs.length) {
-      list.innerHTML = '<div style="padding:14px 16px;font-size:13px;color:var(--text-dim);">ما في وثائق مرفوعة بعد</div>';
+      list.innerHTML = '<div style="text-align:center;color:var(--text2);font-size:13px;padding:8px 0;">لا توجد وثائق مرفوعة بعد</div>';
       return;
     }
 
-    const typeLabels = { trade_license: 'سجل تجاري', owner_id: 'هوية صاحب الشركة', extra: 'وثيقة إضافية' };
+    const typeLabels = { trade_license: 'سجل تجاري', owner_id: 'هوية صاحب الشركة', extra: 'وثيقة إضافية', logo: 'شعار الشركة' };
     list.innerHTML = docs.map(d => {
       const url = d.file_url || d.url || '';
       const name = typeLabels[d.doc_type] || d.doc_type || 'وثيقة';
       return `<div class="doc-item">
         <span style="font-size:20px;">📄</span>
-        <span class="doc-name">${name}</span>
-        ${url ? `<a href="${url}" target="_blank" style="color:var(--gold);font-size:12px;">فتح</a>` : '<span style="color:var(--text-dim);font-size:12px;">لا يوجد رابط</span>'}
+        <span style="font-size:13px;flex:1;">${name}</span>
+        ${url ? `<a href="${url}" target="_blank" style="color:var(--gold);font-size:12px;">فتح</a>` : '<span style="color:var(--text2);font-size:12px;">لا يوجد رابط</span>'}
       </div>`;
     }).join('');
   } catch(e) {
-    document.getElementById('docsList').innerHTML = '<div style="padding:14px 16px;font-size:13px;color:var(--text-dim);">تعذّر تحميل الوثائق</div>';
+    document.getElementById('docsList').innerHTML = '<div style="text-align:center;color:var(--text2);font-size:13px;padding:8px 0;">تعذّر تحميل الوثائق</div>';
   }
 }
 
@@ -491,7 +795,7 @@ async function uploadDoc() {
   if (!selectedDocFile) return;
   const btn = document.getElementById('uploadDocBtn');
   btn.disabled = true;
-  btn.textContent = 'جاري الرفع...';
+  btn.textContent = 'جارٍ الرفع...';
 
   try {
     const formData = new FormData();
@@ -506,28 +810,37 @@ async function uploadDoc() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'خطأ');
 
-    showDocAlert('✅ تم رفع الوثيقة بنجاح', 'success');
-    document.getElementById('docLabel').textContent = 'اضغط لرفع وثيقة جديدة';
+    showMsg('docSuccessMsg', '✅ تم رفع الوثيقة بنجاح');
+    document.getElementById('docLabel').textContent = 'اختر ملفاً للرفع';
     document.getElementById('docFile').value = '';
     selectedDocFile = null;
     loadDocs();
   } catch(e) {
-    showDocAlert(e.message || 'تعذّر الرفع', 'error');
+    showMsg('docErrorMsg', e.message || 'تعذّر الرفع');
   }
 
   btn.disabled = false;
   btn.textContent = 'رفع الوثيقة';
 }
 
-function showDocAlert(msg, type) {
-  const el = document.getElementById('docAlert');
+// ─── Helpers ────────────────────────────────────────
+function showMsg(id, msg) {
+  const el = document.getElementById(id);
   el.textContent = msg;
-  el.className = 'alert ' + type;
   el.style.display = 'block';
-  setTimeout(() => el.style.display = 'none', 3000);
+  setTimeout(() => { el.style.display = 'none'; }, 4000);
 }
 
-loadDocs();
+function hideMessages() {
+  ['successMsg','errorMsg'].forEach(id => { document.getElementById(id).style.display = 'none'; });
+}
+
+function logout() {
+  if (!confirm('هل تريد تسجيل الخروج؟')) return;
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = 'login.html';
+}
 </script>
 </body>
 </html>
