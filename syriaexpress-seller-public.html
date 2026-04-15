@@ -6,12 +6,14 @@
   <title>سوريا إكسبريس — صفحة البائع</title>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
+    /* ===== Theme Variables ===== */
     :root {
       --bg: #0F0E0C;
       --bg2: #1a1917;
       --bg3: #252320;
       --gold: #C9A84C;
       --gold-dim: #a68a3a;
+      --border-gold: rgba(201,168,76,0.25);
       --text: #fff;
       --text2: #b5b0a5;
       --text3: #7a7670;
@@ -20,15 +22,41 @@
       --shadow: 0 2px 16px rgba(0,0,0,.4);
     }
 
+    [data-theme="light"] {
+      --bg: #F5F3EF;
+      --bg2: #FFFFFF;
+      --bg3: #E8E4DC;
+      --text: #1a1917;
+      --text2: #5a5650;
+      --text3: #8a8680;
+      --border-gold: rgba(201,168,76,0.35);
+      --shadow: 0 2px 16px rgba(0,0,0,.08);
+    }
+
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
       font-family: 'Cairo', sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      direction: rtl;
+      transition: background .3s, color .3s;
+    }
+
+    /* ===== Responsive Container ===== */
+    .page-container {
       max-width: 480px;
       margin: 0 auto;
-      direction: rtl;
+    }
+    @media (min-width: 768px) {
+      .page-container {
+        max-width: 900px;
+      }
+    }
+    @media (min-width: 1200px) {
+      .page-container {
+        max-width: 1100px;
+      }
     }
 
     /* ===== Header ===== */
@@ -38,10 +66,20 @@
       justify-content: space-between;
       padding: 12px 16px;
       background: var(--bg2);
-      border-bottom: 1px solid rgba(201,168,76,0.25);
+      border-bottom: 1px solid var(--border-gold);
       position: sticky;
       top: 0;
       z-index: 100;
+      transition: background .3s;
+    }
+    @media (min-width: 768px) {
+      .header { padding: 14px 32px; }
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     .header-back {
       background: var(--bg3);
@@ -54,7 +92,13 @@
       border-radius: 8px;
       white-space: nowrap;
       text-decoration: none;
+      transition: background .2s;
     }
+    [data-theme="light"] .header-back {
+      border-color: rgba(0,0,0,0.1);
+    }
+    .header-back:hover { opacity: 0.85; }
+
     .header-logo {
       display: flex;
       align-items: center;
@@ -62,29 +106,60 @@
       text-decoration: none;
     }
     .header-logo img {
-      height: 36px;
-      width: 36px;
+      height: 42px;
+      width: 42px;
       object-fit: contain;
+    }
+    @media (min-width: 768px) {
+      .header-logo img {
+        height: 48px;
+        width: 48px;
+      }
     }
     .header-logo-text {
       display: flex;
       flex-direction: column;
       align-items: center;
     }
-    .header-logo-text span:first-child {
+    .header-logo-text .ar {
       font-family: 'Amiri', serif;
       font-size: 17px;
       font-weight: 700;
       color: var(--gold);
-      line-height: 1;
+      line-height: 1.2;
     }
-    .header-logo-text span:last-child {
+    @media (min-width: 768px) {
+      .header-logo-text .ar { font-size: 20px; }
+    }
+    .header-logo-text .en {
       font-size: 9px;
       color: var(--text3);
       letter-spacing: 2px;
       font-weight: 600;
     }
-    .header-spacer { width: 60px; }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ===== Theme Toggle ===== */
+    .theme-toggle {
+      background: var(--bg3);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text2);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 8px;
+      transition: background .2s;
+      line-height: 1;
+    }
+    [data-theme="light"] .theme-toggle {
+      border-color: rgba(0,0,0,0.1);
+    }
+    .theme-toggle:hover { opacity: 0.85; }
 
     /* ===== Loading ===== */
     .loading {
@@ -117,12 +192,30 @@
       border-radius: var(--radius);
       border: 1px solid var(--bg3);
       overflow: hidden;
+      transition: background .3s, border-color .3s;
     }
+    @media (min-width: 768px) {
+      .seller-card { margin: 24px 32px; }
+    }
+    @media (min-width: 1200px) {
+      .seller-card { margin: 28px 40px; }
+    }
+
     .seller-top {
       padding: 24px 20px;
       text-align: center;
       border-bottom: 1px solid var(--bg3);
     }
+    @media (min-width: 768px) {
+      .seller-top {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        text-align: right;
+        padding: 28px 32px;
+      }
+    }
+
     .seller-avatar {
       width: 72px; height: 72px;
       background: var(--bg3);
@@ -134,13 +227,34 @@
       margin: 0 auto 12px;
       border: 2px solid var(--gold-dim);
       color: var(--gold);
+      flex-shrink: 0;
+      overflow: hidden;
     }
+    @media (min-width: 768px) {
+      .seller-avatar {
+        width: 90px; height: 90px;
+        font-size: 38px;
+        margin: 0;
+      }
+    }
+    .seller-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .seller-top-info { flex: 1; }
+
     .seller-name {
       font-family: 'Amiri', serif;
       font-size: 22px;
       font-weight: 700;
       color: var(--gold);
       margin-bottom: 4px;
+    }
+    @media (min-width: 768px) {
+      .seller-name { font-size: 26px; }
     }
     .seller-activity {
       font-size: 13px;
@@ -172,6 +286,14 @@
     .seller-info {
       padding: 16px 20px;
     }
+    @media (min-width: 768px) {
+      .seller-info {
+        padding: 20px 32px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 24px;
+      }
+    }
     .info-row {
       display: flex;
       align-items: center;
@@ -181,6 +303,10 @@
       font-size: 14px;
     }
     .info-row:last-child { border-bottom: none; }
+    @media (min-width: 768px) {
+      .info-row { padding: 12px 0; }
+      .info-row:nth-last-child(2) { border-bottom: none; }
+    }
     .info-row .icon {
       font-size: 16px;
       width: 24px;
@@ -196,11 +322,26 @@
       flex: 1;
     }
 
-    /* ===== Contact Buttons ===== */
+    /* ===== Contact + Owner Buttons ===== */
+    .action-btns-wrapper {
+      padding: 0 16px 16px;
+    }
+    @media (min-width: 768px) {
+      .action-btns-wrapper { padding: 0 32px 20px; }
+    }
+    @media (min-width: 1200px) {
+      .action-btns-wrapper { padding: 0 40px 24px; }
+    }
+
     .contact-btns {
       display: flex;
       gap: 10px;
-      padding: 0 16px 16px;
+      margin-bottom: 10px;
+    }
+    @media (min-width: 768px) {
+      .contact-btns {
+        max-width: 400px;
+      }
     }
     .btn-contact {
       flex: 1;
@@ -228,16 +369,54 @@
       color: var(--bg);
     }
 
+    .owner-actions {
+      display: flex;
+      gap: 10px;
+    }
+    @media (min-width: 768px) {
+      .owner-actions { max-width: 400px; }
+    }
+    .btn-edit-profile {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--gold-dim);
+      background: rgba(201,168,76,0.1);
+      font-family: 'Cairo', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gold);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .2s;
+    }
+    .btn-edit-profile:hover { background: rgba(201,168,76,0.2); }
+    .btn-edit-profile:active { transform: scale(.97); }
+
     /* ===== Products Section ===== */
     .products-section {
       padding: 0 16px 24px;
     }
+    @media (min-width: 768px) {
+      .products-section { padding: 0 32px 32px; }
+    }
+    @media (min-width: 1200px) {
+      .products-section { padding: 0 40px 40px; }
+    }
+
     .section-title {
       font-family: 'Amiri', serif;
       font-size: 20px;
       font-weight: 700;
       color: var(--gold);
       margin-bottom: 14px;
+    }
+    @media (min-width: 768px) {
+      .section-title { font-size: 24px; margin-bottom: 18px; }
     }
 
     /* Filters */
@@ -268,6 +447,9 @@
       color: var(--bg);
       border-color: var(--gold);
     }
+    [data-theme="light"] .filter-btn.active {
+      color: #fff;
+    }
 
     /* Product Grid */
     .products-grid {
@@ -275,19 +457,35 @@
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
+    @media (min-width: 768px) {
+      .products-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+    }
+    @media (min-width: 1200px) {
+      .products-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+      }
+    }
+
     .product-card {
       background: var(--bg2);
       border-radius: var(--radius);
       border: 1px solid var(--bg3);
       overflow: hidden;
       cursor: pointer;
-      transition: transform .2s, border-color .2s;
+      transition: transform .2s, border-color .2s, box-shadow .2s;
       text-decoration: none;
       color: inherit;
       display: block;
     }
     .product-card:active { transform: scale(.97); }
-    .product-card:hover { border-color: var(--gold-dim); }
+    .product-card:hover {
+      border-color: var(--gold-dim);
+      box-shadow: var(--shadow);
+    }
     .product-img {
       width: 100%;
       aspect-ratio: 1;
@@ -318,6 +516,9 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
+    @media (min-width: 768px) {
+      .product-name { font-size: 14px; }
+    }
     .product-price {
       font-size: 14px;
       font-weight: 700;
@@ -336,63 +537,37 @@
       grid-column: 1 / -1;
     }
     .empty-products .icon { font-size: 40px; margin-bottom: 8px; }
-
-    /* Owner Edit Button */
-    .owner-actions {
-      display: flex;
-      gap: 10px;
-      padding: 0 16px 16px;
-    }
-    .btn-edit-profile {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid var(--gold-dim);
-      background: rgba(201,168,76,0.1);
-      font-family: 'Cairo', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--gold);
-      cursor: pointer;
-      text-decoration: none;
-      transition: all .2s;
-    }
-    .btn-edit-profile:hover { background: rgba(201,168,76,0.2); }
-    .btn-edit-profile:active { transform: scale(.97); }
-
-    /* Seller Logo */
-    .seller-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 50%;
-    }
   </style>
 </head>
 <body>
 
   <!-- Header -->
   <div class="header">
-    <div class="header-spacer"></div>
+    <!-- يمين: زر رجوع -->
+    <div class="header-right">
+      <a class="header-back" href="javascript:void(0)" onclick="history.back()">← رجوع</a>
+    </div>
+    <!-- وسط: اللوغو -->
     <a href="syriaexpress-landing.html" class="header-logo">
       <div class="header-logo-text">
-        <span>سوريا إكسبريس</span>
-        <span>B2B MARKETPLACE</span>
+        <div class="ar">سوريا إكسبريس</div>
+        <div class="en">B2B MARKETPLACE</div>
       </div>
       <img id="headerLogo" src="" alt="logo" style="display:none" onerror="this.style.display='none'">
     </a>
-    <button class="header-back" onclick="history.back()">← رجوع</button>
+    <!-- يسار: زر الثيم -->
+    <div class="header-left">
+      <button class="theme-toggle" id="themeToggle" title="تبديل الوضع">🌙</button>
+    </div>
   </div>
 
   <!-- Content -->
-  <div id="content">
-    <div class="loading" id="loadingState">
-      <div class="spinner"></div>
-      <div>جارٍ التحميل...</div>
+  <div class="page-container">
+    <div id="content">
+      <div class="loading" id="loadingState">
+        <div class="spinner"></div>
+        <div>جارٍ التحميل...</div>
+      </div>
     </div>
   </div>
 
@@ -400,14 +575,42 @@
   <script>
     const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
 
-    // Logo
+    // ===== Theme Toggle =====
+    (function() {
+      const saved = localStorage.getItem('theme');
+      if (saved === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+      updateThemeIcon();
+    })();
+
+    function updateThemeIcon() {
+      const btn = document.getElementById('themeToggle');
+      if (!btn) return;
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      btn.textContent = isLight ? '☀️' : '🌙';
+    }
+
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      if (current === 'light') {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+      }
+      updateThemeIcon();
+    });
+
+    // ===== Logo =====
     if (typeof LOGOS !== 'undefined' && LOGOS.main) {
       const logoEl = document.getElementById('headerLogo');
       logoEl.src = LOGOS.main;
       logoEl.style.display = 'block';
     }
 
-    // Get seller ID from URL
+    // ===== Get seller ID from URL =====
     const params = new URLSearchParams(window.location.search);
     const sellerId = params.get('id');
 
@@ -419,13 +622,10 @@
 
     async function loadSeller() {
       try {
-        // Fetch seller info
         const sellerRes = await fetch(`${API_BASE}/api/sellers/${sellerId}`);
         if (!sellerRes.ok) throw new Error('البائع غير موجود');
 
         const sellerData = await sellerRes.json();
-        
-        // Handle different response formats
         const seller = sellerData.seller || sellerData;
         let products = seller.products || [];
 
@@ -474,7 +674,6 @@
 
     function formatPhone(phone) {
       if (!phone) return null;
-      // Remove spaces and normalize
       return phone.replace(/\s+/g, '');
     }
 
@@ -516,7 +715,7 @@
           </div>`;
       }
 
-      // Avatar: show logo if available, otherwise first letter
+      // Avatar
       const companyName = seller.company_name_ar || seller.company_name || seller.business_name || 'ب';
       const avatarContent = seller.logo_url
         ? `<img src="${seller.logo_url}" alt="${companyName}" onerror="this.outerHTML='${companyName[0]}'">`
@@ -527,10 +726,12 @@
         <div class="seller-card">
           <div class="seller-top">
             <div class="seller-avatar">${avatarContent}</div>
-            <div class="seller-name">${companyName}</div>
-            <div class="seller-activity">${getActivityLabel(seller.activity_type)}</div>
-            ${(seller.is_verified || seller.verification_status === 'verified') ? '<span class="seller-badge badge-verified">✓ بائع موثّق</span>' : ''}
-            ${getTierBadge(seller.partner_tier)}
+            <div class="seller-top-info">
+              <div class="seller-name">${companyName}</div>
+              <div class="seller-activity">${getActivityLabel(seller.activity_type)}</div>
+              ${(seller.is_verified || seller.verification_status === 'verified') ? '<span class="seller-badge badge-verified">✓ بائع موثّق</span>' : ''}
+              ${getTierBadge(seller.partner_tier)}
+            </div>
           </div>
           <div class="seller-info">
             ${(seller.governorate || seller.city) ? `<div class="info-row"><span class="icon">📍</span><span class="label">المحافظة</span><span class="value">${seller.governorate || seller.city}</span></div>` : ''}
@@ -541,18 +742,18 @@
           </div>
         </div>
 
-        <!-- Owner Edit Button -->
-        ${ownerHTML}
-
-        <!-- Contact Buttons -->
-        ${contactHTML}
+        <!-- Action Buttons -->
+        <div class="action-btns-wrapper">
+          ${contactHTML}
+          ${ownerHTML}
+        </div>
 
         <!-- Products -->
         <div class="products-section">
           <div class="section-title">المنتجات</div>
           <div class="filters">
             <button class="filter-btn active" data-filter="all">جميع المنتجات</button>
-            <button class="filter-btn" data-filter="newest">منتجات جديدة</button>
+            <button class="filter-btn" data-filter="newest">الأحدث</button>
             <button class="filter-btn" data-filter="popular">الأكثر طلباً</button>
           </div>
           <div class="products-grid" id="productsGrid">
@@ -577,7 +778,6 @@
     function applyFilter(filter) {
       let filtered = [...window._allProducts];
       if (filter === 'newest') {
-        // Products from last 30 days, sorted newest first
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         filtered = filtered
