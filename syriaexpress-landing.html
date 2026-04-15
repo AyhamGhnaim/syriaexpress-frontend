@@ -14,10 +14,15 @@
   --border:#2A2620;--border-gold:rgba(201,168,76,0.25);
 }
 html{scroll-behavior:smooth}
-body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;direction:rtl;}
+[data-theme="light"]{
+  --bg:#F5F3EF;--bg2:#FFFFFF;--bg3:#E8E4DC;--bg4:#DDD8CF;
+  --text:#1a1917;--text-dim:#5a5650;
+  --border:#d5d0c8;--border-gold:rgba(201,168,76,0.35);
+}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;direction:rtl;transition:background .3s,color .3s;}
 
 /* NAV */
-nav{position:fixed;top:0;right:0;left:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:60px;background:rgba(15,14,12,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-gold);}
+nav{position:fixed;top:0;right:0;left:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:60px;background:rgba(15,14,12,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-gold);transition:background .3s;}
 .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
 .nav-logo img{width:36px;height:36px;object-fit:contain}
 .nav-logo-text .name{font-family:'Amiri',serif;color:var(--gold);font-size:17px;line-height:1}
@@ -26,6 +31,13 @@ nav{position:fixed;top:0;right:0;left:0;z-index:100;display:flex;align-items:cen
 .btn-nav-lang{background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:6px 14px;border-radius:6px;font-family:'Cairo',sans-serif;font-size:12px;cursor:pointer;}
 .btn-nav-register{background:var(--gold);border:none;color:#0F0E0C;padding:8px 18px;border-radius:8px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:background 0.2s;}
 .btn-nav-register:hover{background:var(--gold-light)}
+[data-theme="light"] nav{background:rgba(245,243,239,0.95);}
+.btn-theme-toggle{
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--text-dim);padding:6px 10px;border-radius:6px;
+  font-size:18px;cursor:pointer;line-height:1;transition:all 0.2s;
+}
+.btn-theme-toggle:hover{border-color:var(--gold);color:var(--gold)}
 
 /* HERO */
 .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px 40px;text-align:center;position:relative;overflow:hidden;}
@@ -145,6 +157,7 @@ footer{background:var(--bg);border-top:1px solid var(--border);padding:40px 24px
 <!-- NAV -->
 <nav>
   <div class="nav-actions">
+    <button class="btn-theme-toggle" id="themeToggle" title="تبديل الوضع">🌙</button>
     <button class="btn-nav-lang">EN</button>
     <button class="btn-nav-register" onclick="location.href='login.html'">سجّل مجاناً</button>
   </div>
@@ -331,6 +344,36 @@ footer{background:var(--bg);border-top:1px solid var(--border);padding:40px 24px
   </div>
 </footer>
 
+<script>
+// ===== تطبيق الثيم وزر التبديل (فقط في الصفحة الرئيسية) =====
+(function() {
+  var saved = localStorage.getItem('theme');
+  if (saved === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+  updateIcon();
+  var btn = document.getElementById('themeToggle');
+  if (btn) {
+    btn.addEventListener('click', function() {
+      var current = document.documentElement.getAttribute('data-theme');
+      if (current === 'light') {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+      }
+      updateIcon();
+    });
+  }
+  function updateIcon() {
+    var b = document.getElementById('themeToggle');
+    if (!b) return;
+    var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    b.textContent = isLight ? '☀️' : '🌙';
+  }
+})();
+</script>
 <script>
 const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
 const observer = new IntersectionObserver((entries) => {
