@@ -139,27 +139,10 @@
     }
 
     .header-left {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      width: 70px;
     }
 
-    /* ===== Theme Toggle ===== */
-    .theme-toggle {
-      background: var(--bg3);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: var(--text2);
-      font-size: 18px;
-      cursor: pointer;
-      padding: 6px 10px;
-      border-radius: 8px;
-      transition: background .2s;
-      line-height: 1;
-    }
-    [data-theme="light"] .theme-toggle {
-      border-color: rgba(0,0,0,0.1);
-    }
-    .theme-toggle:hover { opacity: 0.85; }
+
 
     /* ===== Loading ===== */
     .loading {
@@ -555,10 +538,8 @@
       </div>
       <img id="headerLogo" src="" alt="logo" style="display:none" onerror="this.style.display='none'">
     </a>
-    <!-- يسار: زر الثيم -->
-    <div class="header-left">
-      <button class="theme-toggle" id="themeToggle" title="تبديل الوضع">🌙</button>
-    </div>
+    <!-- يسار: فراغ لتوازن الترويسة -->
+    <div class="header-left"></div>
   </div>
 
   <!-- Content -->
@@ -575,33 +556,13 @@
   <script>
     const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
 
-    // ===== Theme Toggle =====
+    // ===== تطبيق الثيم تلقائياً من localStorage =====
     (function() {
       const saved = localStorage.getItem('theme');
       if (saved === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
       }
-      updateThemeIcon();
     })();
-
-    function updateThemeIcon() {
-      const btn = document.getElementById('themeToggle');
-      if (!btn) return;
-      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-      btn.textContent = isLight ? '☀️' : '🌙';
-    }
-
-    document.getElementById('themeToggle').addEventListener('click', () => {
-      const current = document.documentElement.getAttribute('data-theme');
-      if (current === 'light') {
-        document.documentElement.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'dark');
-      } else {
-        document.documentElement.setAttribute('data-theme', 'light');
-        localStorage.setItem('theme', 'light');
-      }
-      updateThemeIcon();
-    });
 
     // ===== Logo =====
     if (typeof LOGOS !== 'undefined' && LOGOS.main) {
