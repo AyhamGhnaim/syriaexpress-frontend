@@ -287,7 +287,6 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
   </div>
   <div class="header-title">لوحة البائع</div>
   <div class="header-right">
-    <button class="btn-add" onclick="location.href='syriaexpress-seller-reports.html'" style="background:transparent;border:1px solid var(--border-gold);color:var(--gold);padding:8px 10px;font-size:18px;line-height:1;" title="تقارير المبيعات">📊</button>
     <button class="btn-add" onclick="goToMyPublicPage()" style="background:transparent;border:1px solid var(--border-gold);color:var(--gold);padding:8px 10px;font-size:13px;line-height:1;">🌐 صفحتي</button>
     <button class="btn-add" onclick="location.href='syriaexpress-seller-profile.html'" style="background:transparent;border:1px solid var(--border-gold);color:var(--gold);padding:8px 10px;font-size:18px;line-height:1;">⚙️</button>
     <a href="syriaexpress-landing.html" class="btn-home">
@@ -405,18 +404,16 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 
   </div> <!-- end two-col-desktop -->
 
-  <!-- TOP PRODUCTS -->
-  <div class="box">
+  <!-- ANALYTICS -->
+  <div class="box" onclick="location.href='syriaexpress-seller-reports.html'" style="cursor:pointer;">
     <div class="box-header">
-      <div class="box-title"><span class="box-dot"></span> أكثر المنتجات طلباً</div>
-      <a href="syriaexpress-seller-reports.html" class="box-link">تقارير كاملة ←</a>
+      <div class="box-title"><span class="box-dot"></span> التحليلات والتقارير</div>
+      <span class="box-link">عرض التقارير ←</span>
     </div>
-    <div class="top-product-list">
-      <div class="empty-state">
-        <div class="empty-icon">📊</div>
-        <div class="empty-text">لا توجد بيانات بعد</div>
-        <div class="empty-sub">ستظهر أكثر منتجاتك طلباً هنا بعد أول طلب</div>
-      </div>
+    <div style="padding:24px 16px;text-align:center;">
+      <div style="font-size:40px;margin-bottom:10px;">📊</div>
+      <div style="font-size:15px;font-weight:700;color:var(--text-dim);margin-bottom:6px;">تقارير المبيعات والتحليلات</div>
+      <div style="font-size:12px;color:var(--text-dim);opacity:0.6;line-height:1.5;">إجمالي المبيعات، حالة الطلبات، الأكثر مبيعاً، الرسوم البيانية</div>
     </div>
   </div>
 
