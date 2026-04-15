@@ -25,6 +25,16 @@
     --purple: #a78bfa;
   }
 
+  [data-theme="light"] {
+    --bg: #F5F3EF;
+    --bg2: #FFFFFF;
+    --bg3: #E8E4DC;
+    --text: #1a1917;
+    --text2: #5a5650;
+    --border: #d5d0c8;
+    --border-gold: rgba(201,168,76,0.35);
+  }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
@@ -33,9 +43,10 @@
     font-family: 'Cairo', sans-serif;
     min-height: 100vh;
     padding-bottom: 40px;
+    transition: background .3s, color .3s;
   }
 
-  /* Header */
+  /* ===== Header ===== */
   .header {
     background: var(--bg2);
     border-bottom: 1px solid var(--border-gold);
@@ -46,12 +57,12 @@
     position: sticky;
     top: 0;
     z-index: 100;
+    transition: background .3s;
   }
-  .header-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-  .header-logo img { height: 36px; width: 36px; object-fit: contain; }
-  .header-logo-text { text-align: center; }
-  .header-logo-text .ar { font-family: 'Amiri', serif; color: var(--gold); font-size: 17px; line-height: 1; }
-  .header-logo-text .en { color: var(--text2); font-size: 9px; letter-spacing: 2px; }
+  @media (min-width: 768px) {
+    .header { padding: 14px 32px; }
+  }
+
   .back-btn {
     background: var(--bg3);
     border: 1px solid var(--border);
@@ -62,24 +73,65 @@
     font-size: 13px;
     cursor: pointer;
     text-decoration: none;
+    transition: background .2s;
   }
+  .back-btn:hover { opacity: 0.85; }
 
+  .header-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .header-logo img { height: 42px; width: 42px; object-fit: contain; }
+  @media (min-width: 768px) {
+    .header-logo img { height: 48px; width: 48px; }
+  }
+  .header-logo-text { text-align: center; }
+  .header-logo-text .ar { font-family: 'Amiri', serif; color: var(--gold); font-size: 17px; line-height: 1.2; font-weight: 700; }
+  @media (min-width: 768px) {
+    .header-logo-text .ar { font-size: 20px; }
+  }
+  .header-logo-text .en { color: var(--text2); font-size: 9px; letter-spacing: 2px; font-weight: 600; }
+
+  .header-spacer { width: 70px; }
+
+  /* ===== Responsive Container ===== */
   .container { padding: 16px; max-width: 600px; margin: 0 auto; }
+  @media (min-width: 768px) {
+    .container { max-width: 700px; padding: 24px 32px; }
+  }
+  @media (min-width: 1200px) {
+    .container { max-width: 800px; }
+  }
 
   /* Avatar Section */
   .avatar-section {
     text-align: center;
     padding: 28px 16px 20px;
   }
+  @media (min-width: 768px) {
+    .avatar-section {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      text-align: right;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 32px 32px 24px;
+    }
+  }
   .avatar-wrap {
     position: relative;
     width: 90px;
     height: 90px;
     margin: 0 auto 12px;
+    flex-shrink: 0;
+  }
+  @media (min-width: 768px) {
+    .avatar-wrap {
+      width: 100px; height: 100px;
+      margin: 0;
+    }
   }
   .avatar {
-    width: 90px;
-    height: 90px;
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
     background: var(--bg3);
     border: 3px solid var(--gold);
@@ -119,7 +171,11 @@
     opacity: 0;
     cursor: pointer;
   }
+  .avatar-info { flex: 1; }
   .company-name { font-family: 'Amiri', serif; font-size: 22px; font-weight: 700; color: var(--gold); margin-bottom: 4px; }
+  @media (min-width: 768px) {
+    .company-name { font-size: 26px; }
+  }
   .company-activity { font-size: 13px; color: var(--text2); margin-bottom: 8px; }
   .company-email { font-size: 12px; color: var(--text2); }
 
@@ -144,6 +200,10 @@
     border-radius: 12px;
     padding: 16px;
     margin-bottom: 16px;
+    transition: background .3s, border-color .3s;
+  }
+  @media (min-width: 768px) {
+    .section { padding: 20px 24px; }
   }
   .section-title {
     font-size: 14px;
@@ -161,12 +221,16 @@
     grid-template-columns: 1fr 1fr;
     gap: 10px;
   }
+  @media (min-width: 768px) {
+    .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  }
   .stat-card {
     background: var(--bg3);
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 14px;
     text-align: center;
+    transition: background .3s;
   }
   .stat-icon { font-size: 22px; margin-bottom: 6px; }
   .stat-value { font-size: 20px; font-weight: 700; color: var(--gold); margin-bottom: 2px; }
@@ -219,6 +283,15 @@
   }
   .form-textarea:disabled { opacity: 0.5; cursor: not-allowed; }
   .form-textarea.readonly { border-color: transparent; background: transparent; padding-right: 0; opacity: 1; }
+
+  /* Form Grid for desktop */
+  @media (min-width: 768px) {
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 20px;
+    }
+  }
 
   /* Edit Toggle */
   .edit-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
@@ -286,7 +359,9 @@
 
 <!-- Header -->
 <div class="header">
-  <div style="width:60px"></div>
+  <!-- يمين: زر رجوع -->
+  <a href="syriaexpress-seller.html" class="back-btn">← رجوع</a>
+  <!-- وسط: اللوغو + النص ثم الصورة (الصورة يمين النص في RTL) -->
   <a href="syriaexpress-landing.html" class="header-logo">
     <div class="header-logo-text">
       <div class="ar">سوريا إكسبريس</div>
@@ -294,7 +369,8 @@
     </div>
     <img id="headerLogo" src="" alt="logo" style="display:none" onerror="this.style.display='none'">
   </a>
-  <a href="syriaexpress-seller.html" class="back-btn">← رجوع</a>
+  <!-- يسار: فراغ لتوازن الترويسة -->
+  <div class="header-spacer"></div>
 </div>
 
 <!-- Loading -->
@@ -315,10 +391,12 @@
         <input type="file" accept="image/*" onchange="uploadLogo(this)">
       </label>
     </div>
-    <div class="company-name" id="companyName">—</div>
-    <div class="company-activity" id="companyActivity">—</div>
-    <div class="company-email" id="companyEmail">—</div>
-    <div id="verifBadge"></div>
+    <div class="avatar-info">
+      <div class="company-name" id="companyName">—</div>
+      <div class="company-activity" id="companyActivity">—</div>
+      <div class="company-email" id="companyEmail">—</div>
+      <div id="verifBadge"></div>
+    </div>
   </div>
 
   <div class="container">
@@ -363,52 +441,54 @@
       <div class="success-msg" id="successMsg"></div>
       <div class="error-msg" id="errorMsg"></div>
 
-      <div class="form-group">
-        <label class="form-label">اسم الشركة (عربي)</label>
-        <input class="form-input readonly" type="text" id="fieldCompanyAr" disabled>
-      </div>
-      <div class="form-group">
-        <label class="form-label">اسم الشركة (إنجليزي)</label>
-        <input class="form-input readonly" type="text" id="fieldCompanyEn" disabled>
-      </div>
-      <div class="form-group">
-        <label class="form-label">المحافظة</label>
-        <select class="form-select readonly" id="fieldGov" disabled>
-          <option value="">اختر المحافظة</option>
-          <option value="دمشق">دمشق</option>
-          <option value="ريف دمشق">ريف دمشق</option>
-          <option value="حلب">حلب</option>
-          <option value="حمص">حمص</option>
-          <option value="حماة">حماة</option>
-          <option value="اللاذقية">اللاذقية</option>
-          <option value="طرطوس">طرطوس</option>
-          <option value="إدلب">إدلب</option>
-          <option value="دير الزور">دير الزور</option>
-          <option value="الرقة">الرقة</option>
-          <option value="الحسكة">الحسكة</option>
-          <option value="درعا">درعا</option>
-          <option value="السويداء">السويداء</option>
-          <option value="القنيطرة">القنيطرة</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">نوع النشاط</label>
-        <select class="form-select readonly" id="fieldActivity" disabled>
-          <option value="">اختر نوع النشاط</option>
-          <option value="factory">مصنع</option>
-          <option value="manufacturer">مُصنّع</option>
-          <option value="distributor">موزّع</option>
-          <option value="wholesaler">تاجر جملة</option>
-          <option value="importer">مستورد</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">رقم الهاتف</label>
-        <input class="form-input readonly" type="text" id="fieldPhone" disabled placeholder="+963 xxx xxx xxx">
-      </div>
-      <div class="form-group">
-        <label class="form-label">سنة التأسيس</label>
-        <input class="form-input readonly" type="number" id="fieldYear" disabled placeholder="مثال: 2010" min="1900" max="2026">
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">اسم الشركة (عربي)</label>
+          <input class="form-input readonly" type="text" id="fieldCompanyAr" disabled>
+        </div>
+        <div class="form-group">
+          <label class="form-label">اسم الشركة (إنجليزي)</label>
+          <input class="form-input readonly" type="text" id="fieldCompanyEn" disabled>
+        </div>
+        <div class="form-group">
+          <label class="form-label">المحافظة</label>
+          <select class="form-select readonly" id="fieldGov" disabled>
+            <option value="">اختر المحافظة</option>
+            <option value="دمشق">دمشق</option>
+            <option value="ريف دمشق">ريف دمشق</option>
+            <option value="حلب">حلب</option>
+            <option value="حمص">حمص</option>
+            <option value="حماة">حماة</option>
+            <option value="اللاذقية">اللاذقية</option>
+            <option value="طرطوس">طرطوس</option>
+            <option value="إدلب">إدلب</option>
+            <option value="دير الزور">دير الزور</option>
+            <option value="الرقة">الرقة</option>
+            <option value="الحسكة">الحسكة</option>
+            <option value="درعا">درعا</option>
+            <option value="السويداء">السويداء</option>
+            <option value="القنيطرة">القنيطرة</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">نوع النشاط</label>
+          <select class="form-select readonly" id="fieldActivity" disabled>
+            <option value="">اختر نوع النشاط</option>
+            <option value="factory">مصنع</option>
+            <option value="manufacturer">مُصنّع</option>
+            <option value="distributor">موزّع</option>
+            <option value="wholesaler">تاجر جملة</option>
+            <option value="importer">مستورد</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">رقم الهاتف</label>
+          <input class="form-input readonly" type="text" id="fieldPhone" disabled placeholder="+963 xxx xxx xxx">
+        </div>
+        <div class="form-group">
+          <label class="form-label">سنة التأسيس</label>
+          <input class="form-input readonly" type="number" id="fieldYear" disabled placeholder="مثال: 2010" min="1900" max="2026">
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label">وصف الشركة</label>
@@ -427,7 +507,7 @@
       <div class="upload-area" onclick="document.getElementById('docFile').click()">
         <div style="font-size:24px;">📎</div>
         <div style="font-size:13px;color:var(--text2);margin-top:6px;" id="docLabel">اختر ملفاً للرفع</div>
-        <div style="font-size:11px;color:var(--text2);margin-top:8px;">PDF أو صورة — حد أقصى 5MB</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:8px;">PDF أو صورة — الحد الأقصى 5MB</div>
         <input type="file" id="docFile" accept="image/*,.pdf" style="display:none" onchange="handleDocSelect(this)">
       </div>
       <div style="margin-top:10px;">
@@ -479,6 +559,14 @@
 
 <script src="logos.js"></script>
 <script>
+// ===== تطبيق الثيم تلقائياً من localStorage =====
+(function() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+})();
+
 const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
 const token = localStorage.getItem('token');
 const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -649,7 +737,7 @@ async function saveProfile() {
     cancelEdit();
     showMsg('successMsg', '✅ تم حفظ المعلومات بنجاح');
   } catch(e) {
-    showMsg('errorMsg', e.message || 'تعذّر الحفظ، حاول مجدداً');
+    showMsg('errorMsg', e.message || 'تعذّر الحفظ، يُرجى المحاولة مجدداً');
   }
 
   btn.disabled = false;
@@ -670,7 +758,6 @@ async function uploadLogo(input) {
   avatarEl.innerHTML = '<div class="spinner" style="width:30px;height:30px;border-width:2px;"></div>';
 
   try {
-    // Try dedicated logo endpoint first
     const formData = new FormData();
     formData.append('logo', file);
 
@@ -709,7 +796,7 @@ async function uploadLogo(input) {
     throw new Error('تعذّر رفع الصورة');
   } catch(e) {
     renderProfile();
-    showMsg('errorMsg', e.message || 'تعذّر رفع الصورة — قد تحتاج إضافة endpoint خاص');
+    showMsg('errorMsg', e.message || 'تعذّر رفع الصورة');
   }
 }
 
@@ -722,7 +809,7 @@ async function changePassword() {
   document.getElementById('pwError').style.display = 'none';
   document.getElementById('pwSuccess').style.display = 'none';
 
-  if (!current || !newPw || !confirm) { showMsg('pwError', 'يرجى ملء جميع الحقول'); return; }
+  if (!current || !newPw || !confirm) { showMsg('pwError', 'يُرجى ملء جميع الحقول'); return; }
   if (newPw.length < 6) { showMsg('pwError', 'كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل'); return; }
   if (newPw !== confirm) { showMsg('pwError', 'كلمة المرور الجديدة غير متطابقة'); return; }
 
