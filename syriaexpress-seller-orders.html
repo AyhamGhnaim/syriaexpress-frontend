@@ -23,17 +23,27 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  [data-theme="light"] {
+    --bg: #F5F3EF;
+    --bg2: #FFFFFF;
+    --bg3: #E8E4DC;
+    --text: #1a1917;
+    --text2: #5a5650;
+    --border: #d5d0c8;
+  }
+
   body {
     background: var(--bg);
     color: var(--text);
     font-family: 'Cairo', sans-serif;
     min-height: 100vh;
     padding-bottom: 100px;
+    transition: background .3s, color .3s;
   }
 
   .header {
     background: var(--bg2);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid rgba(201,168,76,0.25);
     padding: 12px 16px;
     display: flex;
     align-items: center;
@@ -41,11 +51,23 @@
     position: sticky;
     top: 0;
     z-index: 100;
+    transition: background .3s;
   }
-  .header-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
-  .header-logo img { height: 36px; }
-  .header-logo-text .ar { font-family: 'Amiri', serif; color: var(--gold); font-size: 16px; }
-  .header-logo-text .en { color: var(--text2); font-size: 9px; letter-spacing: 2px; }
+  @media (min-width: 768px) {
+    .header { padding: 14px 32px; }
+  }
+  .header-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .header-logo img { height: 42px; width: 42px; object-fit: contain; }
+  @media (min-width: 768px) {
+    .header-logo img { height: 48px; width: 48px; }
+  }
+  .header-logo-text { text-align: center; }
+  .header-logo-text .ar { font-family: 'Amiri', serif; color: var(--gold); font-size: 17px; font-weight: 700; line-height: 1.2; }
+  @media (min-width: 768px) {
+    .header-logo-text .ar { font-size: 20px; }
+  }
+  .header-logo-text .en { color: var(--text2); font-size: 9px; letter-spacing: 2px; font-weight: 600; }
+  .header-spacer { width: 70px; }
   .back-btn {
     background: var(--bg3);
     border: 1px solid var(--border);
@@ -58,6 +80,12 @@
   }
 
   .container { padding: 16px; max-width: 600px; margin: 0 auto; }
+  @media (min-width: 768px) {
+    .container { max-width: 900px; padding: 24px 32px; }
+  }
+  @media (min-width: 1200px) {
+    .container { max-width: 1100px; }
+  }
 
   /* Stats */
   .stats-row {
@@ -105,6 +133,7 @@
     color: #000;
     font-weight: 700;
   }
+  [data-theme="light"] .filter-btn.active { color: #fff; }
 
   /* Order Card */
   .order-card {
@@ -345,15 +374,18 @@
 
 <!-- Header -->
 <div class="header">
+  <!-- يمين: زر رجوع -->
   <a href="syriaexpress-seller.html" class="back-btn">← رجوع</a>
+  <!-- وسط: اللوغو -->
   <a href="syriaexpress-landing.html" class="header-logo">
     <div class="header-logo-text">
       <div class="ar">سوريا إكسبريس</div>
       <div class="en">B2B MARKETPLACE</div>
     </div>
-    <img src="assets/logo_main.png" onerror="this.style.display='none'" />
+    <img id="headerLogo" src="" alt="logo" style="display:none" onerror="this.style.display='none'">
   </a>
-  <div style="width:60px"></div>
+  <!-- يسار: فراغ -->
+  <div class="header-spacer"></div>
 </div>
 
 <div class="container">
@@ -381,7 +413,7 @@
   <!-- Loading -->
   <div class="loading-state" id="loadingState">
     <div class="spinner"></div>
-    <div>جاري التحميل...</div>
+    <div>جارٍ التحميل...</div>
   </div>
 
   <!-- Orders -->
@@ -390,8 +422,8 @@
   <!-- Empty -->
   <div class="empty-state" id="emptyState" style="display:none">
     <div class="empty-icon">📭</div>
-    <div class="empty-title">ما في طلبات</div>
-    <div class="empty-sub">لما يطلب أحد منتجاتك رح تظهر هون</div>
+    <div class="empty-title">لا توجد طلبات</div>
+    <div class="empty-sub">ستظهر الطلبات الواردة هنا عند ورود أول طلب</div>
   </div>
 
 </div>
@@ -428,6 +460,21 @@
 </div>
 
 <script src="logos.js"></script>
+<script>
+// ===== تطبيق الثيم تلقائياً من localStorage =====
+(function() {
+  var saved = localStorage.getItem('theme');
+  if (saved === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+})();
+
+// ===== Logo =====
+if (typeof LOGOS !== 'undefined' && LOGOS.main) {
+  var logoEl = document.getElementById('headerLogo');
+  if (logoEl) { logoEl.src = LOGOS.main; logoEl.style.display = 'block'; }
+}
+</script>
 <script>
 const API = 'https://syriaexpress-backend-production.up.railway.app';
 let allOrders = [];
