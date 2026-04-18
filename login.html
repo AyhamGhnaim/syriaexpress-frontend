@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>تسجيل الدخول — SyriaExpress</title>
+  <script>(function(){var s=localStorage.getItem('theme');if(s==='light')document.documentElement.setAttribute('data-theme','light');})()</script>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
   <style>
     :root {
@@ -18,6 +19,15 @@
       --border: rgba(201,168,76,0.2);
       --error: #e05555;
       --success: #4caf50;
+    }
+
+    [data-theme="light"] {
+      --bg: #F5F3EF;
+      --bg2: #FFFFFF;
+      --bg3: #E8E4DC;
+      --text: #1a1610;
+      --text-muted: #6b5e3e;
+      --border: rgba(139,90,20,0.2);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -278,6 +288,17 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+
+    @media (min-width: 480px) {
+      .container { max-width: 460px; }
+      .card { padding: 3rem; }
+      .card-title { font-size: 2rem; }
+    }
+
+    @media (min-width: 768px) {
+      body { padding: 3rem; }
+      .container { max-width: 480px; }
+    }
   </style>
 </head>
 <body>
@@ -320,7 +341,7 @@
       <div class="divider">أو</div>
 
       <div class="card-footer">
-        ما عندك حساب؟ <a href="register.html">سجّل الآن</a>
+        ليس لديك حساب؟ <a href="register.html">سجّل الآن</a>
       </div>
     </div>
 
@@ -348,7 +369,7 @@
       const text = document.getElementById('btnText');
       btn.disabled = loading;
       spinner.style.display = loading ? 'block' : 'none';
-      text.textContent = loading ? 'جاري التسجيل...' : 'تسجيل الدخول';
+      text.textContent = loading ? 'جارٍ التسجيل...' : 'تسجيل الدخول';
     }
 
     function togglePass() {
@@ -393,7 +414,7 @@
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
 
-        showAlert('تم تسجيل الدخول بنجاح! جاري التحويل...', 'success');
+        showAlert('تم تسجيل الدخول بنجاح! جارٍ التحويل...', 'success');
 
         // Redirect based on user type
         setTimeout(() => {
