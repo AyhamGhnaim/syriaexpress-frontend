@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>إنشاء حساب — SyriaExpress</title>
+  <script>(function(){var s=localStorage.getItem('theme');if(s==='light')document.documentElement.setAttribute('data-theme','light');})()</script>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
   <style>
     :root {
@@ -18,6 +19,15 @@
       --border: rgba(201,168,76,0.2);
       --error: #e05555;
       --success: #4caf50;
+    }
+
+    [data-theme="light"] {
+      --bg: #F5F3EF;
+      --bg2: #FFFFFF;
+      --bg3: #E8E4DC;
+      --text: #1a1610;
+      --text-muted: #6b5e3e;
+      --border: rgba(139,90,20,0.2);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -404,6 +414,21 @@
       .form-row { grid-template-columns: 1fr; }
       .card { padding: 1.8rem 1.4rem; }
     }
+
+    @media (min-width: 481px) and (max-width: 767px) {
+      .container { max-width: 540px; }
+      .card { padding: 2.8rem; }
+    }
+
+    @media (min-width: 768px) {
+      body { padding: 3rem 2rem; }
+      .container { max-width: 560px; }
+      .card { padding: 3rem; }
+      .step-title { font-size: 1.8rem; }
+    }
+
+    [data-theme="light"] select option { background: #FFFFFF; color: #1a1610; }
+    [data-theme="light"] .btn-next { color: #1a1610; }
   </style>
 </head>
 <body>
@@ -610,7 +635,7 @@
   </div>
 
   <div class="card-footer">
-    عندك حساب؟ <a href="login.html">سجّل دخولك</a>
+    لديك حساب بالفعل؟ <a href="login.html">سجّل دخولك</a>
   </div>
 
   <div class="back-home">
@@ -730,7 +755,7 @@
     const text = document.getElementById('btnText');
     btn.disabled = loading;
     spinner.style.display = loading ? 'block' : 'none';
-    text.textContent = loading ? 'جاري الإنشاء...' : 'إنشاء الحساب';
+    text.textContent = loading ? 'جارٍ الإنشاء...' : 'إنشاء الحساب';
   }
 
   async function handleRegister() {
@@ -813,8 +838,8 @@
       document.getElementById('stepsIndicator').style.display = 'none';
 
       const msg = selectedType === 'seller'
-        ? 'تم إنشاء حسابك! حسابك قيد المراجعة من قِبل الإدارة.\nجاري التحويل...'
-        : 'تم إنشاء حسابك بنجاح!\nجاري تحويلك للوحة التحكم...';
+        ? 'تم إنشاء حسابك! حسابك قيد المراجعة من قِبل الإدارة.\nجارٍ التحويل...'
+        : 'تم إنشاء حسابك بنجاح!\nجارٍ تحويلك للوحة التحكم...';
       document.getElementById('successMsg').innerHTML = msg.replace('\n', '<br/>');
 
       setTimeout(() => {
