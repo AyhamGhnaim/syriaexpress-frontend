@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>السلة — SyriaExpress</title>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<script>
+(function() {
+  var saved = localStorage.getItem('theme');
+  if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+})();
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -13,6 +19,13 @@
   --text:#F5F0E8;--text-dim:#A89880;
   --border:#2A2620;--border-gold:rgba(201,168,76,0.25);
   --green:#4ade80;--blue:#60a5fa;--orange:#fb923c;--red:#f87171;
+  --header-bg:rgba(15,14,12,0.95);
+}
+[data-theme="light"]{
+  --bg:#F5F3EF;--bg2:#FFFFFF;--bg3:#E8E4DC;--bg4:#DDD9D0;
+  --text:#1A1814;--text-dim:#6B6560;
+  --border:#D0CBC0;--border-gold:rgba(201,168,76,0.35);
+  --header-bg:rgba(245,243,239,0.95);
 }
 body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);direction:rtl;min-height:100vh;}
 
@@ -21,7 +34,7 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);direc
   position:sticky;top:0;z-index:50;
   display:flex;align-items:center;justify-content:space-between;
   padding:0 16px;height:56px;
-  background:rgba(15,14,12,0.95);backdrop-filter:blur(12px);
+  background:var(--header-bg);backdrop-filter:blur(12px);
   border-bottom:1px solid var(--border-gold);
 }
 .header-right{display:flex;align-items:center;gap:10px}
@@ -62,6 +75,7 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
   padding:14px 16px;border-bottom:1px solid rgba(42,38,32,0.5);
   transition:background 0.15s;
 }
+[data-theme="light"] .cart-item{border-bottom-color:rgba(208,203,192,0.5);}
 .cart-item:last-child{border-bottom:none}
 .cart-item:hover{background:rgba(201,168,76,0.03)}
 .item-img{
@@ -107,6 +121,7 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
   padding:8px 0;border-bottom:1px solid rgba(42,38,32,0.4);
   font-size:13px;
 }
+[data-theme="light"] .summary-row{border-bottom-color:rgba(208,203,192,0.4);}
 .summary-row:last-of-type{border-bottom:none}
 .summary-row.total{
   font-size:15px;font-weight:900;color:var(--gold);
@@ -124,6 +139,7 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
   display:flex;align-items:center;gap:6px;
   border-bottom:1px solid rgba(42,38,32,0.3);
 }
+[data-theme="light"] .seller-label{border-bottom-color:rgba(208,203,192,0.3);}
 .seller-label span{color:var(--gold);font-weight:700;}
 
 /* SHIPPING SELECT */
@@ -169,6 +185,27 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 
 /* LOADING */
 .loading{padding:32px;text-align:center;color:var(--text-dim);font-size:13px;}
+
+/* RESPONSIVE — Tablet */
+@media(min-width:768px){
+  main{max-width:680px;padding:24px 20px;gap:20px;}
+  .shipping-options{flex-direction:row;gap:12px;}
+  .ship-opt{flex-direction:column;align-items:flex-start;gap:6px;padding:14px;}
+  .ship-opt-price{margin-top:auto;}
+  .cart-item{gap:16px;}
+  .item-img{width:60px;height:60px;}
+  .item-name{font-size:14px;}
+}
+
+/* RESPONSIVE — Desktop */
+@media(min-width:1200px){
+  main{max-width:900px;padding:32px 24px;flex-direction:row;align-items:flex-start;gap:24px;}
+  .box{flex:1;}
+  #shippingBox{flex:none;width:100%;}
+  .cart-and-shipping{flex:1;display:flex;flex-direction:column;gap:20px;}
+  .summary-box{width:320px;flex-shrink:0;position:sticky;top:72px;}
+  .header-title{font-size:16px;}
+}
 </style>
 </head>
 <body>
@@ -186,50 +223,52 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
   </div>
 </div>
 
-<main>
+<main id="mainLayout">
 
-  <!-- CART ITEMS -->
-  <div class="box" id="cartBox">
-    <div class="box-header">
-      <div class="box-title"><span class="box-dot"></span> المنتجات المختارة</div>
-      <button onclick="clearCart()" style="font-size:11px;color:var(--red);background:none;border:none;cursor:pointer;font-family:'Cairo',sans-serif;">مسح الكل</button>
+  <div class="cart-and-shipping">
+    <!-- CART ITEMS -->
+    <div class="box" id="cartBox">
+      <div class="box-header">
+        <div class="box-title"><span class="box-dot"></span> المنتجات المختارة</div>
+        <button onclick="clearCart()" style="font-size:11px;color:var(--red);background:none;border:none;cursor:pointer;font-family:'Cairo',sans-serif;">مسح الكل</button>
+      </div>
+      <div class="cart-list" id="cartList">
+        <div class="loading">جارٍ التحميل...</div>
+      </div>
     </div>
-    <div class="cart-list" id="cartList">
-      <div class="loading">جاري التحميل...</div>
-    </div>
-  </div>
 
-  <!-- SHIPPING -->
-  <div class="box" id="shippingBox" style="display:none">
-    <div class="box-header">
-      <div class="box-title"><span class="box-dot"></span> خيار الشحن</div>
-    </div>
-    <div class="shipping-section">
-      <div class="shipping-options">
-        <label class="ship-opt selected" onclick="selectShipping(this,'inside',0)">
-          <input type="radio" name="ship" value="inside" checked>
-          <div class="ship-opt-info">
-            <div class="ship-opt-name">داخل المحافظة</div>
-            <div class="ship-opt-desc">1–2 يوم عمل</div>
-          </div>
-          <div class="ship-opt-price">مجاناً</div>
-        </label>
-        <label class="ship-opt" onclick="selectShipping(this,'outside',2500)">
-          <input type="radio" name="ship" value="outside">
-          <div class="ship-opt-info">
-            <div class="ship-opt-name">خارج المحافظة</div>
-            <div class="ship-opt-desc">2–4 أيام عمل</div>
-          </div>
-          <div class="ship-opt-price">2,500 ل.س</div>
-        </label>
-        <label class="ship-opt" onclick="selectShipping(this,'international',15000)">
-          <input type="radio" name="ship" value="international">
-          <div class="ship-opt-info">
-            <div class="ship-opt-name">خارج سوريا</div>
-            <div class="ship-opt-desc">7–14 يوم عمل</div>
-          </div>
-          <div class="ship-opt-price">15,000 ل.س</div>
-        </label>
+    <!-- SHIPPING -->
+    <div class="box" id="shippingBox" style="display:none">
+      <div class="box-header">
+        <div class="box-title"><span class="box-dot"></span> خيار الشحن</div>
+      </div>
+      <div class="shipping-section">
+        <div class="shipping-options">
+          <label class="ship-opt selected" onclick="selectShipping(this,'inside',0)">
+            <input type="radio" name="ship" value="inside" checked>
+            <div class="ship-opt-info">
+              <div class="ship-opt-name">داخل المحافظة</div>
+              <div class="ship-opt-desc">1–2 يوم عمل</div>
+            </div>
+            <div class="ship-opt-price">مجاناً</div>
+          </label>
+          <label class="ship-opt" onclick="selectShipping(this,'outside',2500)">
+            <input type="radio" name="ship" value="outside">
+            <div class="ship-opt-info">
+              <div class="ship-opt-name">خارج المحافظة</div>
+              <div class="ship-opt-desc">2–4 أيام عمل</div>
+            </div>
+            <div class="ship-opt-price">2,500 ل.س</div>
+          </label>
+          <label class="ship-opt" onclick="selectShipping(this,'international',15000)">
+            <input type="radio" name="ship" value="international">
+            <div class="ship-opt-info">
+              <div class="ship-opt-name">خارج سوريا</div>
+              <div class="ship-opt-desc">7–14 يوم عمل</div>
+            </div>
+            <div class="ship-opt-price">15,000 ل.س</div>
+          </label>
+        </div>
       </div>
     </div>
   </div>
@@ -319,9 +358,6 @@ function renderCart() {
     html += `<div class="seller-label">🏭 <span>${group.name}</span></div>`;
     group.items.forEach(item => {
       const subtotal = (item.price * item.qty).toLocaleString('ar-SY');
-      const imgHtml = item.image_url
-        ? `<img src="${item.image_url}" alt="">`
-        : (item.emoji || '📦');
       html += `
         <div class="cart-item">
           <div class="item-img">${item.image_url ? `<img src="${item.image_url}" alt="">` : (item.emoji || '📦')}</div>
