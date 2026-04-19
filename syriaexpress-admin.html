@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>لوحة الإدارة — SyriaExpress</title>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<script>
+(function() {
+  var saved = localStorage.getItem('theme');
+  if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+})();
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -14,12 +20,29 @@
   --border:#2A2620;--border-gold:rgba(201,168,76,0.25);
   --green:#4ade80;--blue:#60a5fa;--orange:#fb923c;--purple:#a78bfa;--red:#f87171;
 }
+[data-theme="light"]{
+  --bg:#F5F3EF;--bg2:#FFFFFF;--bg3:#FFFFFF;--bg4:#E8E4DC;
+  --text:#1a1814;--text-dim:#6b6456;
+  --border:#d4cfc4;--border-gold:rgba(201,168,76,0.3);
+  --green:#2e7d32;--blue:#1565c0;--orange:#e65100;--purple:#6a1b9a;--red:#c62828;
+}
 body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);direction:rtl;min-height:100vh;}
 
 
 
 /* MAIN */
 main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:16px;}
+
+@media(min-width:768px){
+  main{max-width:900px;padding:20px;}
+  .stats-grid{grid-template-columns:repeat(4,1fr);}
+  .main-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .main-cols .box{margin-bottom:0;}
+  .quick-actions{grid-template-columns:repeat(4,1fr);}
+}
+@media(min-width:1200px){
+  main{max-width:1100px;}
+}
 
 /* STAT CARDS */
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
@@ -190,13 +213,13 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
       <span class="stat-icon">👤</span>
       <div class="stat-num" id="stat-users">—</div>
       <div class="stat-label">إجمالي المستخدمين</div>
-      <div class="stat-sub" id="stat-users-sub">جاري التحميل...</div>
+      <div class="stat-sub" id="stat-users-sub">جارٍ التحميل...</div>
     </div>
     <div class="stat-card gold">
       <span class="stat-icon">🏭</span>
       <div class="stat-num" id="stat-sellers">—</div>
       <div class="stat-label">البائعون النشطون</div>
-      <div class="stat-sub" id="stat-sellers-sub">جاري التحميل...</div>
+      <div class="stat-sub" id="stat-sellers-sub">جارٍ التحميل...</div>
     </div>
     <div class="stat-card orange">
       <span class="stat-icon">⏳</span>
@@ -208,7 +231,7 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
       <span class="stat-icon">📦</span>
       <div class="stat-num" id="stat-orders">—</div>
       <div class="stat-label">إجمالي الطلبات</div>
-      <div class="stat-sub" id="stat-orders-sub">جاري التحميل...</div>
+      <div class="stat-sub" id="stat-orders-sub">جارٍ التحميل...</div>
     </div>
   </div>
 
@@ -238,12 +261,13 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
   </div>
 
   <!-- VERIFICATIONS -->
+  <div class="main-cols">
   <div class="box">
     <div class="box-header">
       <div class="box-title"><span class="box-dot orange"></span> طلبات التوثيق</div>
       <a href="syriaexpress-admin-verifications.html" class="box-link">عرض الكل ←</a>
     </div>
-    <div class="verif-list">
+    <div class="verif-list" id="verifList">
       <div class="empty-state">
         <div class="empty-icon">📋</div>
         <div class="empty-text">لا توجد طلبات توثيق</div>
@@ -261,32 +285,34 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
     <div class="users-list" id="usersList">
       <div class="empty-state">
         <div class="empty-icon">👥</div>
-        <div class="empty-text">جاري التحميل...</div>
+        <div class="empty-text">جارٍ التحميل...</div>
       </div>
     </div>
+  </div>
   </div>
 
   <!-- ANALYTICS -->
   <div class="box">
     <div class="box-header">
       <div class="box-title"><span class="box-dot green"></span> التحليلات</div>
+      <a href="syriaexpress-admin-analytics.html" class="box-link">تفاصيل ←</a>
     </div>
-    <div class="analytics-rows">
+    <div class="analytics-rows" id="analyticsRows">
       <div class="analytics-row">
         <span class="analytics-label">إجمالي المبيعات</span>
-        <span class="analytics-val">—</span>
+        <span class="analytics-val" id="anGMV">—</span>
       </div>
       <div class="analytics-row">
         <span class="analytics-label">متوسط قيمة الطلب</span>
-        <span class="analytics-val">—</span>
+        <span class="analytics-val" id="anAvg">—</span>
       </div>
       <div class="analytics-row">
         <span class="analytics-label">أكثر الفئات نشاطاً</span>
-        <span class="analytics-val">—</span>
+        <span class="analytics-val" id="anTopCat">—</span>
       </div>
       <div class="analytics-row">
         <span class="analytics-label">معدل إتمام الطلبات</span>
-        <span class="analytics-val">—</span>
+        <span class="analytics-val" id="anRate">—</span>
       </div>
     </div>
   </div>
@@ -296,14 +322,19 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 <script>
 const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
 
-// Check auth
 const token = localStorage.getItem('token');
 const user = JSON.parse(localStorage.getItem('user') || '{}');
 if (!token || user.user_type !== 'admin') {
   window.location.href = 'login.html';
 }
 
-// Load stats
+function formatPrice(p) {
+  if (!p) return '0 ل.س';
+  if (p >= 1000000) return (p/1000000).toFixed(1) + 'م ل.س';
+  if (p >= 1000) return (p/1000).toFixed(0) + 'ك ل.س';
+  return Number(p).toLocaleString('ar-SY') + ' ل.س';
+}
+
 async function loadStats() {
   try {
     const res = await fetch(`${API_BASE}/api/admin/overview`, {
@@ -313,24 +344,48 @@ async function loadStats() {
     const data = await res.json();
 
     const s = data.stats || {};
-    const totalUsers = (s.buyers || 0) + (s.verified_sellers || 0);
+
+    // إصلاح عدد المستخدمين: الإجمالي الكامل من API لا فقط العدد المحدود
+    const totalUsers = s.total_users || ((s.buyers || 0) + (s.verified_sellers || 0) + (s.pending_sellers || 0) + (s.admins || 0));
     document.getElementById('stat-users').textContent = totalUsers;
     document.getElementById('stat-users-sub').textContent =
-      `مشتري: ${s.buyers || 0} | بائع: ${s.verified_sellers || 0}`;
+      `مشترٍ: ${s.buyers || 0} | بائع: ${(s.verified_sellers||0) + (s.pending_sellers||0)}`;
 
     document.getElementById('stat-sellers').textContent = s.verified_sellers || 0;
-    document.getElementById('stat-sellers-sub').textContent = 'بائع موثق';
+    document.getElementById('stat-sellers-sub').textContent = 'بائع موثّق';
 
     document.getElementById('stat-pending').textContent = s.pending_verif || 0;
 
     document.getElementById('stat-orders').textContent = s.total_orders || 0;
     document.getElementById('stat-orders-sub').textContent = 'إجمالي الطلبات';
 
+    // قسم التحليلات — احسب من بيانات overview
+    const orders = data.orders || data.recent_orders || [];
+    const delivered = orders.filter(o => o.status === 'delivered');
+    const cancelled = orders.filter(o => o.status === 'cancelled');
+
+    const gmv = delivered.reduce((s,o) => s + ((o.quantity||0)*(o.price||0)) + (o.shipping_price||0), 0);
+    const avg = delivered.length ? gmv / delivered.length : 0;
+    const rate = orders.length ? Math.round((delivered.length / orders.length) * 100) : 0;
+
+    // أكثر الفئات نشاطاً
+    const catMap = {};
+    orders.filter(o=>o.status!=='cancelled').forEach(o => {
+      const cat = o.category_name_ar || o.category_ar || null;
+      if (cat) catMap[cat] = (catMap[cat]||0) + 1;
+    });
+    const topCat = Object.entries(catMap).sort((a,b)=>b[1]-a[1])[0]?.[0] || '—';
+
+    document.getElementById('anGMV').textContent    = formatPrice(gmv);
+    document.getElementById('anAvg').textContent    = formatPrice(avg);
+    document.getElementById('anTopCat').textContent = topCat;
+    document.getElementById('anRate').textContent   = rate + '%';
+
   } catch(e) {
     ['stat-users','stat-sellers','stat-pending','stat-orders'].forEach(id => {
       document.getElementById(id).textContent = '—';
     });
-    document.getElementById('stat-users-sub').textContent = 'تعذّر الاتصال بالـ API';
+    document.getElementById('stat-users-sub').textContent = 'تعذّر الاتصال بالخادم';
     document.getElementById('stat-sellers-sub').textContent = '';
     document.getElementById('stat-orders-sub').textContent = '';
   }
@@ -338,21 +393,28 @@ async function loadStats() {
 
 async function loadUsers() {
   try {
-    const res = await fetch(`${API_BASE}/api/admin/users?limit=3`, {
+    // جلب بدون limit لضمان العدد الصحيح
+    const res = await fetch(`${API_BASE}/api/admin/users`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!res.ok) throw new Error('فشل');
     const data = await res.json();
-    const users = data.users || data || [];
+    const users = Array.isArray(data) ? data : (data.users || []);
     const list = document.getElementById('usersList');
+
+    // تحديث عدد المستخدمين بالعدد الفعلي من هذا الـ endpoint
+    if (users.length > 0) {
+      const totalEl = document.getElementById('stat-users');
+      if (totalEl.textContent === '—') totalEl.textContent = users.length;
+    }
 
     if (!users.length) {
       list.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد مستخدمون بعد</div></div>`;
       return;
     }
 
-    const typeMap = { buyer: 'مشتري', seller: 'بائع', admin: 'أدمن' };
-    list.innerHTML = users.slice(0, 3).map(u => `
+    const typeMap = { buyer: 'مشترٍ', seller: 'بائع', admin: 'أدمن' };
+    list.innerHTML = users.slice(0, 5).map(u => `
       <div class="user-row">
         <div class="user-avatar">${(u.name || '؟')[0]}</div>
         <div class="user-info">
@@ -367,10 +429,51 @@ async function loadUsers() {
   }
 }
 
+async function loadVerifications() {
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/verifications?status=pending`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    const list = Array.isArray(data) ? data : (data.verifications || []);
+    const el = document.getElementById('verifList');
+
+    if (!list.length) {
+      el.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">لا توجد طلبات معلّقة</div><div class="empty-sub">جميع الطلبات تمت مراجعتها</div></div>`;
+      return;
+    }
+
+    el.innerHTML = list.slice(0, 3).map(v => `
+      <div class="verif-row">
+        <div class="verif-icon">🏭</div>
+        <div class="verif-info">
+          <div class="verif-name">${v.company_name_ar || v.company_name || '—'}</div>
+          <div class="verif-type">${v.activity_type || ''}</div>
+        </div>
+        <div class="verif-actions">
+          <button class="btn-approve" onclick="approveVerif('${v.id}')">قبول</button>
+          <button class="btn-reject" onclick="location.href='syriaexpress-admin-verifications.html'">رفض</button>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {}
+}
+
+async function approveVerif(id) {
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/verifications/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ action: 'approved' })
+    });
+    if (res.ok) { loadVerifications(); loadStats(); }
+  } catch(e) {}
+}
+
 loadStats();
 loadUsers();
-
-
+loadVerifications();
 
 function logout() {
   localStorage.removeItem('token');
