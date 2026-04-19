@@ -31,16 +31,19 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);direc
 
 
 /* MAIN */
-main{padding:16px;max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:16px;}
+main{padding:16px;max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:16px;}
 
-@media(min-width:768px){
-  main{padding:20px;}
-  .stats-grid{grid-template-columns:repeat(4,1fr);}
+/* STAT CARDS - always 4 columns */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+
+@media(max-width:600px){
+  .stats-grid{grid-template-columns:1fr 1fr;}
+  main{padding:12px;}
+}
+
+@media(min-width:601px){
   .main-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
   .quick-actions{grid-template-columns:repeat(4,1fr);}
-}
-@media(min-width:1200px){
-  main{max-width:1100px;}
 }
 
 /* STAT CARDS */
@@ -361,11 +364,15 @@ async function loadStats() {
 
     const s = data.stats || {};
 
-    // إصلاح عدد المستخدمين: الإجمالي الكامل من API لا فقط العدد المحدود
-    const totalUsers = s.total_users || ((s.buyers || 0) + (s.verified_sellers || 0) + (s.pending_sellers || 0) + (s.admins || 0));
+    // عدد المستخدمين: نستخدم total_users أو نجمع كل الأنواع شاملاً الأدمن
+    const buyers  = s.buyers  || s.total_buyers  || 0;
+    const sellers = (s.verified_sellers || 0) + (s.pending_sellers || 0) + (s.unverified_sellers || 0);
+    const admins  = s.admins  || s.total_admins  || 0;
+    const totalUsers = s.total_users || (buyers + sellers + admins) || '—';
+
     document.getElementById('stat-users').textContent = totalUsers;
     document.getElementById('stat-users-sub').textContent =
-      `مشترٍ: ${s.buyers || 0} | بائع: ${(s.verified_sellers||0) + (s.pending_sellers||0)}`;
+      `مشترٍ: ${buyers} | بائع: ${sellers}`;
 
     document.getElementById('stat-sellers').textContent = s.verified_sellers || 0;
     document.getElementById('stat-sellers-sub').textContent = 'بائع موثّق';
@@ -418,10 +425,9 @@ async function loadUsers() {
     const users = Array.isArray(data) ? data : (data.users || []);
     const list = document.getElementById('usersList');
 
-    // تحديث عدد المستخدمين بالعدد الفعلي من هذا الـ endpoint
+    // دائماً حدّث العداد بالعدد الفعلي من users endpoint
     if (users.length > 0) {
-      const totalEl = document.getElementById('stat-users');
-      if (totalEl.textContent === '—') totalEl.textContent = users.length;
+      document.getElementById('stat-users').textContent = users.length;
     }
 
     if (!users.length) {
