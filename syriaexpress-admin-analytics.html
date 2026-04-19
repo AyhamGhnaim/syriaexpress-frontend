@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>التحليلات — سوريا إكسبريس</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<script>
+(function() {
+  var saved = localStorage.getItem('theme');
+  if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+})();
+</script>
 <style>
   :root {
     --bg: #0F0E0C;
@@ -21,6 +27,21 @@
     --info: #2196F3;
   }
 
+  [data-theme="light"] {
+    --bg: #F5F3EF;
+    --bg2: #FFFFFF;
+    --bg3: #E8E4DC;
+    --gold: #C9A84C;
+    --gold2: #b8922e;
+    --text: #1a1814;
+    --text2: #6b6456;
+    --border: #d4cfc4;
+    --success: #2e7d32;
+    --warning: #e65100;
+    --danger: #c62828;
+    --info: #1565c0;
+  }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
@@ -33,7 +54,7 @@
 
   .header {
     background: var(--bg2);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 2px solid var(--gold);
     padding: 12px 16px;
     display: flex;
     align-items: center;
@@ -42,8 +63,15 @@
     top: 0;
     z-index: 100;
   }
-  .header-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
-  .header-logo img { height: 36px; }
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    flex-direction: row-reverse;
+  }
+  .header-logo img { height: 42px; width: 42px; object-fit: contain; }
+  @media (min-width: 768px) { .header-logo img { height: 48px; width: 48px; } }
   .header-logo-text .ar { font-family: 'Amiri', serif; color: var(--gold); font-size: 16px; }
   .header-logo-text .en { color: var(--text2); font-size: 9px; letter-spacing: 2px; }
   .back-btn {
@@ -56,8 +84,23 @@
     font-size: 13px;
     text-decoration: none;
   }
+  .header-spacer { width: 60px; }
 
   .container { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+  @media (min-width: 768px) {
+    .container { max-width: 900px; padding: 20px; }
+    .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+    .kpi-card.wide { grid-column: span 3; }
+    .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .bottom-two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  }
+
+  @media (min-width: 1200px) {
+    .container { max-width: 1100px; }
+    .kpi-grid { grid-template-columns: repeat(5, 1fr); }
+    .kpi-card.wide { grid-column: span 5; }
+  }
 
   /* Period */
   .period-filter {
@@ -312,15 +355,15 @@
       <div class="ar">سوريا إكسبريس</div>
       <div class="en">B2B MARKETPLACE</div>
     </div>
-    <img src="assets/logo_main.png" onerror="this.style.display='none'" />
+    <img id="headerLogo" src="" alt="logo" style="display:none" onerror="this.style.display='none'">
   </a>
-  <div style="width:60px"></div>
+  <div class="header-spacer"></div>
 </div>
 
 <!-- Loading -->
 <div class="loading-state" id="loadingState">
   <div class="spinner"></div>
-  <div>جاري تحميل البيانات...</div>
+  <div>جارٍ تحميل البيانات...</div>
 </div>
 
 <div id="pageContent" style="display:none">
@@ -366,6 +409,7 @@
   </div>
 
   <!-- Revenue Chart -->
+  <div class="charts-row">
   <div class="section">
     <div class="section-title">📈 إيرادات المنصة</div>
     <div class="chart-wrap" id="revenueChart"></div>
@@ -376,8 +420,10 @@
     <div class="section-title">📊 الطلبات اليومية</div>
     <div class="chart-wrap" id="ordersChart"></div>
   </div>
+  </div>
 
-  <!-- Top Sellers -->
+  <!-- Top Sellers + Category Breakdown -->
+  <div class="bottom-two">
   <div class="section">
     <div class="section-title">🏆 أفضل البائعين</div>
     <div id="topSellers"></div>
@@ -387,6 +433,7 @@
   <div class="section">
     <div class="section-title">🗂️ توزيع الطلبات بالفئة</div>
     <div id="categoryBreakdown"></div>
+  </div>
   </div>
 
   <!-- Overview Table -->
@@ -415,6 +462,13 @@
 </div>
 
 <script src="logos.js"></script>
+<script>
+// تحميل اللوغو من logos.js
+if (typeof LOGOS !== 'undefined' && LOGOS.main) {
+  var hLogo = document.getElementById('headerLogo');
+  if (hLogo) { hLogo.src = LOGOS.main; hLogo.style.display = 'block'; }
+}
+</script>
 <script>
 const API = 'https://syriaexpress-backend-production.up.railway.app';
 let allOrders = [];
@@ -571,7 +625,7 @@ function renderTopSellers(orders) {
 
   const el = document.getElementById('topSellers');
   if (!sorted.length) {
-    el.innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px;font-size:13px">ما في بيانات</div>';
+    el.innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px;font-size:13px">لا توجد بيانات</div>';
     return;
   }
   el.innerHTML = sorted.map((s,i) => `
@@ -602,7 +656,7 @@ function renderCategoryBreakdown(orders) {
 
   const el = document.getElementById('categoryBreakdown');
   if (!sorted.length) {
-    el.innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px;font-size:13px">ما في بيانات</div>';
+    el.innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px;font-size:13px">لا توجد بيانات</div>';
     return;
   }
   el.innerHTML = `
