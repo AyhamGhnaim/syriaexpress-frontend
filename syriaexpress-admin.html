@@ -31,13 +31,12 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);direc
 
 
 /* MAIN */
-main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:16px;}
+main{padding:16px;max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:16px;}
 
 @media(min-width:768px){
-  main{max-width:900px;padding:20px;}
+  main{padding:20px;}
   .stats-grid{grid-template-columns:repeat(4,1fr);}
   .main-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-  .main-cols .box{margin-bottom:0;}
   .quick-actions{grid-template-columns:repeat(4,1fr);}
 }
 @media(min-width:1200px){
@@ -46,21 +45,27 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 
 /* STAT CARDS */
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:16px;}
-.stat-card.green{border-top:3px solid var(--green)}
-.stat-card.gold{border-top:3px solid var(--gold)}
-.stat-card.blue{border-top:3px solid var(--blue)}
-.stat-card.purple{border-top:3px solid var(--purple)}
-.stat-card.orange{border-top:3px solid var(--orange)}
-.stat-icon{font-size:26px;margin-bottom:8px;display:block}
-.stat-num{font-size:32px;font-weight:900;line-height:1;margin-bottom:4px}
-.stat-card.green .stat-num{color:var(--green)}
-.stat-card.gold .stat-num{color:var(--gold)}
-.stat-card.blue .stat-num{color:var(--blue)}
-.stat-card.purple .stat-num{color:var(--purple)}
+.stat-card{
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:16px;
+}
+.stat-card.green {border-top:4px solid var(--green)}
+.stat-card.gold  {border-top:4px solid var(--gold)}
+.stat-card.blue  {border-top:4px solid var(--blue)}
+.stat-card.purple{border-top:4px solid var(--purple)}
+.stat-card.orange{border-top:4px solid var(--orange)}
+.stat-icon{font-size:28px;margin-bottom:10px;display:block;text-align:left}
+[dir="rtl"] .stat-icon{text-align:right}
+.stat-num{font-size:34px;font-weight:900;line-height:1;margin-bottom:6px}
+.stat-card.green .stat-num {color:var(--green)}
+.stat-card.gold  .stat-num {color:var(--gold)}
+.stat-card.blue  .stat-num {color:var(--blue)}
+.stat-card.purple.stat-num {color:var(--purple)}
 .stat-card.orange .stat-num{color:var(--orange)}
-.stat-label{font-size:12px;color:var(--text-dim);margin-bottom:4px}
-.stat-sub{font-size:11px;color:var(--text-dim);opacity:0.7}
+.stat-label{font-size:13px;color:var(--text);font-weight:600;margin-bottom:3px}
+.stat-sub{font-size:11px;color:var(--text-dim)}
 
 /* BOX */
 .box{background:var(--bg3);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
@@ -144,8 +149,19 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
   position:sticky;top:0;z-index:50;
   display:flex;align-items:center;justify-content:space-between;
   padding:0 16px;height:56px;
-  background:rgba(15,14,12,0.95);backdrop-filter:blur(12px);
+  background:var(--bg2);
   border-bottom:1px solid var(--border-gold);
+}
+.header-center{
+  font-family:'Amiri',serif;
+  color:var(--gold);
+  font-size:18px;
+  font-weight:700;
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  white-space:nowrap;
+  pointer-events:none;
 }
 .header-right{display:flex;align-items:center;gap:10px}
 .btn-home{
@@ -196,8 +212,8 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
       خروج
     </button>
   </div>
+  <div class="header-center">لوحة الإدارة</div>
   <div class="header-right">
-    <span class="header-title">لوحة الإدارة</span>
     <a href="syriaexpress-landing.html" class="btn-home">
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       الرئيسية
