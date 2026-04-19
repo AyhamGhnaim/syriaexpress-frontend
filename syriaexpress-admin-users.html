@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>إدارة المستخدمين — سوريا إكسبريس</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<script>
+(function() {
+  var saved = localStorage.getItem('theme');
+  if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+})();
+</script>
 <style>
   :root {
     --bg: #0F0E0C;
@@ -19,6 +25,20 @@
     --warning: #FF9800;
     --danger: #e05555;
     --info: #2196F3;
+  }
+  [data-theme="light"] {
+    --bg: #F5F3EF;
+    --bg2: #FFFFFF;
+    --bg3: #E8E4DC;
+    --gold: #C9A84C;
+    --gold2: #b8922d;
+    --text: #1a1814;
+    --text2: #6b6456;
+    --border: #d4cfc5;
+    --success: #2e7d32;
+    --warning: #e65100;
+    --danger: #c62828;
+    --info: #1565c0;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -46,6 +66,9 @@
   .header-logo img { height: 36px; }
   .header-logo-text .ar { font-family: 'Amiri', serif; color: var(--gold); font-size: 16px; }
   .header-logo-text .en { color: var(--text2); font-size: 9px; letter-spacing: 2px; }
+  .header-spacer { width: 60px; }
+  .header-logo img { height: 42px; }
+  @media (min-width: 768px) { .header-logo img { height: 48px; } }
   .back-btn {
     background: var(--bg3);
     border: 1px solid var(--border);
@@ -58,6 +81,19 @@
   }
 
   .container { padding: 16px; max-width: 600px; margin: 0 auto; }
+  @media (min-width: 768px) {
+    .container { max-width: 900px; padding: 20px 24px; }
+    .stats-row { grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .user-card { margin-bottom: 12px; }
+    .user-name { font-size: 15px; }
+    .user-email { font-size: 12px; }
+  }
+  @media (min-width: 1200px) {
+    .container { max-width: 1100px; }
+    .stats-row { gap: 16px; }
+    .stat-card { padding: 16px 12px; }
+    .stat-value { font-size: 26px; }
+  }
 
   /* Stats */
   .stats-row {
@@ -323,9 +359,9 @@
       <div class="ar">سوريا إكسبريس</div>
       <div class="en">B2B MARKETPLACE</div>
     </div>
-    <img src="assets/logo_main.png" onerror="this.style.display='none'" />
+    <img id="headerLogo" src="" alt="logo" style="display:none" onerror="this.style.display='none'">
   </a>
-  <div style="width:60px"></div>
+  <div class="header-spacer"></div>
 </div>
 
 <div class="container">
@@ -343,6 +379,10 @@
     <div class="stat-card">
       <div class="stat-value" id="sBuyers" style="color:var(--info)">—</div>
       <div class="stat-label">مشترين</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="sAdmins" style="color:var(--danger)">—</div>
+      <div class="stat-label">أدمن</div>
     </div>
   </div>
 
@@ -365,7 +405,7 @@
   <!-- Loading -->
   <div class="loading-state" id="loadingState">
     <div class="spinner"></div>
-    <div>جاري التحميل...</div>
+    <div>جارٍ التحميل...</div>
   </div>
 
   <!-- Users -->
@@ -374,8 +414,8 @@
   <!-- Empty -->
   <div class="empty-state" id="emptyState" style="display:none">
     <div class="empty-icon">👥</div>
-    <div class="empty-title">ما في نتائج</div>
-    <div class="empty-sub">جرب بحث ثاني</div>
+    <div class="empty-title">لا توجد نتائج</div>
+    <div class="empty-sub">حاول البحث بكلمات مختلفة</div>
   </div>
 
 </div>
@@ -401,6 +441,19 @@
 
 <script src="logos.js"></script>
 <script>
+// تحميل اللوغو من logos.js
+(function() {
+  function trySetLogo() {
+    if (typeof LOGOS !== 'undefined' && LOGOS.main) {
+      var el = document.getElementById('headerLogo');
+      if (el) { el.src = LOGOS.main; el.style.display = 'inline-block'; }
+    } else {
+      setTimeout(trySetLogo, 100);
+    }
+  }
+  trySetLogo();
+})();
+
 const API = 'https://syriaexpress-backend-production.up.railway.app';
 let allUsers = [];
 let currentFilter = 'all';
@@ -529,6 +582,7 @@ function updateStats() {
   document.getElementById('sTotal').textContent = allUsers.length;
   document.getElementById('sSellers').textContent = allUsers.filter(u => u.user_type === 'seller').length;
   document.getElementById('sBuyers').textContent = allUsers.filter(u => u.user_type === 'buyer').length;
+  document.getElementById('sAdmins').textContent = allUsers.filter(u => u.user_type === 'admin').length;
 }
 
 function setFilter(filter, btn) {
