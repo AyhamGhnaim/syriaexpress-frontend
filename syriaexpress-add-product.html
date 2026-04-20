@@ -176,6 +176,19 @@ select {
   appearance: none;
   -webkit-appearance: none;
 }
+select option {
+  background: var(--bg3);
+  color: var(--text);
+}
+/* Windows يتجاهل CSS variables على option — نضع قيم ثابتة كاحتياط */
+[data-theme="light"] select option {
+  background: #E8E4DC;
+  color: #1a1610;
+}
+:root:not([data-theme="light"]) select option {
+  background: #252320;
+  color: #e8e0d0;
+}
 input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--gold);
