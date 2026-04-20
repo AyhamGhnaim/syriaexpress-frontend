@@ -767,19 +767,31 @@ async function loadProducts() {
 
   try {
     const params = new URLSearchParams();
-    // الـ backend يتوقع slug في معامل 'category' — ليس UUID في 'category_id'
+    // ملاحظة: الـ backend يتوقع slug في 'category' — لكن الـ slug قد يكون غير موجود/فاضي بالـ DB
+    // لذا نرسل slug إذا توفر، وإلا نجيب كل المنتجات ونفلتر على الفرونت إند
     if (state.categorySlug) params.set('category', state.categorySlug);
     if (state.shipping) params.set('shipping', state.shipping);
     if (state.search) params.set('search', state.search);
     params.set('page', state.page);
-    params.set('limit', state.limit);
+    params.set('limit', state.categoryId && !state.categorySlug ? 200 : state.limit);
 
     const res = await fetch(`${API_BASE}/api/products?${params}`);
     const data = await res.json();
 
-    const products = data.products || data.items || (Array.isArray(data) ? data : []);
-    state.total = data.total ?? products.length;
-    state.pages = data.pages ?? Math.max(1, Math.ceil(state.total / state.limit));
+    let products = data.products || data.items || (Array.isArray(data) ? data : []);
+
+    // فلترة على الفرونت إند بالـ category_id كاحتياط (إذا لم يكن الـ slug يعمل)
+    if (state.categoryId && !state.categorySlug) {
+      products = products.filter(p => p.category_id === state.categoryId);
+      state.total = products.length;
+      state.pages = Math.max(1, Math.ceil(state.total / state.limit));
+      // pagination يدوي
+      const start = (state.page - 1) * state.limit;
+      products = products.slice(start, start + state.limit);
+    } else {
+      state.total = data.total ?? products.length;
+      state.pages = data.pages ?? Math.max(1, Math.ceil(state.total / state.limit));
+    }
 
     document.getElementById('totalCount').textContent = state.total;
     document.getElementById('resultsText').innerHTML =
