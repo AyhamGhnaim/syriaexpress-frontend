@@ -497,9 +497,10 @@ let selectedImageFile = null;
 async function init() {
   const token = localStorage.getItem('token');
   if (!token) { location.href = 'login.html'; return; }
-
-  await loadCategories();
 }
+
+loadCategories();
+init();
 
 async function loadCategories() {
   const FALLBACK_CATS = [
@@ -655,25 +656,16 @@ document.head.appendChild(style);
 function applyLogo() {
   const img = document.getElementById('headerLogo');
   if (!img) return;
-  // logos.js may expose the base64 directly or via a function
-  if (typeof window.setSyriaExpressLogo === 'function') {
+  if (typeof LOGOS !== 'undefined' && LOGOS.main) {
+    img.src = LOGOS.main;
+    img.style.display = 'inline-block';
+  } else if (typeof window.setSyriaExpressLogo === 'function') {
     window.setSyriaExpressLogo('headerLogo');
-    img.style.display = 'inline-block';
-  } else if (window.syriaExpressLogo) {
-    img.src = window.syriaExpressLogo;
-    img.style.display = 'inline-block';
-  } else if (window.LOGOS && window.LOGOS.main) {
-    img.src = window.LOGOS.main;
     img.style.display = 'inline-block';
   }
 }
-// Try immediately (if logos.js already ran synchronously)
 applyLogo();
-// Also listen for async load
 document.addEventListener('logosReady', applyLogo);
-window.addEventListener('load', applyLogo);
-
-init();
 </script>
 </body>
 </html>
