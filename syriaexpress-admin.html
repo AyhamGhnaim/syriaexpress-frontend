@@ -150,6 +150,57 @@ main{padding:16px;max-width:1100px;margin:0 auto;display:flex;flex-direction:col
 .empty-text{font-size:14px;font-weight:700;color:var(--text-dim);margin-bottom:4px;}
 .empty-sub{font-size:12px;color:var(--text-dim);opacity:0.6;line-height:1.5;}
 
+/* ── TRANSITIONS & INTERACTIVITY (seller-style) ── */
+body{transition:background .3s,color .3s;}
+.stat-card,.box{transition:background .3s,border-color .3s,transform .2s,box-shadow .2s;}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.3);}
+[data-theme="light"] .stat-card:hover{box-shadow:0 6px 20px rgba(0,0,0,0.1);}
+.box:hover{border-color:var(--border-gold);}
+
+/* Header light mode */
+[data-theme="light"] .header{background:rgba(245,243,239,0.95);}
+.header{backdrop-filter:blur(12px);}
+
+/* Stat num counter animation */
+.stat-num{transition:color .3s;}
+@keyframes countUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.stat-num.animated{animation:countUp .4s ease forwards;}
+
+/* Quick buttons hover */
+.quick-btn{transition:background .2s,border-color .2s,transform .15s;}
+.quick-btn:hover{transform:translateY(-2px);background:var(--bg3);}
+.quick-btn:active{transform:translateY(0);}
+
+/* Verif & user rows hover */
+.verif-row,.user-row{transition:background .15s;}
+.verif-row:hover,.user-row:hover{background:var(--bg4);}
+
+/* Buttons transitions */
+.btn-approve,.btn-reject,.btn-home,.btn-logout{transition:all .2s;}
+
+/* Analytics rows hover */
+.analytics-row{transition:background .15s;}
+.analytics-row:hover{background:var(--bg4);border-radius:8px;}
+
+/* Box header link */
+.box-link{transition:color .2s;}
+
+/* Loading pulse animation */
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.loading-pulse{animation:pulse 1.4s ease-in-out infinite;}
+
+/* Fade-in for sections */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.stats-grid{animation:fadeInUp .35s ease both;}
+.box{animation:fadeInUp .4s ease both;}
+.main-cols{animation:fadeInUp .45s ease both;}
+
+/* Responsive tablet */
+@media(min-width:768px){
+  .header{padding:0 32px;height:60px;}
+  main{padding:24px 32px;}
+}
+
 
 /* HEADER */
 .header{
@@ -368,6 +419,12 @@ async function loadStats() {
 
     const s = data.stats || {};
 
+    // إزالة loading pulse
+    ['stat-users','stat-sellers','stat-pending','stat-orders'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('loading-pulse');
+    });
+
     // عدد المستخدمين يُحدَّث فقط من loadUsers() لتجنب التعارض
     // نعرض sub text فقط هنا
     const buyers  = s.buyers  || 0;
@@ -377,9 +434,14 @@ async function loadStats() {
     document.getElementById('stat-sellers').textContent = s.verified_sellers || 0;
     document.getElementById('stat-sellers-sub').textContent = 'بائع موثّق';
 
-    document.getElementById('stat-pending').textContent = s.pending_verif || 0;
+    const pendingEl = document.getElementById('stat-pending');
+    const ordersEl = document.getElementById('stat-orders');
+    const sellersEl = document.getElementById('stat-sellers');
 
-    document.getElementById('stat-orders').textContent = s.total_orders || 0;
+    animateCount(sellersEl, s.verified_sellers || 0);
+    animateCount(pendingEl, s.pending_verif || 0);
+    animateCount(ordersEl, s.total_orders || 0);
+
     document.getElementById('stat-orders-sub').textContent = 'إجمالي الطلبات';
 
     // قسم التحليلات — احسب من بيانات overview
@@ -427,7 +489,9 @@ async function loadUsers() {
 
     // دائماً حدّث العداد بالعدد الفعلي من users endpoint
     if (users.length > 0) {
-      document.getElementById('stat-users').textContent = users.length;
+      const usersEl = document.getElementById('stat-users');
+      usersEl.classList.remove('loading-pulse');
+      animateCount(usersEl, users.length);
     }
 
     if (!users.length) {
@@ -492,6 +556,28 @@ async function approveVerif(id) {
     if (res.ok) { loadVerifications(); loadStats(); }
   } catch(e) {}
 }
+
+// ── أنيمشن عداد الأرقام (مثل صفحة البائع) ──
+function animateCount(el, target) {
+  if (!el || isNaN(target)) return;
+  el.classList.add('animated');
+  const duration = 600;
+  const start = performance.now();
+  const from = 0;
+  function step(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(from + (target - from) * ease);
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// ── loading pulse لبطاقات الإحصائيات ──
+['stat-users','stat-sellers','stat-pending','stat-orders'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el && el.textContent === '—') el.classList.add('loading-pulse');
+});
 
 loadStats();
 loadUsers();
