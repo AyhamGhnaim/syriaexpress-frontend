@@ -401,14 +401,16 @@ textarea { resize: vertical; min-height: 90px; }
         <label>الوحدة <span class="required">*</span></label>
         <div class="select-wrap">
           <select id="unit">
-            <option value="كيلو">كيلو</option>
-            <option value="طن">طن</option>
-            <option value="قطعة">قطعة</option>
-            <option value="لتر">لتر</option>
-            <option value="صندوق">صندوق</option>
-            <option value="حبة">حبة</option>
-            <option value="كرتون">كرتون</option>
-            <option value="متر">متر</option>
+            <option value="كيلو">كيلو (kg)</option>
+            <option value="طن">طن (ton)</option>
+            <option value="قطعة">قطعة (piece)</option>
+            <option value="عبوة">عبوة (pack)</option>
+            <option value="متر">متر (m)</option>
+            <option value="متر مربع">متر مربع (m²)</option>
+            <option value="لتر">لتر (L)</option>
+            <option value="صندوق">صندوق (box)</option>
+            <option value="كرتون">كرتون (carton)</option>
+            <option value="طقم">طقم (set)</option>
           </select>
         </div>
       </div>
@@ -500,18 +502,40 @@ async function init() {
 }
 
 async function loadCategories() {
+  const FALLBACK_CATS = [
+    { id: 'd91a982a-4943-41d2-a10d-190bdcc46dbf', name: 'غذائيات' },
+    { id: 'dbc84456-4a45-41bb-81b1-6c55866a84ae', name: 'كيماويات ومنظفات' },
+    { id: '9cd45ecd-7b06-4908-9e96-0e3e5182372a', name: 'ألبسة' },
+    { id: '4a853f88-f000-4a81-ba5a-54f6b17f666f', name: 'كهربائيات' },
+    { id: '0450b35f-331b-4b91-b7d6-0fefbe0c3299', name: 'مواد بناء' },
+    { id: '2c2ebbf1-d69b-4808-a24b-b24e95cbb81c', name: 'بلاستيكيات' },
+    { id: '022f9e74-b115-4ce0-ab15-5951dab17f10', name: 'مستلزمات طبية' },
+  ];
+  const sel = document.getElementById('category');
   try {
-    const res = await fetch(`${API}/api/categories`);
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API}/api/categories`, {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    });
+    if (!res.ok) throw new Error('not ok');
     const data = await res.json();
-    const sel = document.getElementById('category');
-    (data.categories || data).forEach(c => {
+    // handle array or {categories:[...]} or {data:[...]}
+    const list = Array.isArray(data) ? data : (data.categories || data.data || []);
+    if (list.length === 0) throw new Error('empty');
+    list.forEach(c => {
       const opt = document.createElement('option');
       opt.value = c.id;
       opt.textContent = c.name;
       sel.appendChild(opt);
     });
   } catch(e) {
-    console.error('فشل تحميل الفئات', e);
+    console.warn('تعذّر تحميل الفئات من الـ API، جارٍ استخدام القائمة الثابتة');
+    FALLBACK_CATS.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.name;
+      sel.appendChild(opt);
+    });
   }
 }
 
@@ -628,14 +652,26 @@ style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
 document.head.appendChild(style);
 
 // ===== Logo =====
-if (typeof window.setSyriaExpressLogo === 'function') {
-  window.setSyriaExpressLogo('headerLogo');
-} else {
-  document.addEventListener('logosReady', () => {
-    if (typeof window.setSyriaExpressLogo === 'function')
-      window.setSyriaExpressLogo('headerLogo');
-  });
+function applyLogo() {
+  const img = document.getElementById('headerLogo');
+  if (!img) return;
+  // logos.js may expose the base64 directly or via a function
+  if (typeof window.setSyriaExpressLogo === 'function') {
+    window.setSyriaExpressLogo('headerLogo');
+    img.style.display = 'inline-block';
+  } else if (window.syriaExpressLogo) {
+    img.src = window.syriaExpressLogo;
+    img.style.display = 'inline-block';
+  } else if (window.LOGOS && window.LOGOS.main) {
+    img.src = window.LOGOS.main;
+    img.style.display = 'inline-block';
+  }
 }
+// Try immediately (if logos.js already ran synchronously)
+applyLogo();
+// Also listen for async load
+document.addEventListener('logosReady', applyLogo);
+window.addEventListener('load', applyLogo);
 
 init();
 </script>
