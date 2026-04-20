@@ -503,7 +503,7 @@ loadCategories();
 init();
 
 async function loadCategories() {
-  const FALLBACK_CATS = [
+  const CATS = [
     { id: 'd91a982a-4943-41d2-a10d-190bdcc46dbf', name: 'غذائيات' },
     { id: 'dbc84456-4a45-41bb-81b1-6c55866a84ae', name: 'كيماويات ومنظفات' },
     { id: '9cd45ecd-7b06-4908-9e96-0e3e5182372a', name: 'ألبسة' },
@@ -512,31 +512,37 @@ async function loadCategories() {
     { id: '2c2ebbf1-d69b-4808-a24b-b24e95cbb81c', name: 'بلاستيكيات' },
     { id: '022f9e74-b115-4ce0-ab15-5951dab17f10', name: 'مستلزمات طبية' },
   ];
+
   const sel = document.getElementById('category');
-  try {
-    const token = localStorage.getItem('token');
-    const res = await fetch(`${API}/api/categories`, {
-      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-    });
-    if (!res.ok) throw new Error('not ok');
-    const data = await res.json();
-    // handle array or {categories:[...]} or {data:[...]}
-    const list = Array.isArray(data) ? data : (data.categories || data.data || []);
-    if (list.length === 0) throw new Error('empty');
+
+  function fillSelect(list) {
+    // احذف كل الخيارات ما عدا الأول (اختر الفئة)
+    while (sel.options.length > 1) sel.remove(1);
     list.forEach(c => {
       const opt = document.createElement('option');
       opt.value = c.id;
       opt.textContent = c.name;
       sel.appendChild(opt);
     });
-  } catch(e) {
-    console.warn('تعذّر تحميل الفئات من الـ API، جارٍ استخدام القائمة الثابتة');
-    FALLBACK_CATS.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c.id;
-      opt.textContent = c.name;
-      sel.appendChild(opt);
+  }
+
+  // اعرض الفئات الثابتة فوراً
+  fillSelect(CATS);
+
+  // حاول تحديثها من الـ API
+  try {
+    const token = localStorage.getItem('token') || '';
+    const res = await fetch(`${API}/api/categories`, {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
     });
+    if (!res.ok) return;
+    const data = await res.json();
+    const list = Array.isArray(data) ? data
+                : Array.isArray(data.categories) ? data.categories
+                : Array.isArray(data.data) ? data.data : [];
+    if (list.length > 0) fillSelect(list);
+  } catch(e) {
+    // الفئات الثابتة موجودة أصلاً
   }
 }
 
