@@ -679,6 +679,7 @@ const CATEGORY_ICONS = {
 // الحالة
 let state = {
   categoryId: new URLSearchParams(location.search).get('cat') || '',
+  categorySlug: '',
   categoryName: '',
   shipping: '',
   search: '',
@@ -728,6 +729,7 @@ async function loadCategoryInfo() {
     document.getElementById('categoryName').textContent = 'جميع المنتجات';
     document.getElementById('breadcrumbCategory').textContent = 'جميع المنتجات';
     document.getElementById('categoryIcon').textContent = '📦';
+    loadProducts();
     return;
   }
 
@@ -739,6 +741,7 @@ async function loadCategoryInfo() {
 
     if (cat) {
       state.categoryName = cat.name_ar || cat.name || 'الفئة';
+      state.categorySlug = cat.slug || '';
       document.getElementById('categoryName').textContent = state.categoryName;
       document.getElementById('breadcrumbCategory').textContent = state.categoryName;
       document.getElementById('categoryIcon').textContent =
@@ -752,6 +755,9 @@ async function loadCategoryInfo() {
     document.getElementById('categoryName').textContent = 'الفئة';
     document.getElementById('breadcrumbCategory').textContent = 'الفئة';
   }
+
+  // حمّل المنتجات بعد محاولة استخراج الـ slug (نجحت أم فشلت)
+  loadProducts();
 }
 
 // ═══════════════════ PRODUCTS ═══════════════════
@@ -761,7 +767,8 @@ async function loadProducts() {
 
   try {
     const params = new URLSearchParams();
-    if (state.categoryId) params.set('category_id', state.categoryId);
+    // الـ backend يتوقع slug في معامل 'category' — ليس UUID في 'category_id'
+    if (state.categorySlug) params.set('category', state.categorySlug);
     if (state.shipping) params.set('shipping', state.shipping);
     if (state.search) params.set('search', state.search);
     params.set('page', state.page);
@@ -821,25 +828,25 @@ function pickFirst(obj, keys) {
 function renderProduct(p, i) {
   const price = p.price != null ? Number(p.price).toLocaleString('en-US') : '—';
   const unit = p.unit || 'قطعة';
-  const moq = p.moq || p.min_order_qty || 1;
 
-  // منطق ذكي لاسم المنتج
+  // الحد الأدنى — الاسم الصحيح بالـ DB: min_order_quantity
+  const moq = p.min_order_quantity ?? p.min_order_qty ?? p.moq ?? 1;
+
+  // اسم المنتج — الأسماء الصحيحة بالـ view: name_ar, name_en
   const productName = pickFirst(p, [
-    'name', 'name_ar', 'product_name', 'title', 'arabic_name'
+    'name_ar', 'name_en', 'name', 'product_name', 'title'
   ]) || 'بدون اسم';
 
-  // منطق ذكي لاسم الشركة/البائع
+  // اسم الشركة — الأسماء الصحيحة بالـ view: company_name_ar, company_name_en
   const sellerName = pickFirst(p, [
+    'company_name_ar',
+    'company_name_en',
     'company_name',
     'seller_company_name',
+    'seller.company_name_ar',
     'seller.company_name',
     'seller_name',
-    'seller.name',
-    'sellers.company_name',
-    'sellers.name',
-    'brand_name',
-    'business_name',
-    'store_name'
+    'seller.name'
   ]) || 'بائع سوري';
 
   const tier = p.partner_tier || p.seller?.partner_tier || p.tier;
@@ -958,8 +965,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initLogo();
   initFilters();
   initViewToggle();
-  loadCategoryInfo();
-  loadProducts();
+  loadCategoryInfo(); // يستدعي loadProducts() بالداخل بعد ما يجيب الـ slug
 });
 </script>
 </body>
