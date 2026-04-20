@@ -643,12 +643,15 @@ function init() {
 
 function renderProduct() {
   const p = orderProduct;
-  const minQty = p.min_order_quantity || 1;
+  // دعم الحقلين القديم (من API) والجديد (من localStorage بعد الـ normalize)
+  const minQty = p.min_order || p.min_order_quantity || 1;
+  const productName = p.name || p.name_ar || p.name_en || 'منتج';
+  const sellerName = p.seller_name || p.company_name_ar || p.company_name_en || '';
   
   document.getElementById('minQty').textContent = minQty;
   document.getElementById('unitLabel').textContent = p.unit || '';
   document.getElementById('qtyUnit').textContent = p.unit || '';
-  document.getElementById('qtyInput').value = p.qty || minQty;
+  document.getElementById('qtyInput').value = p.quantity || p.qty || minQty;
   document.getElementById('qtyInput').min = minQty;
 
   shippingPrices = {
@@ -664,8 +667,8 @@ function renderProduct() {
         ? `<img class="product-img" src="${p.image_url}" onerror="this.style.display='none'" />`
         : `<div class="product-img-placeholder">📦</div>`}
       <div class="product-info">
-        <div class="product-name">${p.name_ar || p.name_en || 'منتج'}</div>
-        <div class="product-company">${p.company_name_ar || ''}</div>
+        <div class="product-name">${productName}</div>
+        <div class="product-company">${sellerName}</div>
         <div class="product-price">${formatPrice(p.price)} / ${p.unit || 'وحدة'}</div>
       </div>
     </div>
