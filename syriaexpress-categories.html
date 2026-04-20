@@ -402,7 +402,7 @@
     grid.innerHTML = filtered.map(cat => {
       const isAvailable = cat.status === 'available';
       const href = isAvailable
-        ? `syriaexpress-products.html?category_id=${cat.id}`
+        ? `syriaexpress-products.html?cat=${cat.id}`
         : 'javascript:void(0)';
       const cls = isAvailable ? 'cat-card' : 'cat-card coming';
       const badge = isAvailable
