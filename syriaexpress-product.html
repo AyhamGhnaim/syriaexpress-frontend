@@ -639,16 +639,39 @@ async function loadProduct() {
   try {
     const res = await fetch(`${API_BASE}/api/products/${productId}`);
     if (!res.ok) throw new Error('فشل تحميل المنتج');
-    product = await res.json();
-    quantity = product.min_order || 1;
-    
-    // Load seller
-    if (product.seller_id) {
-      try {
-        const sr = await fetch(`${API_BASE}/api/sellers/${product.seller_id}`);
-        if (sr.ok) seller = await sr.json();
-      } catch(e) {}
-    }
+    const data = await res.json();
+
+    // Normalize field names from API response
+    product = {
+      id: data.id,
+      seller_id: data.seller_id,
+      name: data.name_ar || data.name || 'منتج',
+      description: data.description_ar || data.description || '',
+      price: parseFloat(data.price) || 0,
+      unit: data.unit || 'وحدة',
+      min_order: data.min_order_quantity || data.min_order || 1,
+      image_url: data.image_url || '',
+      category_name: data.category_name_ar || data.category_name || '',
+      shipping_local: data.ship_inside !== false,
+      shipping_national: data.ship_outside !== false,
+      shipping_international: data.ship_international === true,
+      status: data.status,
+    };
+
+    // Seller info is embedded in the product response
+    seller = {
+      id: data.seller_id,
+      company_name: data.company_name_ar || data.company_name_en || 'بائع',
+      city: data.seller_governorate || '',
+      logo_url: data.seller_logo_url || '',
+      phone: data.seller_phone || '',
+      is_verified: data.seller_verified || false,
+      completed_orders: data.completed_orders ?? null,
+      active_products: data.active_products ?? null,
+      rating: data.rating || null,
+    };
+
+    quantity = product.min_order;
 
     // Check saved
     const saved = JSON.parse(localStorage.getItem('savedProducts') || '[]');
