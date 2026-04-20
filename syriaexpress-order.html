@@ -587,7 +587,7 @@
   </a>
 </div>
 
-<script src="logos.js"></script>
+<script src="https://ayhamghnaim.github.io/syriaexpress-frontend/logos.js"></script>
 <script>
 const API = 'https://syriaexpress-backend-production.up.railway.app';
 
@@ -612,18 +612,16 @@ function formatPrice(p) {
   return Number(p).toLocaleString('ar-SY') + ' ل.س';
 }
 
-function init() {
+async function init() {
   // حمّل البيانات من localStorage
   const raw = localStorage.getItem('orderCart');
   if (!raw) {
-    // جرب cart
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
     if (cart.length === 0) {
       document.getElementById('emptyState').style.display = 'block';
       document.getElementById('orderForm').style.display = 'none';
       return;
     }
-    // خذ أول منتج من السلة
     orderProduct = cart[0];
   } else {
     const parsed = JSON.parse(raw);
@@ -634,6 +632,22 @@ function init() {
     document.getElementById('emptyState').style.display = 'block';
     document.getElementById('orderForm').style.display = 'none';
     return;
+  }
+
+  // إذا الاسم ناقص، جيب البيانات الكاملة من API
+  if ((!orderProduct.name || orderProduct.name === 'منتج') && orderProduct.id) {
+    try {
+      const res = await fetch(`${API}/api/products/${orderProduct.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        orderProduct.name = data.name_ar || data.name_en || orderProduct.name;
+        orderProduct.seller_name = data.company_name_ar || data.company_name_en || orderProduct.seller_name || '';
+        orderProduct.min_order = data.min_order_quantity || data.min_order || orderProduct.min_order || 1;
+        orderProduct.unit = data.unit || orderProduct.unit;
+        orderProduct.price = data.price || orderProduct.price;
+        orderProduct.image_url = data.image_url || orderProduct.image_url;
+      }
+    } catch(e) {}
   }
 
   renderProduct();
