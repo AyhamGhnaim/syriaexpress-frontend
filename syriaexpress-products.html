@@ -736,8 +736,14 @@ async function loadCategoryInfo() {
   try {
     const res = await fetch(`${API_BASE}/api/categories`);
     const data = await res.json();
+
+    // ═══ تشخيص مؤقت ═══
+    console.log('📂 Categories response:', data);
+
     const cats = Array.isArray(data) ? data : (data.categories || []);
     const cat = cats.find(c => c.id === state.categoryId);
+
+    console.log('📂 الفئة المطابقة:', cat);
 
     if (cat) {
       state.categoryName = cat.name_ar || cat.name || 'الفئة';
@@ -777,6 +783,13 @@ async function loadProducts() {
 
     const res = await fetch(`${API_BASE}/api/products?${params}`);
     const data = await res.json();
+
+    // ═══ تشخيص مؤقت — لنعرف شكل الـ response الحقيقي ═══
+    console.log('🔍 API URL:', `${API_BASE}/api/products?${params}`);
+    console.log('🔍 Response كامل:', data);
+    console.log('🔍 أول منتج (كل الحقول):', (data.products || data)[0]);
+    console.log('🔍 state.categoryId:', state.categoryId);
+    console.log('🔍 state.categorySlug:', state.categorySlug);
 
     let products = data.products || data.items || (Array.isArray(data) ? data : []);
 
