@@ -582,7 +582,7 @@
   <a href="syriaexpress-cart.html" class="nav-item active">
     <span class="nav-icon">🛒</span>سلتي
   </a>
-  <a href="syriaexpress-buyer.html" class="nav-item">
+  <a id="accountNavLink" href="syriaexpress-buyer.html" class="nav-item">
     <span class="nav-icon">👤</span>حسابي
   </a>
 </div>
@@ -590,6 +590,19 @@
 <script src="https://ayhamghnaim.github.io/syriaexpress-frontend/logos.js"></script>
 <script>
 const API = 'https://syriaexpress-backend-production.up.railway.app';
+
+// ===== ACCOUNT LINK =====
+(function() {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const type = payload.user_type || payload.type || payload.role || '';
+    const map = { seller: 'syriaexpress-seller.html', admin: 'syriaexpress-admin.html', buyer: 'syriaexpress-buyer.html' };
+    const el = document.getElementById('accountNavLink');
+    if (el) el.href = map[type] || 'syriaexpress-buyer.html';
+  } catch(e) {}
+})();
 
 // تحميل اللوغو من logos.js
 window.addEventListener('load', function() {
