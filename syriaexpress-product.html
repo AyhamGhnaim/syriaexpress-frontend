@@ -603,7 +603,7 @@ main {
     <span class="nav-icon">🛒</span>
     <span>سلتي</span>
   </a>
-  <a href="syriaexpress-buyer.html" class="nav-item">
+  <a id="accountNavLink" href="syriaexpress-buyer.html" class="nav-item">
     <span class="nav-icon">👤</span>
     <span>حسابي</span>
   </a>
@@ -622,6 +622,23 @@ if (typeof LOGOS !== 'undefined' && LOGOS.main) {
   el.src = LOGOS.main;
   el.style.display = 'block';
 }
+
+// ===== ACCOUNT LINK =====
+(function initAccountLink() {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const type = payload.user_type || payload.type || payload.role || '';
+    const map = {
+      seller: 'syriaexpress-seller.html',
+      admin:  'syriaexpress-admin.html',
+      buyer:  'syriaexpress-buyer.html'
+    };
+    const el = document.getElementById('accountNavLink');
+    if (el) el.href = map[type] || 'syriaexpress-buyer.html';
+  } catch(e) {}
+})();
 
 // State
 let product = null;
