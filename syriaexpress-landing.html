@@ -201,49 +201,8 @@ footer{background:var(--bg);border-top:1px solid var(--border);padding:40px 24px
   <div class="section-label">الفئات</div>
   <h2 class="section-title">كل ما تحتاجه<br>في مكان واحد</h2>
   <p class="section-sub">تصفّح المنتجات حسب الفئة وابحث عن أفضل الموردين السوريين</p>
-  <div class="cats-grid">
-    <a href="syriaexpress-products.html?cat=d91a982a-4943-41d2-a10d-190bdcc46dbf" class="cat-card">
-      <span class="cat-badge available">متاح الآن</span>
-      <div class="cat-icon">🌾</div>
-      <div class="cat-name">غذائيات</div>
-      <div class="cat-desc">ابدأ التصفح</div>
-    </a>
-    <a href="syriaexpress-products.html?cat=dbc84456-4a45-41bb-81b1-6c55866a84ae" class="cat-card">
-      <span class="cat-badge available">متاح الآن</span>
-      <div class="cat-icon">🧴</div>
-      <div class="cat-name">كيماويات ومنظفات</div>
-      <div class="cat-desc">ابدأ التصفح</div>
-    </a>
-    <div class="cat-card">
-      <span class="cat-badge soon">قريباً</span>
-      <div class="cat-icon">🧵</div>
-      <div class="cat-name">ألبسة</div>
-      <div class="cat-desc">تجار جملة</div>
-    </div>
-    <div class="cat-card">
-      <span class="cat-badge soon">قريباً</span>
-      <div class="cat-icon">⚡</div>
-      <div class="cat-name">كهربائيات</div>
-      <div class="cat-desc">معدات ومواد</div>
-    </div>
-    <div class="cat-card">
-      <span class="cat-badge soon">قريباً</span>
-      <div class="cat-icon">🏗️</div>
-      <div class="cat-name">مواد بناء</div>
-      <div class="cat-desc">مقاولون وتجار</div>
-    </div>
-    <div class="cat-card">
-      <span class="cat-badge soon">قريباً</span>
-      <div class="cat-icon">🧴</div>
-      <div class="cat-name">بلاستيكيات</div>
-      <div class="cat-desc">مصانع وتجار</div>
-    </div>
-    <div class="cat-card">
-      <span class="cat-badge soon">قريباً</span>
-      <div class="cat-icon">💊</div>
-      <div class="cat-name">مستلزمات طبية</div>
-      <div class="cat-desc">مستودعات وصيدليات</div>
-    </div>
+  <div class="cats-grid" id="catsGrid">
+    <!-- تُحمَّل ديناميكياً من API -->
   </div>
 </section>
 
@@ -380,6 +339,64 @@ const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
 }, {threshold: 0.1});
 document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
+<script>
+// ===== تحميل الفئات من API =====
+(async function() {
+  const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
+  const ICONS = {
+    'd91a982a-4943-41d2-a10d-190bdcc46dbf': '🌾',
+    'dbc84456-4a45-41bb-81b1-6c55866a84ae': '🧴',
+    '9cd45ecd-7b06-4908-9e96-0e3e5182372a': '🧵',
+    '022f9e74-b115-4ce0-ab15-5951dab17f10': '💊',
+    '4a853f88-f000-4a81-ba5a-54f6b17f666f': '📱',
+    '0450b35f-331b-4b91-b7d6-0fefbe0c3299': '🧱',
+    '2c2ebbf1-d69b-4808-a24b-b24e95cbb81c': '🧺',
+  };
+  const DESC = {
+    available: 'ابدأ التصفح',
+    soon: 'قريباً',
+  };
+
+  const grid = document.getElementById('catsGrid');
+  if (!grid) return;
+
+  try {
+    const res  = await fetch(`${API_BASE}/api/categories`);
+    const data = await res.json();
+    const cats = Array.isArray(data) ? data : (data.categories || []);
+
+    grid.innerHTML = cats.map(cat => {
+      const name   = cat.name_ar || cat.name || '—';
+      const icon   = cat.icon    || ICONS[cat.id] || '📦';
+      const status = cat.status  || 'available';
+      const isAvail = status === 'available';
+      const tag    = isAvail ? '<span class="cat-badge available">متاح الآن</span>'
+                             : '<span class="cat-badge soon">قريباً</span>';
+      const desc   = isAvail ? 'ابدأ التصفح' : 'قريباً';
+
+      if (isAvail) {
+        return `<a href="syriaexpress-products.html?cat=${cat.id}" class="cat-card">
+          ${tag}
+          <div class="cat-icon">${icon}</div>
+          <div class="cat-name">${name}</div>
+          <div class="cat-desc">${desc}</div>
+        </a>`;
+      } else {
+        return `<div class="cat-card">
+          ${tag}
+          <div class="cat-icon">${icon}</div>
+          <div class="cat-name">${name}</div>
+          <div class="cat-desc">${desc}</div>
+        </div>`;
+      }
+    }).join('');
+  } catch(e) {
+    // fallback: أخفِ القسم إذا فشل التحميل
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-dim);padding:20px">تعذّر تحميل الفئات</div>';
+  }
+})();
 </script>
 </body>
 </html>
