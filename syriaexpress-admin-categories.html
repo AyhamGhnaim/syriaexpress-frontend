@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إدارة الفئات — سوريا إكسبريس</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ==================== THEME VARIABLES ==================== */
+:root {
+  --bg: #0F0E0C;
+  --bg2: #1A1916;
+  --bg3: #252420;
+  --bg4: #2E2C28;
+  --text: #F0EDE6;
+  --text2: #B0A990;
+  --gold: #C9A84C;
+  --gold2: #E8C97A;
+  --border: rgba(201,168,76,0.18);
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --radius: 14px;
+  --success: #4CAF50;
+  --warning: #FF9800;
+  --danger: #f44336;
+  --info: #2196F3;
+}
+[data-theme="light"] {
+  --bg: #F5F3EF;
+  --bg2: #FFFFFF;
+  --bg3: #E8E4DC;
+  --bg4: #DDD9D0;
+  --text: #1A1814;
+  --text2: #6B6355;
+  --border: rgba(201,168,76,0.25);
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Cairo', sans-serif;
+  min-height: 100vh;
+  direction: rtl;
+}
+
+/* ==================== HEADER ==================== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 64px;
+  background: var(--bg2);
+  border-bottom: 2px solid var(--gold);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.back-btn {
+  color: var(--gold);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+.back-btn:hover { opacity: 0.75; }
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text);
+  flex-shrink: 0;
+}
+.header-logo-text .ar {
+  font-family: 'Amiri', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1.2;
+}
+.header-logo-text .en {
+  font-size: 9px;
+  color: var(--text2);
+  letter-spacing: 1.5px;
+  line-height: 1;
+}
+#headerLogo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+.header-spacer { width: 80px; }
+
+/* ==================== MAIN ==================== */
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+}
+
+.page-title {
+  font-family: 'Amiri', serif;
+  font-size: 28px;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.page-subtitle {
+  color: var(--text2);
+  font-size: 14px;
+  margin-bottom: 32px;
+}
+
+/* ==================== TOOLBAR ==================== */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.toolbar-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.filter-btn {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  padding: 7px 16px;
+  border-radius: 20px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.filter-btn:hover, .filter-btn.active {
+  background: var(--gold);
+  color: #0F0E0C;
+  border-color: var(--gold);
+  font-weight: 600;
+}
+.add-btn {
+  background: var(--gold);
+  color: #0F0E0C;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 10px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s, transform 0.1s;
+}
+.add-btn:hover { background: var(--gold2); }
+.add-btn:active { transform: scale(0.97); }
+
+/* ==================== CATEGORIES GRID ==================== */
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.category-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: box-shadow 0.2s, transform 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.category-card:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+.category-card::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--gold);
+  opacity: 0.6;
+}
+.category-card.status-soon::before { background: var(--warning); }
+.category-card.status-inactive::before { background: var(--danger); }
+
+.card-icon {
+  font-size: 32px;
+  margin-bottom: 10px;
+  display: block;
+}
+.card-name {
+  font-family: 'Amiri', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.card-name-input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--gold);
+  color: var(--text);
+  font-family: 'Amiri', serif;
+  font-size: 16px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+  display: none;
+}
+.card-slug {
+  font-size: 11px;
+  color: var(--text2);
+  margin-bottom: 12px;
+  direction: ltr;
+  text-align: right;
+}
+.card-stats {
+  font-size: 12px;
+  color: var(--text2);
+  margin-bottom: 14px;
+}
+.card-stats span {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+/* Status badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+}
+.status-available { background: rgba(76,175,80,0.15); color: var(--success); }
+.status-soon { background: rgba(255,152,0,0.15); color: var(--warning); }
+.status-inactive { background: rgba(244,67,54,0.15); color: var(--danger); }
+
+/* Card actions */
+.card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.action-btn {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+  text-align: center;
+}
+.btn-edit {
+  background: var(--bg3);
+  border-color: var(--border);
+  color: var(--text2);
+}
+.btn-edit:hover { border-color: var(--gold); color: var(--gold); }
+.btn-save {
+  background: var(--gold);
+  color: #0F0E0C;
+  display: none;
+}
+.btn-save:hover { background: var(--gold2); }
+.btn-cancel {
+  background: var(--bg3);
+  border-color: var(--border);
+  color: var(--text2);
+  display: none;
+}
+.btn-cancel:hover { border-color: var(--danger); color: var(--danger); }
+.btn-status {
+  background: var(--bg3);
+  border-color: var(--border);
+  color: var(--text2);
+  font-size: 11px;
+}
+.btn-status:hover { border-color: var(--gold); color: var(--gold); }
+
+.status-select {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--gold);
+  color: var(--text);
+  font-family: 'Cairo', sans-serif;
+  font-size: 12px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  display: none;
+  cursor: pointer;
+}
+
+/* ==================== MODAL ==================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 32px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.modal-title {
+  font-family: 'Amiri', serif;
+  font-size: 22px;
+  color: var(--gold);
+  margin-bottom: 24px;
+}
+.form-group {
+  margin-bottom: 18px;
+}
+.form-label {
+  display: block;
+  font-size: 13px;
+  color: var(--text2);
+  margin-bottom: 7px;
+  font-weight: 600;
+}
+.form-input, .form-select {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Cairo', sans-serif;
+  font-size: 14px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  transition: border-color 0.2s;
+}
+.form-input:focus, .form-select:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+.form-select option { background: var(--bg2); }
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+  margin-top: 6px;
+}
+.emoji-opt {
+  font-size: 22px;
+  text-align: center;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.15s;
+}
+.emoji-opt:hover { background: var(--bg4); }
+.emoji-opt.selected { border-color: var(--gold); background: var(--bg4); }
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+}
+.btn-primary {
+  flex: 1;
+  background: var(--gold);
+  color: #0F0E0C;
+  border: none;
+  padding: 11px;
+  border-radius: 10px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-primary:hover { background: var(--gold2); }
+.btn-secondary {
+  flex: 1;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  padding: 11px;
+  border-radius: 10px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-secondary:hover { border-color: var(--danger); color: var(--danger); }
+
+/* ==================== TOAST ==================== */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--bg2);
+  border: 1px solid var(--gold);
+  color: var(--text);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 300;
+  transition: transform 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.success { border-color: var(--success); }
+.toast.error { border-color: var(--danger); }
+
+/* ==================== LOADING ==================== */
+.loading {
+  text-align: center;
+  padding: 60px;
+  color: var(--text2);
+  font-size: 15px;
+}
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 900px) {
+  .categories-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .categories-grid { grid-template-columns: 1fr; }
+  .toolbar { flex-direction: column; align-items: flex-start; }
+  .header { padding: 0 14px; }
+  main { padding: 20px 14px 50px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Theme Init -->
+<script>
+(function() {
+  var saved = localStorage.getItem('theme');
+  if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+})();
+</script>
+
+<!-- Header -->
+<div class="header">
+  <a href="syriaexpress-admin.html" class="back-btn">← لوحة الإدارة</a>
+  <a href="syriaexpress-landing.html" class="header-logo">
+    <div class="header-logo-text">
+      <div class="ar">سوريا إكسبريس</div>
+      <div class="en">B2B MARKETPLACE</div>
+    </div>
+    <img id="headerLogo" src="" alt="logo" style="display:none" onerror="this.style.display='none'">
+  </a>
+  <div class="header-spacer"></div>
+</div>
+
+<!-- Main -->
+<main>
+  <div class="page-title">إدارة الفئات</div>
+  <div class="page-subtitle">التحكم في فئات المنتجات — تعديل الحالة والاسم</div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-filters">
+      <button class="filter-btn active" data-filter="all" onclick="filterCategories('all', this)">الكل</button>
+      <button class="filter-btn" data-filter="available" onclick="filterCategories('available', this)">متاح الآن</button>
+      <button class="filter-btn" data-filter="soon" onclick="filterCategories('soon', this)">قريباً</button>
+      <button class="filter-btn" data-filter="inactive" onclick="filterCategories('inactive', this)">غير نشط</button>
+    </div>
+    <button class="add-btn" onclick="openAddModal()">
+      <span>＋</span> إضافة فئة
+    </button>
+  </div>
+
+  <!-- Grid -->
+  <div id="categoriesGrid" class="categories-grid">
+    <div class="loading">
+      <div class="spinner"></div>
+      جارٍ تحميل الفئات...
+    </div>
+  </div>
+</main>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">إضافة فئة جديدة</div>
+    <div class="form-group">
+      <label class="form-label">اسم الفئة</label>
+      <input type="text" class="form-input" id="modalName" placeholder="مثال: غذائيات">
+    </div>
+    <div class="form-group">
+      <label class="form-label">الحالة</label>
+      <select class="form-select" id="modalStatus">
+        <option value="available">✅ متاح الآن</option>
+        <option value="soon">🔜 قريباً</option>
+        <option value="inactive">❌ غير نشط</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">الأيقونة</label>
+      <div class="emoji-grid" id="emojiGrid">
+        <!-- populated by JS -->
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="saveModal()">حفظ</button>
+      <button class="btn-secondary" onclick="closeModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="logos.js"></script>
+<script>
+// ==================== CONFIG ====================
+const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
+const EMOJIS = ['🍞','🧴','👗','💡','🏗️','🧱','💊','🧃','🥩','🥛','🌿','🧪','🔧','📦','🛒','🏭','🚗','🖥️','🧹','🪑'];
+
+// Local status overrides (stored in localStorage since API may not support status updates)
+// Structure: { [categoryId]: { status, name, icon } }
+const STORAGE_KEY = 'admin_category_overrides';
+
+let allCategories = [];
+let currentFilter = 'all';
+let editingCategoryId = null;
+let selectedEmoji = '📦';
+
+// ==================== INIT ====================
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadCategories();
+  buildEmojiGrid();
+});
+
+// ==================== LOAD ====================
+async function loadCategories() {
+  const token = localStorage.getItem('token');
+  try {
+    const res = await fetch(`${API_BASE}/api/categories`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    const data = await res.json();
+    allCategories = Array.isArray(data) ? data : (data.categories || []);
+
+    // Merge with local overrides
+    const overrides = getOverrides();
+    allCategories = allCategories.map(cat => {
+      const ov = overrides[cat.id];
+      if (ov) return { ...cat, ...ov };
+      // Default status if not set
+      if (!cat.status) cat.status = 'available';
+      if (!cat.icon) cat.icon = guessIcon(cat.name);
+      return cat;
+    });
+
+    renderGrid();
+  } catch (err) {
+    console.error(err);
+    // Fallback to known categories from context
+    allCategories = getDefaultCategories();
+    renderGrid();
+    showToast('تعذّر الاتصال بالخادم — يُعرض البيانات المحلية', 'error');
+  }
+}
+
+function getDefaultCategories() {
+  const overrides = getOverrides();
+  const defaults = [
+    { id: 'd91a982a-4943-41d2-a10d-190bdcc46dbf', name: 'غذائيات', status: 'available', icon: '🍞' },
+    { id: 'dbc84456-4a45-41bb-81b1-6c55866a84ae', name: 'كيماويات ومنظفات', status: 'available', icon: '🧴' },
+    { id: '9cd45ecd-7b06-4908-9e96-0e3e5182372a', name: 'ألبسة', status: 'soon', icon: '👗' },
+    { id: '4a853f88-f000-4a81-ba5a-54f6b17f666f', name: 'كهربائيات', status: 'soon', icon: '💡' },
+    { id: '0450b35f-331b-4b91-b7d6-0fefbe0c3299', name: 'مواد بناء', status: 'soon', icon: '🏗️' },
+    { id: '2c2ebbf1-d69b-4808-a24b-b24e95cbb81c', name: 'بلاستيكيات', status: 'soon', icon: '♻️' },
+    { id: '022f9e74-b115-4ce0-ab15-5951dab17f10', name: 'مستلزمات طبية', status: 'soon', icon: '💊' },
+  ];
+  return defaults.map(cat => {
+    const ov = overrides[cat.id];
+    return ov ? { ...cat, ...ov } : cat;
+  });
+}
+
+// ==================== RENDER ====================
+function renderGrid() {
+  const grid = document.getElementById('categoriesGrid');
+  let filtered = allCategories;
+  if (currentFilter !== 'all') {
+    filtered = allCategories.filter(c => c.status === currentFilter);
+  }
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="loading" style="grid-column:1/-1">لا توجد فئات في هذا التصنيف</div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(cat => buildCard(cat)).join('');
+}
+
+function buildCard(cat) {
+  const statusMap = {
+    available: { label: 'متاح الآن', cls: 'status-available', dot: '🟢' },
+    soon: { label: 'قريباً', cls: 'status-soon', dot: '🟡' },
+    inactive: { label: 'غير نشط', cls: 'status-inactive', dot: '🔴' },
+  };
+  const s = statusMap[cat.status] || statusMap['soon'];
+  const icon = cat.icon || '📦';
+
+  return `
+    <div class="category-card status-${cat.status}" id="card-${cat.id}" data-id="${cat.id}" data-status="${cat.status}">
+      <span class="card-icon" id="icon-${cat.id}">${icon}</span>
+      <div class="card-name" id="name-display-${cat.id}">${cat.name}</div>
+      <input type="text" class="card-name-input" id="name-input-${cat.id}" value="${cat.name}">
+      <div class="card-slug">${cat.id.substring(0,8)}…</div>
+      <div class="status-badge ${s.cls}" id="badge-${cat.id}">${s.dot} ${s.label}</div>
+      <select class="status-select" id="status-select-${cat.id}">
+        <option value="available" ${cat.status==='available'?'selected':''}>✅ متاح الآن</option>
+        <option value="soon" ${cat.status==='soon'?'selected':''}>🔜 قريباً</option>
+        <option value="inactive" ${cat.status==='inactive'?'selected':''}>❌ غير نشط</option>
+      </select>
+      <div class="card-actions">
+        <button class="action-btn btn-edit" id="edit-btn-${cat.id}" onclick="startEdit('${cat.id}')">✏️ تعديل</button>
+        <button class="action-btn btn-save" id="save-btn-${cat.id}" onclick="saveCard('${cat.id}')">✔ حفظ</button>
+        <button class="action-btn btn-cancel" id="cancel-btn-${cat.id}" onclick="cancelEdit('${cat.id}')">✕</button>
+      </div>
+    </div>
+  `;
+}
+
+// ==================== EDIT INLINE ====================
+function startEdit(id) {
+  document.getElementById(`name-display-${id}`).style.display = 'none';
+  document.getElementById(`name-input-${id}`).style.display = 'block';
+  document.getElementById(`status-select-${id}`).style.display = 'block';
+  document.getElementById(`badge-${id}`).style.display = 'none';
+  document.getElementById(`edit-btn-${id}`).style.display = 'none';
+  document.getElementById(`save-btn-${id}`).style.display = 'flex';
+  document.getElementById(`cancel-btn-${id}`).style.display = 'flex';
+}
+
+function cancelEdit(id) {
+  document.getElementById(`name-display-${id}`).style.display = '';
+  document.getElementById(`name-input-${id}`).style.display = 'none';
+  document.getElementById(`status-select-${id}`).style.display = 'none';
+  document.getElementById(`badge-${id}`).style.display = '';
+  document.getElementById(`edit-btn-${id}`).style.display = '';
+  document.getElementById(`save-btn-${id}`).style.display = 'none';
+  document.getElementById(`cancel-btn-${id}`).style.display = 'none';
+}
+
+function saveCard(id) {
+  const newName = document.getElementById(`name-input-${id}`).value.trim();
+  const newStatus = document.getElementById(`status-select-${id}`).value;
+  if (!newName) { showToast('يرجى إدخال اسم الفئة', 'error'); return; }
+
+  // Save override locally
+  const overrides = getOverrides();
+  const cat = allCategories.find(c => c.id === id);
+  overrides[id] = { ...overrides[id], name: newName, status: newStatus, icon: cat?.icon || '📦' };
+  setOverrides(overrides);
+
+  // Update in-memory array
+  const idx = allCategories.findIndex(c => c.id === id);
+  if (idx !== -1) {
+    allCategories[idx].name = newName;
+    allCategories[idx].status = newStatus;
+  }
+
+  // Try to PATCH via API (if endpoint exists)
+  const token = localStorage.getItem('token');
+  if (token) {
+    fetch(`${API_BASE}/api/categories/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ name: newName, status: newStatus })
+    }).catch(() => {}); // silent fail — local override persists
+  }
+
+  renderGrid();
+  showToast('✅ تم حفظ التعديلات', 'success');
+}
+
+// ==================== FILTER ====================
+function filterCategories(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGrid();
+}
+
+// ==================== ADD MODAL ====================
+function openAddModal() {
+  editingCategoryId = null;
+  document.getElementById('modalTitle').textContent = 'إضافة فئة جديدة';
+  document.getElementById('modalName').value = '';
+  document.getElementById('modalStatus').value = 'soon';
+  selectedEmoji = '📦';
+  updateEmojiSelection();
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+
+function buildEmojiGrid() {
+  const grid = document.getElementById('emojiGrid');
+  grid.innerHTML = EMOJIS.map(e => `
+    <div class="emoji-opt ${e === selectedEmoji ? 'selected' : ''}" onclick="selectEmoji('${e}')">${e}</div>
+  `).join('');
+}
+
+function selectEmoji(emoji) {
+  selectedEmoji = emoji;
+  updateEmojiSelection();
+}
+
+function updateEmojiSelection() {
+  document.querySelectorAll('.emoji-opt').forEach(el => {
+    el.classList.toggle('selected', el.textContent === selectedEmoji);
+  });
+}
+
+async function saveModal() {
+  const name = document.getElementById('modalName').value.trim();
+  const status = document.getElementById('modalStatus').value;
+  if (!name) { showToast('يرجى إدخال اسم الفئة', 'error'); return; }
+
+  const token = localStorage.getItem('token');
+  const body = { name, status, icon: selectedEmoji };
+
+  try {
+    // Try API first
+    let newId = null;
+    if (token) {
+      const res = await fetch(`${API_BASE}/api/categories`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        newId = data.id || data.category?.id;
+      }
+    }
+
+    // Generate local ID if API didn't return one
+    if (!newId) newId = 'local-' + Date.now();
+
+    const newCat = { id: newId, ...body };
+    allCategories.push(newCat);
+
+    // Save override
+    const overrides = getOverrides();
+    overrides[newId] = body;
+    setOverrides(overrides);
+
+    closeModal();
+    renderGrid();
+    showToast('✅ تمت إضافة الفئة بنجاح', 'success');
+  } catch (err) {
+    showToast('تعذّر الحفظ — تم الحفظ محلياً', 'error');
+    const newId = 'local-' + Date.now();
+    allCategories.push({ id: newId, ...body });
+    const overrides = getOverrides();
+    overrides[newId] = body;
+    setOverrides(overrides);
+    closeModal();
+    renderGrid();
+  }
+}
+
+// ==================== HELPERS ====================
+function getOverrides() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+  catch { return {}; }
+}
+function setOverrides(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function guessIcon(name) {
+  if (name?.includes('غذ')) return '🍞';
+  if (name?.includes('كيم') || name?.includes('منظف')) return '🧴';
+  if (name?.includes('ألبس') || name?.includes('نسيج')) return '👗';
+  if (name?.includes('كهرب')) return '💡';
+  if (name?.includes('بناء')) return '🏗️';
+  if (name?.includes('بلاستيك')) return '♻️';
+  if (name?.includes('طبي') || name?.includes('صحة')) return '💊';
+  return '📦';
+}
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  setTimeout(() => t.className = 'toast', 2800);
+}
+
+// Close modal on overlay click
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Logo injection
+window.addEventListener('load', () => {
+  if (typeof getLogoBase64 === 'function') {
+    const img = document.getElementById('headerLogo');
+    img.src = getLogoBase64();
+    img.style.display = 'block';
+  }
+});
+</script>
+</body>
+</html>
