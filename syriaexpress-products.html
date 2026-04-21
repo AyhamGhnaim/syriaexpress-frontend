@@ -775,7 +775,8 @@ async function loadProducts() {
     params.set('page', state.categoryId ? 1 : state.page);
     params.set('limit', state.categoryId ? 500 : state.limit);
 
-    const res = await fetch(`${API_BASE}/api/products?${params}`);
+    params.set('_t', Date.now());
+    const res = await fetch(`${API_BASE}/api/products?${params}`, { cache: 'no-store' });
     const data = await res.json();
 
     let products = data.products || data.items || (Array.isArray(data) ? data : []);
