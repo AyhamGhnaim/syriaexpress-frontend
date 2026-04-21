@@ -694,7 +694,7 @@ function getFilteredProducts() {
   const sort = document.getElementById('sortFilter').value;
 
   let list = allProducts.filter(p => {
-    const matchSearch = !search || (p.name || '').toLowerCase().includes(search);
+    const matchSearch = !search || (getProductName(p)).toLowerCase().includes(search);
     const matchCat = !cat || p.category_id === cat;
     return matchSearch && matchCat;
   });
@@ -703,7 +703,7 @@ function getFilteredProducts() {
   else if (sort === 'oldest') list.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
   else if (sort === 'price-asc') list.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
   else if (sort === 'price-desc') list.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
-  else if (sort === 'name') list.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ar'));
+  else if (sort === 'name') list.sort((a, b) => getProductName(a).localeCompare(getProductName(b), 'ar'));
 
   return list;
 }
@@ -730,25 +730,38 @@ function renderProducts() {
   }
 }
 
+function getProductName(p) {
+  return p.name_ar || p.name_en || p.name || p.product_name || p.title || 'منتج بلا اسم';
+}
+function getProductImage(p) {
+  return p.image_url || (p.images && p.images[0]?.url) || '';
+}
+function getProductMOQ(p) {
+  return p.min_order_quantity ?? p.min_order_qty ?? p.moq ?? p.min_order ?? '—';
+}
+
 function renderGridCard(p) {
   const catName = CATEGORY_NAMES[p.category_id] || '';
   const price = parseFloat(p.price);
   const priceStr = isNaN(price) ? '—' : price.toLocaleString('ar-SY') + ' ل.س';
-  const imgHtml = p.image_url
-    ? `<img class="product-img" src="${p.image_url}" alt="${p.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+  const name = getProductName(p);
+  const imageUrl = getProductImage(p);
+  const moq = getProductMOQ(p);
+  const imgHtml = imageUrl
+    ? `<img class="product-img" src="${imageUrl}" alt="${name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
     : '';
-  const placeholderHtml = `<div class="product-img-placeholder" style="${p.image_url ? 'display:none' : ''}">📦</div>`;
+  const placeholderHtml = `<div class="product-img-placeholder" style="${imageUrl ? 'display:none' : ''}">📦</div>`;
   return `
   <div class="product-card">
     ${imgHtml}${placeholderHtml}
     <div class="product-body">
-      <div class="product-name" title="${p.name}">${p.name || 'منتج بلا اسم'}</div>
+      <div class="product-name" title="${name}">${name}</div>
       <div class="product-cat">${catName}</div>
       <div class="product-price">${priceStr}</div>
-      <div class="product-min">الحد الأدنى: ${p.min_order || '—'} ${p.unit || ''}</div>
+      <div class="product-min">الحد الأدنى: ${moq} ${p.unit || ''}</div>
       <div class="product-actions">
         <a href="syriaexpress-edit-product.html?id=${p.id}" class="btn-edit">✏️ تعديل</a>
-        <button class="btn-del" onclick="confirmDelete('${p.id}', '${(p.name||'').replace(/'/g,"\\'")}')">🗑️</button>
+        <button class="btn-del" onclick="confirmDelete('${p.id}', '${name.replace(/'/g,"\\'")}')">🗑️</button>
       </div>
     </div>
   </div>`;
@@ -758,25 +771,28 @@ function renderListCard(p) {
   const catName = CATEGORY_NAMES[p.category_id] || '';
   const price = parseFloat(p.price);
   const priceStr = isNaN(price) ? '—' : price.toLocaleString('ar-SY') + ' ل.س';
-  const imgHtml = p.image_url
-    ? `<img class="product-img" src="${p.image_url}" alt="${p.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+  const name = getProductName(p);
+  const imageUrl = getProductImage(p);
+  const moq = getProductMOQ(p);
+  const imgHtml = imageUrl
+    ? `<img class="product-img" src="${imageUrl}" alt="${name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
     : '';
-  const placeholderHtml = `<div class="product-img-placeholder" style="${p.image_url ? 'display:none' : ''}">📦</div>`;
+  const placeholderHtml = `<div class="product-img-placeholder" style="${imageUrl ? 'display:none' : ''}">📦</div>`;
   return `
   <div class="product-card">
     ${imgHtml}${placeholderHtml}
     <div class="product-body">
       <div class="product-info">
-        <div class="product-name">${p.name || 'منتج بلا اسم'}</div>
+        <div class="product-name">${name}</div>
         <div class="product-cat">${catName}</div>
       </div>
       <div>
         <div class="product-price">${priceStr}</div>
-        <div class="product-min">الحد الأدنى: ${p.min_order || '—'} ${p.unit || ''}</div>
+        <div class="product-min">الحد الأدنى: ${moq} ${p.unit || ''}</div>
       </div>
       <div class="product-actions">
         <a href="syriaexpress-edit-product.html?id=${p.id}" class="btn-edit">✏️ تعديل</a>
-        <button class="btn-del" onclick="confirmDelete('${p.id}', '${(p.name||'').replace(/'/g,"\\'")}')">🗑️</button>
+        <button class="btn-del" onclick="confirmDelete('${p.id}', '${name.replace(/'/g,"\\'")}')">🗑️</button>
       </div>
     </div>
   </div>`;
