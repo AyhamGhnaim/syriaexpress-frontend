@@ -583,17 +583,32 @@
 
     async function loadSeller() {
       try {
-        const sellerRes = await fetch(`${API_BASE}/api/sellers/${sellerId}`);
-        if (!sellerRes.ok) throw new Error('البائع غير موجود');
+        let seller = null;
+        let resolvedSellerId = sellerId;
 
-        const sellerData = await sellerRes.json();
-        const seller = sellerData.seller || sellerData;
+        // المحاولة الأولى: جلب البائع مباشرة بالـ ID
+        const sellerRes = await fetch(`${API_BASE}/api/sellers/${sellerId}`);
+
+        if (sellerRes.ok) {
+          const sellerData = await sellerRes.json();
+          seller = sellerData.seller || sellerData;
+        } else {
+          // المحاولة الثانية: البحث في قائمة البائعين (في حال كان الـ ID هو user_id)
+          const allRes = await fetch(`${API_BASE}/api/sellers`);
+          if (!allRes.ok) throw new Error('تعذّر تحميل بيانات البائع');
+          const allData = await allRes.json();
+          const sellers = allData.sellers || allData || [];
+          seller = sellers.find(s => s.user_id === sellerId || s.id === sellerId);
+          if (!seller) throw new Error('البائع غير موجود');
+          resolvedSellerId = seller.id;
+        }
+
         let products = seller.products || [];
 
-        // If no products in seller response, try dedicated endpoint
+        // جلب المنتجات إذا لم تكن موجودة في الـ response
         if (!products.length) {
           try {
-            const productsRes = await fetch(`${API_BASE}/api/sellers/${sellerId}/products`);
+            const productsRes = await fetch(`${API_BASE}/api/sellers/${resolvedSellerId}/products`);
             if (productsRes.ok) {
               const prodData = await productsRes.json();
               products = prodData.products || prodData || [];
@@ -601,7 +616,6 @@
           } catch(e) { /* ignore */ }
         }
 
-        if (products.length > 0) console.log('🔍 product sample:', JSON.stringify(products[0]));
         renderPage(seller, products);
       } catch (err) {
         console.error(err);
