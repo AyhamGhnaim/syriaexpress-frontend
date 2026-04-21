@@ -578,21 +578,27 @@ window.addEventListener('DOMContentLoaded', async () => {
 async function loadCategories() {
   const token = localStorage.getItem('token');
   try {
-    const res = await fetch(`${API_BASE}/api/categories`, {
+    // استخدم admin endpoint للحصول على كل الفئات بما فيها status و icon
+    const endpoint = token ? `${API_BASE}/api/admin/categories` : `${API_BASE}/api/categories`;
+    const res = await fetch(endpoint, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
     const data = await res.json();
-    allCategories = Array.isArray(data) ? data : (data.categories || []);
+    const raw = Array.isArray(data) ? data : (data.categories || []);
 
-    // Merge with local overrides
+    // دمج بيانات API مع defaults (حالة + أيقونة) + overrides محلية
+    const defaults = getDefaultCategories();
     const overrides = getOverrides();
-    allCategories = allCategories.map(cat => {
-      const ov = overrides[cat.id];
-      if (ov) return { ...cat, ...ov };
-      // Default status if not set
-      if (!cat.status) cat.status = 'available';
-      if (!cat.icon) cat.icon = guessIcon(cat.name);
-      return cat;
+    allCategories = raw.map(cat => {
+      const name = cat.name_ar || cat.name || cat.name_en || '—';
+      const def = defaults.find(d => d.id === cat.id) || {};
+      const ov  = overrides[cat.id] || {};
+      return {
+        ...cat,
+        name:   ov.name   || name,
+        status: ov.status || def.status || 'available',
+        icon:   ov.icon   || def.icon   || guessIcon(name),
+      };
     });
 
     renderGrid();
@@ -646,12 +652,13 @@ function buildCard(cat) {
   };
   const s = statusMap[cat.status] || statusMap['soon'];
   const icon = cat.icon || '📦';
+  const displayName = cat.name || '—';
 
   return `
     <div class="category-card status-${cat.status}" id="card-${cat.id}" data-id="${cat.id}" data-status="${cat.status}">
       <span class="card-icon" id="icon-${cat.id}">${icon}</span>
-      <div class="card-name" id="name-display-${cat.id}">${cat.name}</div>
-      <input type="text" class="card-name-input" id="name-input-${cat.id}" value="${cat.name}">
+      <div class="card-name" id="name-display-${cat.id}">${displayName}</div>
+      <input type="text" class="card-name-input" id="name-input-${cat.id}" value="${displayName}">
       <div class="card-slug">${cat.id.substring(0,8)}…</div>
       <div class="status-badge ${s.cls}" id="badge-${cat.id}">${s.dot} ${s.label}</div>
       <select class="status-select" id="status-select-${cat.id}">
@@ -710,10 +717,10 @@ function saveCard(id) {
   // Try to PATCH via API (if endpoint exists)
   const token = localStorage.getItem('token');
   if (token) {
-    fetch(`${API_BASE}/api/categories/${id}`, {
+    fetch(`${API_BASE}/api/admin/categories/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ name: newName, status: newStatus })
+      body: JSON.stringify({ name_ar: newName, status: newStatus })
     }).catch(() => {}); // silent fail — local override persists
   }
 
@@ -768,13 +775,13 @@ async function saveModal() {
   if (!name) { showToast('يرجى إدخال اسم الفئة', 'error'); return; }
 
   const token = localStorage.getItem('token');
-  const body = { name, status, icon: selectedEmoji };
+  const body = { name_ar: name, status, icon: selectedEmoji };
 
   try {
     // Try API first
     let newId = null;
     if (token) {
-      const res = await fetch(`${API_BASE}/api/categories`, {
+      const res = await fetch(`${API_BASE}/api/admin/categories`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(body)
@@ -843,14 +850,19 @@ document.getElementById('modalOverlay').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
 
-// Logo injection
-window.addEventListener('load', () => {
-  if (typeof getLogoBase64 === 'function') {
-    const img = document.getElementById('headerLogo');
-    img.src = getLogoBase64();
-    img.style.display = 'block';
-  }
-});
+// Logo injection — يجرب أسماء الدالة المختلفة المستخدمة في logos.js
+function injectLogo() {
+  const img = document.getElementById('headerLogo');
+  if (!img) return;
+  const fn = typeof getLogoBase64 === 'function' ? getLogoBase64
+           : typeof getSyriaExpressLogo === 'function' ? getSyriaExpressLogo
+           : typeof getLogo === 'function' ? getLogo
+           : null;
+  if (fn) { img.src = fn(); img.style.display = 'block'; }
+}
+// جرّب فوراً وعند تحميل الصفحة
+injectLogo();
+window.addEventListener('load', injectLogo);
 </script>
 </body>
 </html>
