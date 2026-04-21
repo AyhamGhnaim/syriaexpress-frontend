@@ -601,6 +601,7 @@
           } catch(e) { /* ignore */ }
         }
 
+        if (products.length > 0) console.log('🔍 product sample:', JSON.stringify(products[0]));
         renderPage(seller, products);
       } catch (err) {
         console.error(err);
@@ -759,8 +760,10 @@
       }
 
       return products.map(p => {
-        const imgHTML = p.image_url
-          ? `<img src="${p.image_url}" alt="${p.name}" loading="lazy">`
+        const name = p.name_ar || p.name || p.product_name || p.title || '—';
+        const imageUrl = p.image_url || (p.images && p.images[0]) || '';
+        const imgHTML = imageUrl
+          ? `<img src="${imageUrl}" alt="${name}" loading="lazy">`
           : '📦';
         const price = p.price ? `${Number(p.price).toLocaleString()} ل.س` : '';
         const orders = (p.order_count && p.order_count > 0) ? `${p.order_count} طلب` : '';
@@ -769,7 +772,7 @@
           <a class="product-card" href="syriaexpress-product.html?id=${p.id}">
             <div class="product-img">${imgHTML}</div>
             <div class="product-info">
-              <div class="product-name">${p.name}</div>
+              <div class="product-name">${name}</div>
               ${price ? `<div class="product-price">${price}</div>` : ''}
               ${orders ? `<div class="product-orders">${orders}</div>` : ''}
             </div>
