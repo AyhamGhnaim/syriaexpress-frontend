@@ -585,10 +585,11 @@ async function submitProduct() {
     if (document.getElementById('shipIntl').checked) shipping.push('international');
 
     const body = {
+      name_ar: nameAr,
+      name_en: document.getElementById('nameEn').value.trim() || undefined,
       name: nameAr,
-      name_en: document.getElementById('nameEn').value.trim() || null,
       category_id: category,
-      description: document.getElementById('description').value.trim() || null,
+      description: document.getElementById('description').value.trim() || undefined,
       price,
       unit,
       min_order_quantity: moq,
@@ -603,8 +604,9 @@ async function submitProduct() {
     });
 
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || 'فشل إضافة المنتج');
+      const err = await res.json().catch(() => ({}));
+      const msg = err.message || err.error || err.details || JSON.stringify(err);
+      throw new Error(msg);
     }
 
     const data = await res.json();
