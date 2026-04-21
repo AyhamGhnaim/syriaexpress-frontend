@@ -847,12 +847,15 @@ document.getElementById('deleteModal').addEventListener('click', function(e) {
 });
 
 // Logo
-if (typeof window.LOGO_BASE64 !== 'undefined') {
+function initLogo() {
   const img = document.getElementById('headerLogo');
-  img.src = window.LOGO_BASE64;
-  img.style.display = 'inline-block';
+  if (typeof LOGOS !== 'undefined' && LOGOS.main && img) {
+    img.src = LOGOS.main;
+    img.style.display = 'inline-block';
+  }
 }
 
+initLogo();
 loadProducts();
 </script>
 </body>
