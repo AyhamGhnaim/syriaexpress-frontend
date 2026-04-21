@@ -593,13 +593,22 @@
           const sellerData = await sellerRes.json();
           seller = sellerData.seller || sellerData;
         } else {
-          // المحاولة الثانية: البحث في قائمة البائعين (في حال كان الـ ID هو user_id)
+          // المحاولة الثانية: جلب كل البائعين والبحث عن المطابق
           const allRes = await fetch(`${API_BASE}/api/sellers`);
           if (!allRes.ok) throw new Error('تعذّر تحميل بيانات البائع');
           const allData = await allRes.json();
           const sellers = allData.sellers || allData || [];
-          seller = sellers.find(s => s.user_id === sellerId || s.id === sellerId);
-          if (!seller) throw new Error('البائع غير موجود');
+          // البحث بكل الحقول الممكنة
+          seller = sellers.find(s =>
+            s.user_id === sellerId ||
+            s.id === sellerId ||
+            String(s.user_id) === String(sellerId) ||
+            String(s.id) === String(sellerId)
+          );
+          if (!seller) {
+            console.warn('لم يُعثر على البائع. الـ IDs المتوفرة:', sellers.map(s => ({ id: s.id, user_id: s.user_id })));
+            throw new Error('البائع غير موجود');
+          }
           resolvedSellerId = seller.id;
         }
 
