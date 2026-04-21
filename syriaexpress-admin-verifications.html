@@ -527,9 +527,10 @@ function buildCard(v) {
   const st = getStatusInfo(v.verification_status || v.status);
   const isPending = (v.verification_status || v.status) === 'pending';
   const docs = v.documents || [];
+  const vid = v.seller_id || v.id;
 
   return `
-    <div class="ver-card" id="ver-${v.id}">
+    <div class="ver-card" id="ver-${vid}">
       <div class="ver-header">
         <div>
           <div class="ver-company">${v.company_name_ar || '—'}</div>
@@ -568,7 +569,7 @@ function buildCard(v) {
 
       <div class="docs-section">
         <div class="docs-title">📎 الوثائق المرفوعة</div>
-        <div class="docs-grid" id="docs-${v.id}">
+        <div class="docs-grid" id="docs-${vid}">
           ${buildDocLinks(docs)}
         </div>
       </div>
@@ -587,8 +588,8 @@ function buildCard(v) {
 
       ${isPending ? `
       <div class="ver-actions">
-        <button class="action-btn btn-approve" onclick="approveVerification('${v.id}')">✅ موافقة</button>
-        <button class="action-btn btn-reject" onclick="openRejectModal('${v.id}')">✕ رفض</button>
+        <button class="action-btn btn-approve" onclick="approveVerification('${vid}')">✅ موافقة</button>
+        <button class="action-btn btn-reject" onclick="openRejectModal('${vid}')">✕ رفض</button>
       </div>` : ''}
     </div>
   `;
@@ -727,7 +728,18 @@ async function confirmReject() {
     });
 
     if (res.ok) {
-      showToast('تم رفض طلب التوثيق');
+      // إيقاف حساب البائع بعد الرفض
+      const v = allVerifications.find(x => (x.seller_id || x.id) === rejectTargetId);
+      if (v && v.user_id) {
+        try {
+          await fetch(`${API}/api/admin/users/${v.user_id}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ status: 'inactive' })
+          });
+        } catch (e) { /* تجاهل خطأ الإيقاف */ }
+      }
+      showToast('تم رفض طلب التوثيق وإيقاف الحساب');
       loadVerifications();
     } else {
       const data = await res.json();
