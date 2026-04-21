@@ -340,63 +340,41 @@
     } catch(e) {}
   })();
 
-  // بيانات الفئات (مطابقة لجدول Supabase)
-  const CATEGORIES = [
-    {
-      id: 'd91a982a-4943-41d2-a10d-190bdcc46dbf',
-      name: 'غذائيات',
-      sub: 'متاح • بائعون موثّقون',
-      icon: '🌾',
-      status: 'available'
-    },
-    {
-      id: 'dbc84456-4a45-41bb-81b1-6c55866a84ae',
-      name: 'كيماويات ومنظفات',
-      sub: 'متاح • بائعون موثّقون',
-      icon: '🧴',
-      status: 'available'
-    },
-    {
-      id: '9cd45ecd-7b06-4908-9e96-0e3e5182372a',
-      name: 'ألبسة ونسيج',
-      sub: 'قريباً',
-      icon: '🧵',
-      status: 'soon'
-    },
-    {
-      id: '022f9e74-b115-4ce0-ab15-5951dab17f10',
-      name: 'مستلزمات طبية',
-      sub: 'قريباً',
-      icon: '💊',
-      status: 'soon'
-    },
-    {
-      id: '4a853f88-f000-4a81-ba5a-54f6b17f666f',
-      name: 'كهربائيات',
-      sub: 'قريباً',
-      icon: '📱',
-      status: 'soon'
-    },
-    {
-      id: '0450b35f-331b-4b91-b7d6-0fefbe0c3299',
-      name: 'مواد بناء',
-      sub: 'قريباً',
-      icon: '🧱',
-      status: 'soon'
-    },
-    {
-      id: '2c2ebbf1-d69b-4808-a24b-b24e95cbb81c',
-      name: 'بلاستيكيات',
-      sub: 'قريباً',
-      icon: '🧺',
-      status: 'soon'
-    }
+  // بيانات الفئات الأصلية (مطابقة لجدول Supabase)
+  const CATEGORIES_DEFAULT = [
+    { id: 'd91a982a-4943-41d2-a10d-190bdcc46dbf', name: 'غذائيات',          icon: '🌾', status: 'available' },
+    { id: 'dbc84456-4a45-41bb-81b1-6c55866a84ae', name: 'كيماويات ومنظفات', icon: '🧴', status: 'available' },
+    { id: '9cd45ecd-7b06-4908-9e96-0e3e5182372a', name: 'ألبسة ونسيج',      icon: '🧵', status: 'soon'      },
+    { id: '022f9e74-b115-4ce0-ab15-5951dab17f10', name: 'مستلزمات طبية',    icon: '💊', status: 'soon'      },
+    { id: '4a853f88-f000-4a81-ba5a-54f6b17f666f', name: 'كهربائيات',        icon: '📱', status: 'soon'      },
+    { id: '0450b35f-331b-4b91-b7d6-0fefbe0c3299', name: 'مواد بناء',        icon: '🧱', status: 'soon'      },
+    { id: '2c2ebbf1-d69b-4808-a24b-b24e95cbb81c', name: 'بلاستيكيات',      icon: '🧺', status: 'soon'      },
   ];
+
+  // دمج مع تعديلات الأدمن المحفوظة في localStorage
+  function getCategories() {
+    let overrides = {};
+    try { overrides = JSON.parse(localStorage.getItem('admin_category_overrides')) || {}; } catch(e) {}
+    return CATEGORIES_DEFAULT.map(cat => {
+      const ov = overrides[cat.id] || {};
+      return {
+        ...cat,
+        name:   ov.name   || cat.name,
+        status: ov.status || cat.status,
+        icon:   ov.icon   || cat.icon,
+      };
+    }).concat(
+      Object.entries(overrides)
+        .filter(([id]) => id.startsWith('local-'))
+        .map(([id, ov]) => ({ id, name: ov.name || '—', icon: ov.icon || '📦', status: ov.status || 'soon' }))
+    ).filter(cat => cat.status !== 'inactive');
+  }
 
   let currentFilter = 'all';
   const grid = document.getElementById('grid');
 
   function render() {
+    const CATEGORIES = getCategories();
     const filtered = CATEGORIES.filter(cat => {
       if (currentFilter === 'all') return true;
       return cat.status === currentFilter;
@@ -426,7 +404,7 @@
         <a href="${href}" class="${cls}">
           <div class="cat-icon">${cat.icon}</div>
           <div class="cat-name">${cat.name}</div>
-          <div class="cat-sub">${cat.sub}</div>
+          <div class="cat-sub">${cat.status === "available" ? "متاح • بائعون موثّقون" : "قريباً"}</div>
           ${badge}
         </a>
       `;
