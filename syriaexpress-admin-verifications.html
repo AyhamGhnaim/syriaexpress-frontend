@@ -735,7 +735,7 @@ async function confirmReject() {
           await fetch(`${API}/api/admin/users/${v.user_id}/status`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ status: 'inactive' })
+            body: JSON.stringify({ is_active: false })
           });
         } catch (e) { /* تجاهل خطأ الإيقاف */ }
       }
