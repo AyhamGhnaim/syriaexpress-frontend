@@ -219,7 +219,6 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
   </div>
   <div class="header-title">🛒 سلة المشتريات</div>
   <div class="header-right">
-    <img id="headerLogo" src="" alt="logo" style="display:none;width:38px;height:38px;object-fit:contain" onerror="this.style.display='none'">
     <div class="cart-count" id="cartCount">0</div>
   </div>
 </div>
@@ -316,7 +315,8 @@ window.addEventListener('load', function() {
   }
 });
 
-let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+let cart = JSON.parse(localStorage.getItem('cart') || '[]')
+  .map(i => ({ ...i, qty: Number(i.qty) || 1, price: Number(i.price) || 0 }));
 let shippingCost = 0;
 
 renderCart();
