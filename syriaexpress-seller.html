@@ -391,7 +391,10 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
   <div class="box">
     <div class="box-header">
       <div class="box-title"><span class="box-dot gold"></span> منتجاتي</div>
-      <button class="btn-add" onclick="location.href='syriaexpress-add-product.html'">+ إضافة</button>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <a href="syriaexpress-seller-products.html" style="font-size:13px;color:var(--gold);text-decoration:none;opacity:0.85;">عرض الكل ←</a>
+        <button class="btn-add" onclick="location.href='syriaexpress-add-product.html'">+ إضافة</button>
+      </div>
     </div>
     <div class="my-prod-list" id="myProductsList">
       <div class="empty-state">
