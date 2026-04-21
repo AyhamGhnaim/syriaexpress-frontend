@@ -262,7 +262,48 @@
   .btn-make-buyer  { background: rgba(33,150,243,0.15); color: var(--info); border: 1px solid rgba(33,150,243,0.3); }
   .btn-make-admin  { background: rgba(224,85,85,0.1); color: var(--danger); border: 1px solid rgba(224,85,85,0.3); }
   .btn-view-profile { background: var(--bg3); color: var(--text2); border: 1px solid var(--border); text-decoration: none; display: flex; align-items: center; justify-content: center; }
+  .btn-delete { background: rgba(224,85,85,0.12); color: var(--danger); border: 1px solid rgba(224,85,85,0.35); }
   .action-btn:hover { opacity: 0.8; }
+
+  /* Delete Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 500;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 20px;
+    max-width: 340px;
+    width: 90%;
+    text-align: center;
+  }
+  .modal-icon { font-size: 42px; margin-bottom: 12px; }
+  .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .modal-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; line-height: 1.6; }
+  .modal-name { color: var(--danger); font-weight: 700; }
+  .modal-actions { display: flex; gap: 10px; }
+  .modal-cancel {
+    flex: 1; padding: 10px; border-radius: 10px;
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text); font-family: 'Cairo', sans-serif;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .modal-confirm {
+    flex: 1; padding: 10px; border-radius: 10px;
+    background: var(--danger); border: none;
+    color: #fff; font-family: 'Cairo', sans-serif;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .modal-confirm:disabled { opacity: 0.6; cursor: not-allowed; }
 
   .expand-toggle {
     background: none;
@@ -420,6 +461,19 @@
 
 </div>
 
+<!-- Delete Confirm Modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box">
+    <div class="modal-icon">🗑️</div>
+    <div class="modal-title">حذف المستخدم</div>
+    <div class="modal-sub">هل أنت متأكد من حذف <span class="modal-name" id="deleteModalName"></span>؟<br>هذا الإجراء لا يمكن التراجع عنه.</div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeDeleteModal()">إلغاء</button>
+      <button class="modal-confirm" id="deleteConfirmBtn" onclick="confirmDelete()">🗑️ حذف نهائياً</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -541,6 +595,7 @@ function buildCard(u) {
           ${u.user_type !== 'admin' ? `<button class="action-btn btn-make-admin" onclick="changeType('${u.id}', 'admin')">⚙️ أدمن</button>` : ''}
           ${u.user_type !== 'seller' ? `<button class="action-btn btn-make-seller" onclick="changeType('${u.id}', 'seller')">🏪 بائع</button>` : ''}
           ${u.user_type !== 'buyer' ? `<button class="action-btn btn-make-buyer" onclick="changeType('${u.id}', 'buyer')">🛒 مشتري</button>` : ''}
+          <button class="action-btn btn-delete" onclick="openDeleteModal('${u.id}', '${(u.name || u.full_name || '').replace(/'/g, "\\'")}')">🗑️</button>
         </div>
       </div>
     </div>
@@ -646,6 +701,51 @@ async function changeType(userId, newType) {
       showError(data.error || 'فشل التغيير');
     }
   } catch (err) {
+    showError('فشل الاتصال بالخادم');
+  }
+}
+
+let deleteTargetId = null;
+
+function openDeleteModal(userId, userName) {
+  deleteTargetId = userId;
+  document.getElementById('deleteModalName').textContent = userName || 'هذا المستخدم';
+  document.getElementById('deleteConfirmBtn').disabled = false;
+  document.getElementById('deleteConfirmBtn').textContent = '🗑️ حذف نهائياً';
+  document.getElementById('deleteModal').classList.add('open');
+}
+
+function closeDeleteModal() {
+  deleteTargetId = null;
+  document.getElementById('deleteModal').classList.remove('open');
+}
+
+async function confirmDelete() {
+  if (!deleteTargetId) return;
+  const btn = document.getElementById('deleteConfirmBtn');
+  btn.disabled = true;
+  btn.textContent = 'جارٍ الحذف...';
+
+  const token = getToken();
+  const idToDelete = deleteTargetId;
+  try {
+    const res = await fetch(`${API}/api/admin/users/${idToDelete}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    closeDeleteModal();
+    if (res.ok) {
+      allUsers = allUsers.filter(u => u.id !== idToDelete);
+      updateStats();
+      renderUsers();
+      showToast('تم حذف المستخدم بنجاح ✓');
+    } else {
+      const data = await res.json().catch(() => ({}));
+      showError(data.error || 'فشل حذف المستخدم');
+    }
+  } catch (err) {
+    closeDeleteModal();
     showError('فشل الاتصال بالخادم');
   }
 }
