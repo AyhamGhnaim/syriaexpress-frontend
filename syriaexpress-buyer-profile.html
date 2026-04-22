@@ -471,7 +471,7 @@ function renderProfile() {
 
   const avatarEl = document.getElementById('userAvatar');
   if (userData.avatar_url) {
-    avatarEl.innerHTML = `<img src="${userData.avatar_url}" alt="صورة الملف"><div class="avatar-overlay">📷</div>`;
+    avatarEl.innerHTML = `<img src="${userData.avatar_url}" alt="صورة الملف"><div class="avatar-overlay">📷</div><div class="avatar-delete" onclick="event.stopPropagation();deleteAvatar()">✕</div>`;
   } else {
     avatarEl.innerHTML = `${initials}<div class="avatar-overlay">📷</div>`;
   }
@@ -654,7 +654,7 @@ async function uploadAvatar(input) {
     const data = await res.json();
     if (res.ok) {
       userData.avatar_url = data.avatar_url;
-      avatarEl.innerHTML = `<img src="${data.avatar_url}" alt="صورة الملف"><div class="avatar-overlay">📷</div>`;
+      avatarEl.innerHTML = `<img src="${data.avatar_url}" alt="صورة الملف"><div class="avatar-overlay">📷</div><div class="avatar-delete" onclick="event.stopPropagation();deleteAvatar()">✕</div>`;
     } else {
       alert(data.error || 'فشل رفع الصورة');
       renderProfile();
