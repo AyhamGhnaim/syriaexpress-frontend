@@ -598,6 +598,7 @@ function buildCard(u) {
           ${u.user_type !== 'admin' ? `<button class="action-btn btn-make-admin" onclick="changeType('${u.id}', 'admin')">⚙️ أدمن</button>` : ''}
           ${u.user_type !== 'seller' ? `<button class="action-btn btn-make-seller" onclick="changeType('${u.id}', 'seller')">🏪 بائع</button>` : ''}
           ${u.user_type !== 'buyer' ? `<button class="action-btn btn-make-buyer" onclick="changeType('${u.id}', 'buyer')">🛒 مشتري</button>` : ''}
+          <button class="action-btn" style="background:rgba(251,146,60,0.12);color:#fb923c;border:1px solid rgba(251,146,60,0.3)" onclick="toggleSuspend('${u.id}', ${u.is_active !== false})">${u.is_active === false ? '✅ تفعيل' : '⏸ توقيف'}</button>
           <button class="action-btn btn-delete" onclick="openDeleteModal('${u.id}', '${(u.name || u.full_name || '').replace(/'/g, "\\'")}')">🗑️</button>
         </div>
       </div>
