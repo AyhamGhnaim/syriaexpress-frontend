@@ -527,7 +527,7 @@ function buildCard(v) {
   const st = getStatusInfo(v.verification_status || v.status);
   const isPending = (v.verification_status || v.status) === 'pending';
   const docs = v.documents || [];
-  const vid = v.id;
+  const vid = v.id || v.seller_id;
 
   return `
     <div class="ver-card" id="ver-${vid}">
@@ -707,6 +707,7 @@ async function approveVerification(id) {
 }
 
 function openRejectModal(id) {
+  console.log("rejectTargetId:", id);
   rejectTargetId = id;
   document.getElementById('rejectReason').value = '';
   document.getElementById('rejectModal').classList.add('show');
