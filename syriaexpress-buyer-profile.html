@@ -58,7 +58,16 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
   background:var(--bg3);border:3px solid var(--gold);
   display:flex;align-items:center;justify-content:center;
   font-size:32px;margin:0 auto 12px;
+  overflow:hidden;position:relative;cursor:pointer;
 }
+.avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.avatar-overlay{
+  position:absolute;inset:0;border-radius:50%;
+  background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity 0.2s;font-size:20px;
+}
+.avatar:hover .avatar-overlay{opacity:1;}
+#avatarInput{display:none;}
 .user-name{font-size:20px;font-weight:700;margin-bottom:4px;}
 .user-email{font-size:13px;color:var(--text2);margin-bottom:8px;}
 .user-since{font-size:11px;color:var(--text2);}
@@ -218,7 +227,11 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 
   <!-- AVATAR -->
   <div class="avatar-section">
-    <div class="avatar" id="userAvatar">👤</div>
+    <div class="avatar" id="userAvatar" onclick="document.getElementById('avatarInput').click()" title="انقر لتغيير الصورة">
+      👤
+      <div class="avatar-overlay">📷</div>
+    </div>
+    <input type="file" id="avatarInput" accept="image/*" onchange="uploadAvatar(this)">
     <div>
       <div class="user-name" id="userName">—</div>
       <div class="user-email" id="userEmail">—</div>
@@ -434,7 +447,12 @@ function renderProfile() {
   const name = userData.name || userData.full_name || '—';
   const initials = name !== '—' ? name.charAt(0) : '👤';
 
-  document.getElementById('userAvatar').textContent  = initials;
+  const avatarEl = document.getElementById('userAvatar');
+  if (userData.avatar_url) {
+    avatarEl.innerHTML = `<img src="${userData.avatar_url}" alt="صورة الملف"><div class="avatar-overlay">📷</div>`;
+  } else {
+    avatarEl.innerHTML = `${initials}<div class="avatar-overlay">📷</div>`;
+  }
   document.getElementById('userName').textContent    = name;
   document.getElementById('userEmail').textContent   = userData.email || '—';
 
@@ -570,6 +588,38 @@ function logout() {
 }
 
 loadProfile();
+
+async function uploadAvatar(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  if (file.size > 5 * 1024 * 1024) { alert('الصورة كبيرة جداً (الحد 5MB)'); return; }
+
+  const formData = new FormData();
+  formData.append('avatar', file);
+
+  const token = localStorage.getItem('token');
+  const avatarEl = document.getElementById('userAvatar');
+  avatarEl.innerHTML = '⏳<div class="avatar-overlay">📷</div>';
+
+  try {
+    const res = await fetch(API + '/api/auth/avatar', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: formData
+    });
+    const data = await res.json();
+    if (res.ok) {
+      userData.avatar_url = data.avatar_url;
+      avatarEl.innerHTML = `<img src="${data.avatar_url}" alt="صورة الملف"><div class="avatar-overlay">📷</div>`;
+    } else {
+      alert(data.error || 'فشل رفع الصورة');
+      renderProfile();
+    }
+  } catch (e) {
+    alert('فشل الاتصال بالخادم');
+    renderProfile();
+  }
+}
 </script>
 </body>
 </html>
