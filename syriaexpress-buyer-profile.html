@@ -68,6 +68,15 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 }
 .avatar:hover .avatar-overlay{opacity:1;}
 #avatarInput{display:none;}
+.avatar-delete{
+  position:absolute;top:-4px;left:-4px;
+  width:22px;height:22px;border-radius:50%;
+  background:#f87171;color:#fff;
+  border:2px solid var(--bg);
+  display:none;align-items:center;justify-content:center;
+  font-size:12px;cursor:pointer;z-index:10;
+}
+.avatar:hover .avatar-delete{display:flex;}
 .user-name{font-size:20px;font-weight:700;margin-bottom:4px;}
 .user-email{font-size:13px;color:var(--text2);margin-bottom:8px;}
 .user-since{font-size:11px;color:var(--text2);}
@@ -230,6 +239,7 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
     <div class="avatar" id="userAvatar" onclick="document.getElementById('avatarInput').click()" title="انقر لتغيير الصورة">
       👤
       <div class="avatar-overlay">📷</div>
+      <div class="avatar-delete" onclick="event.stopPropagation();deleteAvatar()" title="حذف الصورة">✕</div>
     </div>
     <input type="file" id="avatarInput" accept="image/*" onchange="uploadAvatar(this)">
     <div>
@@ -588,6 +598,27 @@ function logout() {
 }
 
 loadProfile();
+
+async function deleteAvatar() {
+  if (!confirm('هل تريد حذف الصورة؟')) return;
+  const token = localStorage.getItem('token');
+  const avatarEl = document.getElementById('userAvatar');
+  try {
+    const res = await fetch(API + '/api/auth/avatar', {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+      userData.avatar_url = null;
+      const initials = (userData.name || '—').charAt(0);
+      avatarEl.innerHTML = initials + '<div class="avatar-overlay">📷</div><div class="avatar-delete" onclick="event.stopPropagation();deleteAvatar()">✕</div>';
+    } else {
+      alert('فشل حذف الصورة');
+    }
+  } catch (e) {
+    alert('فشل الاتصال بالخادم');
+  }
+}
 
 async function uploadAvatar(input) {
   if (!input.files || !input.files[0]) return;
