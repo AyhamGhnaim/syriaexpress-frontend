@@ -527,7 +527,7 @@ function buildCard(v) {
   const st = getStatusInfo(v.verification_status || v.status);
   const isPending = (v.verification_status || v.status) === 'pending';
   const docs = v.documents || [];
-  const vid = v.seller_id || v.id;
+  const vid = v.id;
 
   return `
     <div class="ver-card" id="ver-${vid}">
