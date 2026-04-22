@@ -334,7 +334,7 @@ footer{background:var(--bg);border-top:1px solid var(--border);padding:40px 24px
 })();
 </script>
 <script>
-const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
+const API_BASE = 'https://syriaexpress-backend.onrender.com';
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
 }, {threshold: 0.1});
@@ -344,7 +344,7 @@ document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 <script>
 // ===== تحميل الفئات من API =====
 (async function() {
-  const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
+  const API_BASE = 'https://syriaexpress-backend.onrender.com';
   const ICONS = {
     'd91a982a-4943-41d2-a10d-190bdcc46dbf': '🌾',
     'dbc84456-4a45-41bb-81b1-6c55866a84ae': '🧴',

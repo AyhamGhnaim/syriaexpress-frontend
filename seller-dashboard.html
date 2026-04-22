@@ -248,7 +248,7 @@
 </div>
 
 <script>
-  const API = 'https://syriaexpress-backend-production.up.railway.app';
+  const API = 'https://syriaexpress-backend.onrender.com';
   const token = localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('user')||'{}');
   if(!token || user.user_type !== 'seller') window.location.href = 'login.html';
