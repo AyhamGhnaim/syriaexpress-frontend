@@ -623,6 +623,7 @@ async function deleteAvatar() {
 async function uploadAvatar(input) {
   if (!input.files || !input.files[0]) return;
   const file = input.files[0];
+  input.value = '';
   if (file.size > 5 * 1024 * 1024) { alert('الصورة كبيرة جداً (الحد 5MB)'); return; }
 
   const formData = new FormData();
