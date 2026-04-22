@@ -294,6 +294,26 @@ main {
   display: none;
 }
 .btn-cancel:hover { border-color: var(--danger); color: var(--danger); }
+.btn-delete {
+  background: var(--bg3);
+  border-color: var(--border);
+  color: var(--danger);
+  font-size: 11px;
+}
+.btn-delete:hover { background: rgba(244,67,54,0.1); border-color: var(--danger); }
+.order-btns { display: flex; gap: 4px; }
+.btn-order {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+  line-height: 1;
+}
+.btn-order:hover { border-color: var(--gold); color: var(--gold); }
 .btn-status {
   background: var(--bg3);
   border-color: var(--border);
@@ -670,6 +690,11 @@ function buildCard(cat) {
         <button class="action-btn btn-edit" id="edit-btn-${cat.id}" onclick="startEdit('${cat.id}')">✏️ تعديل</button>
         <button class="action-btn btn-save" id="save-btn-${cat.id}" onclick="saveCard('${cat.id}')">✔ حفظ</button>
         <button class="action-btn btn-cancel" id="cancel-btn-${cat.id}" onclick="cancelEdit('${cat.id}')">✕</button>
+        <button class="action-btn btn-delete" onclick="deleteCategory('${cat.id}')">🗑 حذف</button>
+      </div>
+      <div class="order-btns" id="order-btns-${cat.id}">
+        <button class="btn-order" onclick="moveCategory('${cat.id}', -1)" title="تحريك لأعلى">↑</button>
+        <button class="btn-order" onclick="moveCategory('${cat.id}', 1)" title="تحريك لأسفل">↓</button>
       </div>
     </div>
   `;
@@ -775,47 +800,89 @@ async function saveModal() {
   if (!name) { showToast('يرجى إدخال اسم الفئة', 'error'); return; }
 
   const token = localStorage.getItem('token');
+  if (!token) { showToast('يجب تسجيل الدخول كأدمن', 'error'); return; }
+
   const body = { name_ar: name, status, icon: selectedEmoji };
 
   try {
-    // Try API first
-    let newId = null;
-    if (token) {
-      const res = await fetch(`${API_BASE}/api/admin/categories`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(body)
-      });
-      if (res.ok) {
-        const data = await res.json();
-        newId = data.id || data.category?.id;
-      }
+    const res = await fetch(`${API_BASE}/api/admin/categories`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(body)
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      showToast(err.error || 'تعذّر الإضافة', 'error');
+      return;
     }
 
-    // Generate local ID if API didn't return one
-    if (!newId) newId = 'local-' + Date.now();
-
-    const newCat = { id: newId, ...body };
-    allCategories.push(newCat);
-
-    // Save override
-    const overrides = getOverrides();
-    overrides[newId] = body;
-    setOverrides(overrides);
-
+    const data = await res.json();
     closeModal();
-    renderGrid();
     showToast('✅ تمت إضافة الفئة بنجاح', 'success');
+    // أعد تحميل الفئات من الـ API
+    await loadCategories();
   } catch (err) {
-    showToast('تعذّر الحفظ — تم الحفظ محلياً', 'error');
-    const newId = 'local-' + Date.now();
-    allCategories.push({ id: newId, ...body });
-    const overrides = getOverrides();
-    overrides[newId] = body;
-    setOverrides(overrides);
-    closeModal();
-    renderGrid();
+    showToast('تعذّر الاتصال بالخادم', 'error');
   }
+}
+
+// ==================== DELETE ====================
+async function deleteCategory(id) {
+  if (!confirm('هل أنت متأكد من حذف هذه الفئة؟')) return;
+  const token = localStorage.getItem('token');
+  if (!token) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/categories/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      allCategories = allCategories.filter(c => c.id !== id);
+      renderGrid();
+      showToast('✅ تم حذف الفئة', 'success');
+    } else {
+      // إذا ما في DELETE endpoint، غيّر الحالة إلى inactive
+      await fetch(`${API_BASE}/api/admin/categories/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status: 'inactive' })
+      });
+      allCategories = allCategories.filter(c => c.id !== id);
+      renderGrid();
+      showToast('✅ تم إخفاء الفئة', 'success');
+    }
+  } catch(e) {
+    showToast('تعذّر الحذف', 'error');
+  }
+}
+
+// ==================== REORDER ====================
+async function moveCategory(id, direction) {
+  const idx = allCategories.findIndex(c => c.id === id);
+  const newIdx = idx + direction;
+  if (newIdx < 0 || newIdx >= allCategories.length) return;
+
+  // Swap in array
+  [allCategories[idx], allCategories[newIdx]] = [allCategories[newIdx], allCategories[idx]];
+
+  // Update sort_order values
+  const token = localStorage.getItem('token');
+  if (token) {
+    // أرسل الترتيب الجديد للسيرفر
+    const updates = allCategories.map((cat, i) =>
+      fetch(`${API_BASE}/api/admin/categories/${cat.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ sort_order: i + 1 })
+      }).catch(() => {})
+    );
+    await Promise.all(updates);
+  }
+
+  renderGrid();
+  showToast('✅ تم تغيير الترتيب', 'success');
 }
 
 // ==================== HELPERS ====================
