@@ -670,6 +670,11 @@ main {
 
 <script src="logos.js"></script>
 <script>
+// ─── Logo ───
+if (typeof LOGOS !== 'undefined' && LOGOS.main) {
+  const logoEl = document.getElementById('headerLogo');
+  if (logoEl) { logoEl.src = LOGOS.main; logoEl.style.display = 'block'; }
+}
 // ─── Theme ───
 (function() {
   var saved = localStorage.getItem('theme');
