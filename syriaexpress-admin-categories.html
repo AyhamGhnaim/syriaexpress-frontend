@@ -335,6 +335,27 @@ main {
   display: none;
   cursor: pointer;
 }
+.card-emoji-picker {
+  display: none;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+  background: var(--bg3);
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  padding: 8px;
+}
+.card-emoji-opt {
+  font-size: 20px;
+  cursor: pointer;
+  padding: 3px 5px;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  transition: all 0.15s;
+  line-height: 1;
+}
+.card-emoji-opt:hover { background: var(--bg4); }
+.card-emoji-opt.selected { border-color: var(--gold); background: var(--bg4); }
 
 /* ==================== MODAL ==================== */
 .modal-overlay {
@@ -527,9 +548,12 @@ main {
       <button class="filter-btn" data-filter="soon" onclick="filterCategories('soon', this)">قريباً</button>
       <button class="filter-btn" data-filter="inactive" onclick="filterCategories('inactive', this)">غير نشط</button>
     </div>
-    <button class="add-btn" onclick="openAddModal()">
-      <span>＋</span> إضافة فئة
-    </button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="filter-btn" onclick="loadCategories()" id="refreshBtn" title="تحديث">🔄 تحديث</button>
+      <button class="add-btn" onclick="openAddModal()">
+        <span>＋</span> إضافة فئة
+      </button>
+    </div>
   </div>
 
   <!-- Grid -->
@@ -592,6 +616,8 @@ let selectedEmoji = '📦';
 window.addEventListener('DOMContentLoaded', async () => {
   await loadCategories();
   buildEmojiGrid();
+  // تحديث تلقائي كل 30 ثانية
+  setInterval(loadCategories, 30000);
 });
 
 // ==================== LOAD ====================
@@ -686,6 +712,9 @@ function buildCard(cat) {
         <option value="soon" ${cat.status==='soon'?'selected':''}>🔜 قريباً</option>
         <option value="inactive" ${cat.status==='inactive'?'selected':''}>❌ غير نشط</option>
       </select>
+      <div class="card-emoji-picker" id="emoji-picker-${cat.id}">
+        ${EMOJIS.map(e => `<span class="card-emoji-opt ${e === icon ? 'selected' : ''}" onclick="selectCardEmoji('${cat.id}','${e}')">${e}</span>`).join('')}
+      </div>
       <div class="card-actions">
         <button class="action-btn btn-edit" id="edit-btn-${cat.id}" onclick="startEdit('${cat.id}')">✏️ تعديل</button>
         <button class="action-btn btn-save" id="save-btn-${cat.id}" onclick="saveCard('${cat.id}')">✔ حفظ</button>
@@ -705,6 +734,7 @@ function startEdit(id) {
   document.getElementById(`name-display-${id}`).style.display = 'none';
   document.getElementById(`name-input-${id}`).style.display = 'block';
   document.getElementById(`status-select-${id}`).style.display = 'block';
+  document.getElementById(`emoji-picker-${id}`).style.display = 'flex';
   document.getElementById(`badge-${id}`).style.display = 'none';
   document.getElementById(`edit-btn-${id}`).style.display = 'none';
   document.getElementById(`save-btn-${id}`).style.display = 'flex';
@@ -715,10 +745,17 @@ function cancelEdit(id) {
   document.getElementById(`name-display-${id}`).style.display = '';
   document.getElementById(`name-input-${id}`).style.display = 'none';
   document.getElementById(`status-select-${id}`).style.display = 'none';
+  document.getElementById(`emoji-picker-${id}`).style.display = 'none';
   document.getElementById(`badge-${id}`).style.display = '';
   document.getElementById(`edit-btn-${id}`).style.display = '';
   document.getElementById(`save-btn-${id}`).style.display = 'none';
   document.getElementById(`cancel-btn-${id}`).style.display = 'none';
+}
+
+function selectCardEmoji(id, emoji) {
+  document.querySelectorAll(`#emoji-picker-${id} .card-emoji-opt`).forEach(el => {
+    el.classList.toggle('selected', el.textContent === emoji);
+  });
 }
 
 function saveCard(id) {
@@ -726,27 +763,26 @@ function saveCard(id) {
   const newStatus = document.getElementById(`status-select-${id}`).value;
   if (!newName) { showToast('يرجى إدخال اسم الفئة', 'error'); return; }
 
-  // Save override locally
-  const overrides = getOverrides();
-  const cat = allCategories.find(c => c.id === id);
-  overrides[id] = { ...overrides[id], name: newName, status: newStatus, icon: cat?.icon || '📦' };
-  setOverrides(overrides);
+  // قراءة الأيقونة المختارة
+  const selectedEl = document.querySelector(`#emoji-picker-${id} .card-emoji-opt.selected`);
+  const newIcon = selectedEl ? selectedEl.textContent : (allCategories.find(c=>c.id===id)?.icon || '📦');
 
   // Update in-memory array
   const idx = allCategories.findIndex(c => c.id === id);
   if (idx !== -1) {
     allCategories[idx].name = newName;
     allCategories[idx].status = newStatus;
+    allCategories[idx].icon = newIcon;
   }
 
-  // Try to PATCH via API (if endpoint exists)
+  // PATCH via API
   const token = localStorage.getItem('token');
   if (token) {
     fetch(`${API_BASE}/api/admin/categories/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ name_ar: newName, status: newStatus })
-    }).catch(() => {}); // silent fail — local override persists
+      body: JSON.stringify({ name_ar: newName, status: newStatus, icon: newIcon })
+    }).catch(() => {});
   }
 
   renderGrid();
