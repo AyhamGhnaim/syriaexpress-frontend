@@ -716,10 +716,11 @@ function openRejectModal(id) {
 async function confirmReject() {
   const reason = document.getElementById('rejectReason').value.trim();
   const token = getToken();
+  const targetId = rejectTargetId;
   closeModal();
 
   try {
-    const res = await fetch(`${API}/api/admin/verifications/${rejectTargetId}`, {
+    const res = await fetch(`${API}/api/admin/verifications/${targetId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
