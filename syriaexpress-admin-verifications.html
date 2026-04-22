@@ -707,7 +707,6 @@ async function approveVerification(id) {
 }
 
 function openRejectModal(id) {
-  console.log("rejectTargetId:", id);
   rejectTargetId = id;
   document.getElementById('rejectReason').value = '';
   document.getElementById('rejectModal').classList.add('show');
