@@ -498,9 +498,10 @@ async function loadData() {
   if (!token) { window.location.href = 'login.html'; return; }
 
   try {
-    const [overviewRes, analyticsRes, usersRes] = await Promise.all([
+    const [overviewRes, analyticsRes, ordersRes, usersRes] = await Promise.all([
       fetch(`${API}/api/admin/overview`,  { headers: { 'Authorization': `Bearer ${token}` } }),
       fetch(`${API}/api/admin/analytics`, { headers: { 'Authorization': `Bearer ${token}` } }),
+      fetch(`${API}/api/admin/orders`,    { headers: { 'Authorization': `Bearer ${token}` } }),
       fetch(`${API}/api/admin/users`,     { headers: { 'Authorization': `Bearer ${token}` } }),
     ]);
 
@@ -510,8 +511,8 @@ async function loadData() {
     allUsers = usersRes.ok ? (await usersRes.json()) : [];
     if (!Array.isArray(allUsers)) allUsers = allUsers.users || [];
 
-    // بناء allOrders من بيانات analytics
-    allOrders = overview.recentOrders || [];
+    // جلب كل الطلبات مع الأسعار
+    allOrders = ordersRes.ok ? (await ordersRes.json()) : (overview.recentOrders || []);
 
     document.getElementById('loadingState').style.display = 'none';
     document.getElementById('pageContent').style.display = 'block';
