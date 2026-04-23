@@ -470,10 +470,22 @@ async function loadStats() {
         const monthly = aData.monthly || [];
         const totalOrders = monthly.reduce((s, m) => s + parseInt(m.orders||0), 0);
 
-        document.getElementById('anGMV').textContent    = s.total_orders > 0 ? s.total_orders + ' طلب' : '0 ل.س';
-        document.getElementById('anAvg').textContent    = '—';
-        document.getElementById('anTopCat').textContent = topCat;
-        document.getElementById('anRate').textContent   = rate + '%';
+        // حساب الإيرادات من allOrders
+        const deliveredOrders = allOrders.filter(o => o.status === 'delivered');
+        const gmvReal = deliveredOrders.reduce((sum, o) => sum + (parseFloat(o.total_amount) || (parseFloat(o.quantity)||0)*(parseFloat(o.price)||0) + (parseFloat(o.shipping_price)||0)), 0);
+        const avgReal = deliveredOrders.length ? Math.round(gmvReal / deliveredOrders.length) : 0;
+        const rateReal = allOrders.length ? Math.round((deliveredOrders.length / allOrders.length) * 100) : rate;
+        const catMapReal = {};
+        allOrders.filter(o=>o.status!=='cancelled').forEach(o => {
+          const cat = o.category_name_ar;
+          if (cat) catMapReal[cat] = (catMapReal[cat]||0) + 1;
+        });
+        const topCatReal = Object.entries(catMapReal).sort((a,b)=>b[1]-a[1])[0]?.[0] || topCat;
+        const fmtGmv = gmvReal >= 1000000 ? (gmvReal/1000000).toFixed(1)+'م ل.س' : gmvReal >= 1000 ? (gmvReal/1000).toFixed(0)+'ك ل.س' : gmvReal.toLocaleString()+' ل.س';
+        document.getElementById('anGMV').textContent    = gmvReal > 0 ? fmtGmv : (s.total_orders > 0 ? s.total_orders + ' طلب' : '0 ل.س');
+        document.getElementById('anAvg').textContent    = avgReal > 0 ? (avgReal >= 1000 ? (avgReal/1000).toFixed(0)+'ك ل.س' : avgReal.toLocaleString()+' ل.س') : '—';
+        document.getElementById('anTopCat').textContent = topCatReal;
+        document.getElementById('anRate').textContent   = rateReal + '%';
       }
     } catch(e2) {
       // keep default values

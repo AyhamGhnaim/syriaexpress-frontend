@@ -481,10 +481,11 @@ let currentPeriod = 30;
 function getToken() { return localStorage.getItem('token'); }
 
 function formatPrice(p) {
-  if (!p) return '0 ل.س';
-  if (p >= 1000000) return (p/1000000).toFixed(1) + 'م ل.س';
-  if (p >= 1000) return (p/1000).toFixed(0) + 'ك ل.س';
-  return Number(p).toLocaleString('ar-SY') + ' ل.س';
+  const n = parseFloat(p) || 0;
+  if (!n) return '0 ل.س';
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'م ل.س';
+  if (n >= 1000) return (n/1000).toFixed(0) + 'ك ل.س';
+  return n.toLocaleString('ar-SY') + ' ل.س';
 }
 function formatPriceFull(p) {
   return Number(p||0).toLocaleString('ar-SY') + ' ل.س';
@@ -554,7 +555,7 @@ function renderAll(overview, analytics) {
 function renderKPIs(orders, overview, analytics) {
   analytics = analytics || {};
   const delivered = orders.filter(o => o.status === 'delivered');
-  const gmv = delivered.reduce((s,o) => s + ((o.quantity||0)*(o.price||0)) + (o.shipping_price||0), 0);
+  const gmv = delivered.reduce((s,o) => s + (parseFloat(o.total_amount)||(parseFloat(o.quantity)||0)*(parseFloat(o.price)||0)+(parseFloat(o.shipping_price)||0)), 0);
 
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - currentPeriod);
@@ -622,7 +623,7 @@ function renderTopSellers(orders, analytics) {
     const name = o.company_name_ar || o.seller_name || 'بائع';
     if (!map[id]) map[id] = { name, orders:0, revenue:0 };
     map[id].orders++;
-    map[id].revenue += ((o.quantity||0)*(o.price||0)) + (o.shipping_price||0);
+    map[id].revenue += (parseFloat(o.total_amount)||(parseFloat(o.quantity)||0)*(parseFloat(o.price)||0)+(parseFloat(o.shipping_price)||0));
   });
 
   const sorted = Object.values(map).sort((a,b)=>b.revenue-a.revenue).slice(0,5);
@@ -704,7 +705,7 @@ function renderSummaryTable(orders) {
       ${statuses.map(s => {
         const filtered = orders.filter(o=>o.status===s.key);
         const count = filtered.length;
-        const rev = filtered.reduce((sum,o)=>sum+((o.quantity||0)*(o.price||0))+(o.shipping_price||0),0);
+        const rev = filtered.reduce((sum,o)=>sum+(parseFloat(o.total_amount)||((parseFloat(o.quantity)||0)*(parseFloat(o.price)||0))+(parseFloat(o.shipping_price)||0)),0);
         return `
           <tr>
             <td><span style="color:${s.color};font-weight:700">${s.label}</span></td>
