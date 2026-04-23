@@ -632,18 +632,14 @@ async function loadCategories() {
     const data = await res.json();
     const raw = Array.isArray(data) ? data : (data.categories || []);
 
-    // دمج بيانات API مع defaults (حالة + أيقونة) + overrides محلية
-    const defaults = getDefaultCategories();
-    const overrides = getOverrides();
+    // استخدم بيانات API مباشرة كمصدر وحيد
     allCategories = raw.map(cat => {
       const name = cat.name_ar || cat.name || cat.name_en || '—';
-      const def = defaults.find(d => d.id === cat.id) || {};
-      const ov  = overrides[cat.id] || {};
       return {
         ...cat,
-        name:   ov.name   || name,
-        status: ov.status || cat.status || def.status || 'available',
-        icon:   ov.icon   || cat.icon   || def.icon   || guessIcon(name),
+        name:   name,
+        status: cat.status || 'available',
+        icon:   cat.icon   || guessIcon(name),
       };
     });
 
