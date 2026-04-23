@@ -953,19 +953,17 @@ document.getElementById('modalOverlay').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
 
-// Logo injection — يجرب أسماء الدالة المختلفة المستخدمة في logos.js
-function injectLogo() {
-  const img = document.getElementById('headerLogo');
-  if (!img) return;
-  const fn = typeof getLogoBase64 === 'function' ? getLogoBase64
-           : typeof getSyriaExpressLogo === 'function' ? getSyriaExpressLogo
-           : typeof getLogo === 'function' ? getLogo
-           : null;
-  if (fn) { img.src = fn(); img.style.display = 'block'; }
+// Logo injection
+if (typeof LOGOS !== 'undefined' && LOGOS.main) {
+  const logoEl = document.getElementById('headerLogo');
+  if (logoEl) { logoEl.src = LOGOS.main; logoEl.style.display = 'block'; }
 }
-// جرّب فوراً وعند تحميل الصفحة
-injectLogo();
-window.addEventListener('load', injectLogo);
+window.addEventListener('load', function() {
+  if (typeof LOGOS !== 'undefined' && LOGOS.main) {
+    const logoEl = document.getElementById('headerLogo');
+    if (logoEl) { logoEl.src = LOGOS.main; logoEl.style.display = 'block'; }
+  }
+});
 </script>
 </body>
 </html>
