@@ -481,9 +481,9 @@ async function loadStats() {
           if (cat) catMapReal[cat] = (catMapReal[cat]||0) + 1;
         });
         const topCatReal = Object.entries(catMapReal).sort((a,b)=>b[1]-a[1])[0]?.[0] || topCat;
-        const fmtGmv = gmvReal >= 1000000 ? (gmvReal/1000000).toFixed(1)+'م ل.س' : gmvReal >= 1000 ? (gmvReal/1000).toFixed(0)+'ك ل.س' : gmvReal.toLocaleString()+' ل.س';
+        const fmtGmv = gmvReal.toLocaleString('ar-SY', {maximumFractionDigits:0}) + ' ل.س';
         document.getElementById('anGMV').textContent    = gmvReal > 0 ? fmtGmv : (s.total_orders > 0 ? s.total_orders + ' طلب' : '0 ل.س');
-        document.getElementById('anAvg').textContent    = avgReal > 0 ? (avgReal >= 1000 ? (avgReal/1000).toFixed(0)+'ك ل.س' : avgReal.toLocaleString()+' ل.س') : '—';
+        document.getElementById('anAvg').textContent    = avgReal > 0 ? avgReal.toLocaleString('ar-SY', {maximumFractionDigits:0}) + ' ل.س' : '—';
         document.getElementById('anTopCat').textContent = topCatReal;
         document.getElementById('anRate').textContent   = rateReal + '%';
       }

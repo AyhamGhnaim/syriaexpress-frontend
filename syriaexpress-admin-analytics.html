@@ -488,7 +488,7 @@ function formatPrice(p) {
   return n.toLocaleString('ar-SY') + ' ل.س';
 }
 function formatPriceFull(p) {
-  return Number(p||0).toLocaleString('ar-SY') + ' ل.س';
+  return Number(p||0).toLocaleString('ar-SY', {maximumFractionDigits:0}) + ' ل.س';
 }
 function formatDate(d) {
   return new Date(d).toLocaleDateString('ar-SY', { month:'short', day:'numeric' });
@@ -518,7 +518,8 @@ async function loadData() {
     document.getElementById('loadingState').style.display = 'none';
     document.getElementById('pageContent').style.display = 'block';
 
-    renderAll(overview, analytics);
+    // تأخير بسيط لضمان تحميل DOM
+    setTimeout(() => renderAll(overview, analytics), 50);
 
   } catch(err) {
     document.getElementById('loadingState').style.display = 'none';
