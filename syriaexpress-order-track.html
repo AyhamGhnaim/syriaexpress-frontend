@@ -382,7 +382,7 @@ function buildOrderCard(order) {
   const qty     = parseFloat(order.quantity)      || 0;
   const price   = parseFloat(order.price)         || 0;
   const shipping= parseFloat(order.shipping_price)|| 0;
-  const total   = (qty * price) + shipping;
+  const total   = parseFloat(order.total_amount)  || (qty * price) + shipping;
 
   return `
     <div class="order-card" id="order-${order.id}">
