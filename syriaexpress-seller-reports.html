@@ -664,7 +664,7 @@ function renderReports() {
 
 // ===== 1. Stats Cards =====
 function renderStats(orders) {
-  const totalRevenue = orders.reduce((sum, o) => sum + (parseFloat(o.total_amount || o.total || 0)), 0);
+  const totalRevenue = orders.reduce((sum, o) => sum + (parseFloat(o.total_amount || ((o.quantity||0)*(o.price||0)) + (o.shipping_price||0) || 0)), 0);
   const totalOrders = orders.length;
   const delivered = orders.filter(o => o.status === 'delivered').length;
   const completionRate = totalOrders > 0 ? Math.round((delivered / totalOrders) * 100) : 0;
