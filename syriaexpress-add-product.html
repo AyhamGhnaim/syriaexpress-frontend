@@ -455,6 +455,10 @@ textarea { resize: vertical; min-height: 90px; }
         </div>
         <input type="checkbox" class="ship-check" id="shipLocal" checked>
       </label>
+      <div class="form-group" id="shipLocalPriceWrap" style="margin:0 0 8px;padding:0 4px">
+        <label class="form-label">سعر الشحن المحلي (ل.س) — 0 يعني مجاناً</label>
+        <input type="number" class="form-input" id="shipPriceLocal" min="0" value="0" placeholder="0">
+      </div>
       <label class="shipping-option">
         <div class="ship-info">
           <div class="ship-icon">🗺️</div>
@@ -463,8 +467,12 @@ textarea { resize: vertical; min-height: 90px; }
             <div class="ship-desc">لمحافظات أخرى داخل سوريا</div>
           </div>
         </div>
-        <input type="checkbox" class="ship-check" id="shipNational">
+        <input type="checkbox" class="ship-check" id="shipNational" onchange="toggleShipPrice('National',this.checked)">
       </label>
+      <div class="form-group" id="shipNationalPriceWrap" style="margin:0 0 8px;padding:0 4px;display:none">
+        <label class="form-label">سعر الشحن خارج المحافظة (ل.س)</label>
+        <input type="number" class="form-input" id="shipPriceNational" min="0" value="2500" placeholder="2500">
+      </div>
       <label class="shipping-option">
         <div class="ship-info">
           <div class="ship-icon">✈️</div>
@@ -473,8 +481,12 @@ textarea { resize: vertical; min-height: 90px; }
             <div class="ship-desc">خارج سوريا</div>
           </div>
         </div>
-        <input type="checkbox" class="ship-check" id="shipIntl">
+        <input type="checkbox" class="ship-check" id="shipIntl" onchange="toggleShipPrice('Intl',this.checked)">
       </label>
+      <div class="form-group" id="shipIntlPriceWrap" style="margin:0 0 8px;padding:0 4px;display:none">
+        <label class="form-label">سعر الشحن الدولي (ل.س)</label>
+        <input type="number" class="form-input" id="shipPriceIntl" min="0" value="15000" placeholder="15000">
+      </div>
     </div>
   </div>
 
@@ -562,6 +574,10 @@ function removeImage() {
 }
 
 // ===== Submit =====
+function toggleShipPrice(type, show) {
+  document.getElementById('shipPrice' + type + 'Wrap').style.display = show ? '' : 'none';
+}
+
 async function submitProduct() {
   const token = localStorage.getItem('token');
   const nameAr = document.getElementById('nameAr').value.trim();
@@ -594,7 +610,13 @@ async function submitProduct() {
       unit,
       min_order_quantity: moq,
       available_quantity: parseInt(document.getElementById('available').value) || 0,
-      shipping_options: shipping
+      shipping_options: shipping,
+      ship_inside: document.getElementById('shipLocal').checked,
+      ship_outside: document.getElementById('shipNational').checked,
+      ship_international: document.getElementById('shipIntl').checked,
+      ship_price_inside: parseInt(document.getElementById('shipPriceLocal').value) || 0,
+      ship_price_outside: document.getElementById('shipNational').checked ? (parseInt(document.getElementById('shipPriceNational').value) || 2500) : 0,
+      ship_price_intl: document.getElementById('shipIntl').checked ? (parseInt(document.getElementById('shipPriceIntl').value) || 15000) : 0
     };
 
     const res = await fetch(`${API}/api/products`, {

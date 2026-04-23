@@ -592,6 +592,11 @@ main {
         </div>
       </div>
 
+      <div style="padding:6px 4px 8px">
+        <label style="font-size:12px;color:var(--text2)">سعر الشحن المحلي (ل.س) — 0 يعني مجاناً</label>
+        <input type="number" id="shipPriceLocal" min="0" value="0" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-family:Cairo,sans-serif;margin-top:4px">
+      </div>
+
       <div class="shipping-option" id="ship-national" onclick="toggleShipping('national')">
         <div class="shipping-info">
           <div class="shipping-name">🗺️ خارج المحافظة</div>
@@ -602,6 +607,10 @@ main {
             <path d="M1 5L4.5 8.5L11 1.5" stroke="#0F0E0C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
+      </div>
+      <div style="padding:6px 4px 8px" id="shipNationalPriceWrap" style="display:none">
+        <label style="font-size:12px;color:var(--text2)">سعر الشحن خارج المحافظة (ل.س)</label>
+        <input type="number" id="shipPriceNational" min="0" value="2500" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-family:Cairo,sans-serif;margin-top:4px">
       </div>
 
       <div class="shipping-option" id="ship-international" onclick="toggleShipping('international')">
@@ -614,6 +623,10 @@ main {
             <path d="M1 5L4.5 8.5L11 1.5" stroke="#0F0E0C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
+      </div>
+      <div style="padding:6px 4px 8px" id="shipIntlPriceWrap" style="display:none">
+        <label style="font-size:12px;color:var(--text2)">سعر الشحن الدولي (ل.س)</label>
+        <input type="number" id="shipPriceIntl" min="0" value="15000" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-family:Cairo,sans-serif;margin-top:4px">
       </div>
     </div>
   </div>
@@ -754,9 +767,12 @@ function fillForm(p) {
 
   // Shipping
   const so = p.shipping_options || {};
-  if (so.local || so.local_shipping) toggleShipping('local', true);
-  if (so.national || so.national_shipping || so.outside_province) toggleShipping('national', true);
-  if (so.international || so.international_shipping) toggleShipping('international', true);
+  if (so.local || so.local_shipping || p.ship_inside) toggleShipping('local', true);
+  if (so.national || so.national_shipping || so.outside_province || p.ship_outside) toggleShipping('national', true);
+  if (so.international || so.international_shipping || p.ship_international) toggleShipping('international', true);
+  if (p.ship_price_inside !== undefined) document.getElementById('shipPriceLocal').value = p.ship_price_inside || 0;
+  if (p.ship_price_outside !== undefined) document.getElementById('shipPriceNational').value = p.ship_price_outside || 2500;
+  if (p.ship_price_intl !== undefined) document.getElementById('shipPriceIntl').value = p.ship_price_intl || 15000;
 
   // Status
   setStatus(p.is_active !== false && p.status !== 'inactive' ? 'active' : 'inactive');
@@ -850,7 +866,13 @@ async function saveProduct() {
       shipping_options: {
         local: shippingState.local,
         national: shippingState.national,
-        international: shippingState.international
+        international: shippingState.international,
+        ship_inside: shippingState.local,
+        ship_outside: shippingState.national,
+        ship_international: shippingState.international,
+        ship_price_inside: parseInt(document.getElementById('shipPriceLocal').value) || 0,
+        ship_price_outside: shippingState.national ? (parseInt(document.getElementById('shipPriceNational').value) || 2500) : 0,
+        ship_price_intl: shippingState.international ? (parseInt(document.getElementById('shipPriceIntl').value) || 15000) : 0
       }
     };
 
