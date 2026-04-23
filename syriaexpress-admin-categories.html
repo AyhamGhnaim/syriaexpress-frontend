@@ -642,8 +642,8 @@ async function loadCategories() {
       return {
         ...cat,
         name:   ov.name   || name,
-        status: ov.status || def.status || 'available',
-        icon:   ov.icon   || def.icon   || guessIcon(name),
+        status: ov.status || cat.status || def.status || 'available',
+        icon:   ov.icon   || cat.icon   || def.icon   || guessIcon(name),
       };
     });
 
