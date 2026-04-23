@@ -495,7 +495,7 @@ function renderProfile() {
 
 function toggleEdit() {
   isEditing = true;
-  ['fieldName','fieldPhone','fieldGov'].forEach(id => {
+  ['fieldName','fieldEmail','fieldPhone','fieldGov'].forEach(id => {
     const el = document.getElementById(id);
     el.disabled = false;
     el.classList.remove('readonly');
@@ -506,7 +506,7 @@ function toggleEdit() {
 
 function cancelEdit() {
   isEditing = false;
-  ['fieldName','fieldPhone','fieldGov'].forEach(id => {
+  ['fieldName','fieldEmail','fieldPhone','fieldGov'].forEach(id => {
     const el = document.getElementById(id);
     el.disabled = true;
     el.classList.add('readonly');
@@ -526,12 +526,13 @@ async function saveProfile() {
 
   const body = {
     name:        document.getElementById('fieldName').value.trim(),
+    email:       document.getElementById('fieldEmail').value.trim(),
     phone:       document.getElementById('fieldPhone').value.trim(),
     governorate: document.getElementById('fieldGov').value.trim(),
   };
 
   try {
-    const res = await fetch(`${API}/api/users/me`, {
+    const res = await fetch(`${API}/api/auth/me`, {
       method:'PUT',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
       body: JSON.stringify(body)
@@ -629,6 +630,27 @@ async function deleteAvatar() {
       avatarEl.innerHTML = initials + '<div class="avatar-overlay">📷</div><div class="avatar-delete" onclick="event.stopPropagation();deleteAvatar()">✕</div>';
     } else {
       alert('فشل حذف الصورة');
+    }
+  } catch (e) {
+    alert('فشل الاتصال بالخادم');
+  }
+}
+
+async function deleteAccount() {
+  if (!confirm('هل أنت متأكد من حذف حسابك نهائياً؟\nهذا الإجراء لا يمكن التراجع عنه.')) return;
+  if (!confirm('تأكيد أخير — سيتم حذف جميع بياناتك بشكل دائم. هل تريد المتابعة؟')) return;
+  const token = localStorage.getItem('token');
+  try {
+    const res = await fetch(API + '/api/auth/me', {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+      localStorage.clear();
+      alert('تم حذف حسابك بنجاح.');
+      window.location.href = 'syriaexpress-landing.html';
+    } else {
+      alert('فشل حذف الحساب.');
     }
   } catch (e) {
     alert('فشل الاتصال بالخادم');

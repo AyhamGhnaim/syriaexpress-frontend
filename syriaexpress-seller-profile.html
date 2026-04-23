@@ -488,6 +488,10 @@
           </select>
         </div>
         <div class="form-group">
+          <label class="form-label">البريد الإلكتروني</label>
+          <input class="form-input readonly" type="email" id="fieldEmail" disabled placeholder="example@email.com">
+        </div>
+        <div class="form-group">
           <label class="form-label">رقم الهاتف</label>
           <input class="form-input readonly" type="text" id="fieldPhone" disabled placeholder="+963 xxx xxx xxx">
         </div>
@@ -559,6 +563,7 @@
 
     <!-- Logout -->
     <button class="logout-btn" onclick="logout()">🚪 تسجيل الخروج</button>
+    <button onclick="deleteAccount()" style="width:100%;background:transparent;border:1px solid #f87171;color:#f87171;padding:13px;border-radius:10px;font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer;margin-bottom:16px">🗑️ حذف الحساب نهائياً</button>
 
   </div>
 </div>
@@ -675,13 +680,14 @@ function renderProfile() {
   document.getElementById('fieldGov').value = s.governorate || '';
   document.getElementById('fieldActivity').value = s.activity_type || '';
   document.getElementById('fieldPhone').value = s.phone || '';
+  if (document.getElementById('fieldEmail')) document.getElementById('fieldEmail').value = userData.email || '';
   document.getElementById('fieldYear').value = s.established_year || s.year_established || '';
   document.getElementById('fieldDesc').value = s.description || '';
 }
 
 function toggleEdit() {
   isEditing = true;
-  ['fieldCompanyAr','fieldCompanyEn','fieldPhone','fieldYear'].forEach(id => {
+  ['fieldCompanyAr','fieldCompanyEn','fieldEmail','fieldPhone','fieldYear'].forEach(id => {
     const el = document.getElementById(id);
     el.disabled = false; el.classList.remove('readonly');
   });
@@ -700,7 +706,7 @@ function toggleEdit() {
 
 function cancelEdit() {
   isEditing = false;
-  ['fieldCompanyAr','fieldCompanyEn','fieldPhone','fieldYear'].forEach(id => {
+  ['fieldCompanyAr','fieldCompanyEn','fieldEmail','fieldPhone','fieldYear'].forEach(id => {
     const el = document.getElementById(id);
     el.disabled = true; el.classList.add('readonly');
   });
@@ -731,11 +737,13 @@ async function saveProfile() {
     governorate: document.getElementById('fieldGov').value,
     activity_type: document.getElementById('fieldActivity').value,
     established_year: parseInt(document.getElementById('fieldYear').value) || null,
+    email: document.getElementById('fieldEmail').value.trim(),
     phone: document.getElementById('fieldPhone').value.trim(),
     description: document.getElementById('fieldDesc').value.trim()
   };
 
   try {
+    // تحديث بيانات الشركة
     const res = await fetch(`${API_BASE}/api/sellers/me`, {
       method: 'PUT',
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
@@ -743,6 +751,17 @@ async function saveProfile() {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'خطأ');
+
+    // تحديث الإيميل والهاتف عبر auth
+    const emailVal = document.getElementById('fieldEmail').value.trim();
+    const phoneVal = document.getElementById('fieldPhone').value.trim();
+    if (emailVal || phoneVal) {
+      await fetch(`${API_BASE}/api/auth/me`, {
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailVal, phone: phoneVal })
+      });
+    }
 
     sellerData = { ...sellerData, ...body };
     renderProfile();
@@ -934,6 +953,27 @@ function showMsg(id, msg) {
 
 function hideMessages() {
   ['successMsg','errorMsg'].forEach(id => { document.getElementById(id).style.display = 'none'; });
+}
+
+async function deleteAccount() {
+  if (!confirm('هل أنت متأكد من حذف حسابك نهائياً؟\nسيتم حذف جميع بياناتك ومنتجاتك بشكل دائم.')) return;
+  if (!confirm('تأكيد أخير — هذا الإجراء لا يمكن التراجع عنه. هل تريد المتابعة؟')) return;
+  const token = localStorage.getItem('token');
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/me`, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+      localStorage.clear();
+      alert('تم حذف حسابك بنجاح.');
+      window.location.href = 'syriaexpress-landing.html';
+    } else {
+      alert('فشل حذف الحساب.');
+    }
+  } catch (e) {
+    alert('فشل الاتصال بالخادم');
+  }
 }
 
 function logout() {
