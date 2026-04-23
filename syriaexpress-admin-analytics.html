@@ -498,41 +498,31 @@ async function loadData() {
   if (!token) { window.location.href = 'login.html'; return; }
 
   try {
-    const [ordersRes, usersRes] = await Promise.all([
-      fetch(`${API}/api/admin/overview`, { headers: { 'Authorization': `Bearer ${token}` } }),
-      fetch(`${API}/api/admin/users`,    { headers: { 'Authorization': `Bearer ${token}` } }),
+    const [overviewRes, analyticsRes, usersRes] = await Promise.all([
+      fetch(`${API}/api/admin/overview`,  { headers: { 'Authorization': `Bearer ${token}` } }),
+      fetch(`${API}/api/admin/analytics`, { headers: { 'Authorization': `Bearer ${token}` } }),
+      fetch(`${API}/api/admin/users`,     { headers: { 'Authorization': `Bearer ${token}` } }),
     ]);
 
-    // إذا overview ما رجع orders، جرب endpoint ثاني
-    let overview = {};
-    if (ordersRes.ok) overview = await ordersRes.json();
-
-    // جيب الطلبات من overview أو من مصدر ثاني
-    allOrders = overview.orders || overview.recent_orders || [];
-
-    // إذا overview ما عنده orders كافية، جرب sellers endpoint للحصول على بيانات
-    if (allOrders.length === 0) {
-      try {
-        const sellerOrdersRes = await fetch(`${API}/api/orders/seller`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (sellerOrdersRes.ok) allOrders = await sellerOrdersRes.json();
-      } catch(e) {}
-    }
+    let overview = overviewRes.ok ? await overviewRes.json() : {};
+    let analytics = analyticsRes.ok ? await analyticsRes.json() : {};
 
     allUsers = usersRes.ok ? (await usersRes.json()) : [];
     if (!Array.isArray(allUsers)) allUsers = allUsers.users || [];
 
+    // بناء allOrders من بيانات analytics
+    allOrders = overview.recentOrders || [];
+
     document.getElementById('loadingState').style.display = 'none';
     document.getElementById('pageContent').style.display = 'block';
 
-    renderAll(overview);
+    renderAll(overview, analytics);
 
   } catch(err) {
     document.getElementById('loadingState').style.display = 'none';
     document.getElementById('pageContent').style.display = 'block';
     showError('فشل الاتصال بالخادم');
-    renderAll({});
+    renderAll({}, {});
   }
 }
 
@@ -549,17 +539,19 @@ function setPeriod(days, btn) {
   renderAll({});
 }
 
-function renderAll(overview) {
+function renderAll(overview, analytics) {
+  analytics = analytics || {};
   const orders = getFiltered();
-  renderKPIs(orders, overview);
+  renderKPIs(orders, overview, analytics);
   renderChart('revenueChart', orders, 'revenue');
   renderChart('ordersChart',  orders, 'count');
-  renderTopSellers(orders);
-  renderCategoryBreakdown(orders);
+  renderTopSellers(orders, analytics);
+  renderCategoryBreakdown(orders, analytics);
   renderSummaryTable(orders);
 }
 
-function renderKPIs(orders, overview) {
+function renderKPIs(orders, overview, analytics) {
+  analytics = analytics || {};
   const delivered = orders.filter(o => o.status === 'delivered');
   const gmv = delivered.reduce((s,o) => s + ((o.quantity||0)*(o.price||0)) + (o.shipping_price||0), 0);
 
@@ -568,11 +560,20 @@ function renderKPIs(orders, overview) {
   const newUsers = allUsers.filter(u => new Date(u.created_at) >= cutoff).length;
   const activeSellers = [...new Set(orders.filter(o=>o.status!=='cancelled').map(o=>o.seller_id))].length;
 
-  document.getElementById('kpiGMV').textContent       = formatPrice(gmv);
-  document.getElementById('kpiOrders').textContent    = orders.filter(o=>o.status!=='cancelled').length;
-  document.getElementById('kpiCompleted').textContent = delivered.length;
-  document.getElementById('kpiUsers').textContent     = newUsers;
-  document.getElementById('kpiSellers').textContent   = activeSellers;
+  // استخدم بيانات analytics الحقيقية إذا allOrders فاضية
+  const byStatus = analytics.byStatus || [];
+  const totalFromAPI = byStatus.reduce((s, x) => s + parseInt(x.count||0), 0);
+  const deliveredFromAPI = byStatus.find(x => x.status === 'delivered');
+  const dCountAPI = parseInt(deliveredFromAPI?.count || 0);
+
+  const displayOrders = orders.length > 0 ? orders.filter(o=>o.status!=='cancelled').length : totalFromAPI;
+  const displayDelivered = orders.length > 0 ? delivered.length : dCountAPI;
+
+  document.getElementById('kpiGMV').textContent       = formatPrice(gmv) === '0 ل.س' && totalFromAPI > 0 ? totalFromAPI + ' طلب مسجّل' : formatPrice(gmv);
+  document.getElementById('kpiOrders').textContent    = displayOrders;
+  document.getElementById('kpiCompleted').textContent = displayDelivered;
+  document.getElementById('kpiUsers').textContent     = newUsers || allUsers.length;
+  document.getElementById('kpiSellers').textContent   = activeSellers || (analytics.topSellers || []).length;
 }
 
 function renderChart(containerId, orders, type) {
@@ -612,7 +613,8 @@ function renderChart(containerId, orders, type) {
   }).join('');
 }
 
-function renderTopSellers(orders) {
+function renderTopSellers(orders, analytics) {
+  analytics = analytics || {};
   const map = {};
   orders.filter(o=>o.status!=='cancelled').forEach(o => {
     const id = o.seller_id;
@@ -646,7 +648,8 @@ function renderTopSellers(orders) {
   `).join('');
 }
 
-function renderCategoryBreakdown(orders) {
+function renderCategoryBreakdown(orders, analytics) {
+  analytics = analytics || {};
   const map = {};
   orders.filter(o=>o.status!=='cancelled').forEach(o => {
     const cat = o.category_name_ar || o.category_ar || 'أخرى';

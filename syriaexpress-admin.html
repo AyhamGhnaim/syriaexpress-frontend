@@ -447,27 +447,37 @@ async function loadStats() {
 
     document.getElementById('stat-orders-sub').textContent = 'إجمالي الطلبات';
 
-    // قسم التحليلات — احسب من بيانات overview
-    const orders = data.orders || data.recent_orders || [];
-    const delivered = orders.filter(o => o.status === 'delivered');
-    const cancelled = orders.filter(o => o.status === 'cancelled');
+    // قسم التحليلات — جلب من analytics endpoint
+    try {
+      const aRes = await fetch(`${API_BASE}/api/admin/analytics`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (aRes.ok) {
+        const aData = await aRes.json();
 
-    const gmv = delivered.reduce((s,o) => s + ((o.quantity||0)*(o.price||0)) + (o.shipping_price||0), 0);
-    const avg = delivered.length ? gmv / delivered.length : 0;
-    const rate = orders.length ? Math.round((delivered.length / orders.length) * 100) : 0;
+        // إجمالي الطلبات المكتملة
+        const byStatus = aData.byStatus || [];
+        const deliveredCount = byStatus.find(s => s.status === 'delivered');
+        const totalCount = byStatus.reduce((sum, s) => sum + parseInt(s.count||0), 0);
+        const dCount = parseInt(deliveredCount?.count || 0);
+        const rate = totalCount ? Math.round((dCount / totalCount) * 100) : 0;
 
-    // أكثر الفئات نشاطاً
-    const catMap = {};
-    orders.filter(o=>o.status!=='cancelled').forEach(o => {
-      const cat = o.category_name_ar || o.category_ar || null;
-      if (cat) catMap[cat] = (catMap[cat]||0) + 1;
-    });
-    const topCat = Object.entries(catMap).sort((a,b)=>b[1]-a[1])[0]?.[0] || '—';
+        // أكثر الفئات من topSellers (fallback)
+        const topSeller = (aData.topSellers || [])[0];
+        const topCat = topSeller?.company_name_ar || '—';
 
-    document.getElementById('anGMV').textContent    = formatPrice(gmv);
-    document.getElementById('anAvg').textContent    = formatPrice(avg);
-    document.getElementById('anTopCat').textContent = topCat;
-    document.getElementById('anRate').textContent   = rate + '%';
+        // GMV من monthly (تقريبي)
+        const monthly = aData.monthly || [];
+        const totalOrders = monthly.reduce((s, m) => s + parseInt(m.orders||0), 0);
+
+        document.getElementById('anGMV').textContent    = s.total_orders > 0 ? s.total_orders + ' طلب' : '0 ل.س';
+        document.getElementById('anAvg').textContent    = '—';
+        document.getElementById('anTopCat').textContent = topCat;
+        document.getElementById('anRate').textContent   = rate + '%';
+      }
+    } catch(e2) {
+      // keep default values
+    }
 
   } catch(e) {
     ['stat-users','stat-sellers','stat-pending','stat-orders'].forEach(id => {
