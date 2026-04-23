@@ -447,48 +447,21 @@ async function loadStats() {
 
     document.getElementById('stat-orders-sub').textContent = 'إجمالي الطلبات';
 
-    // قسم التحليلات — جلب من analytics endpoint
+    // قسم التحليلات — من بيانات overview المُحسَّنة
     try {
-      const aRes = await fetch(`${API_BASE}/api/admin/analytics`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (aRes.ok) {
-        const aData = await aRes.json();
+      const gmv      = s.total_revenue    || 0;
+      const totalOrd = s.total_orders     || 0;
+      const delivered= s.delivered_orders || 0;
+      const topCat   = s.top_category     || '—';
+      const avgOrder = totalOrd > 0 ? Math.round(gmv / totalOrd) : 0;
+      const rate     = totalOrd > 0 ? Math.round((delivered / totalOrd) * 100) : 0;
 
-        // إجمالي الطلبات المكتملة
-        const byStatus = aData.byStatus || [];
-        const deliveredCount = byStatus.find(s => s.status === 'delivered');
-        const totalCount = byStatus.reduce((sum, s) => sum + parseInt(s.count||0), 0);
-        const dCount = parseInt(deliveredCount?.count || 0);
-        const rate = totalCount ? Math.round((dCount / totalCount) * 100) : 0;
-
-        // أكثر الفئات من topSellers (fallback)
-        const topSeller = (aData.topSellers || [])[0];
-        const topCat = topSeller?.company_name_ar || '—';
-
-        // GMV من monthly (تقريبي)
-        const monthly = aData.monthly || [];
-        const totalOrders = monthly.reduce((s, m) => s + parseInt(m.orders||0), 0);
-
-        // حساب الإيرادات من adminOrders
-        const deliveredOrders = adminOrders.filter(o => o.status === 'delivered');
-        const gmvReal = deliveredOrders.reduce((sum, o) => sum + (parseFloat(o.total_amount) || (parseFloat(o.quantity)||0)*(parseFloat(o.price)||0) + (parseFloat(o.shipping_price)||0)), 0);
-        const avgReal = deliveredOrders.length ? Math.round(gmvReal / deliveredOrders.length) : 0;
-        const rateReal = adminOrders.length ? Math.round((deliveredOrders.length / adminOrders.length) * 100) : rate;
-        const catMapReal = {};
-        adminOrders.filter(o=>o.status!=='cancelled').forEach(o => {
-          const cat = o.category_name_ar;
-          if (cat) catMapReal[cat] = (catMapReal[cat]||0) + 1;
-        });
-        const topCatReal = Object.entries(catMapReal).sort((a,b)=>b[1]-a[1])[0]?.[0] || topCat;
-        const fmtGmv = gmvReal.toLocaleString('ar-SY', {maximumFractionDigits:0}) + ' ل.س';
-        document.getElementById('anGMV').textContent    = gmvReal > 0 ? fmtGmv : '0 ل.س';
-        document.getElementById('anAvg').textContent    = avgReal > 0 ? avgReal.toLocaleString('ar-SY', {maximumFractionDigits:0}) + ' ل.س' : '—';
-        document.getElementById('anTopCat').textContent = topCatReal;
-        document.getElementById('anRate').textContent   = rateReal + '%';
-      }
+      document.getElementById('anGMV').textContent    = gmv > 0 ? formatPrice(gmv) : '0 ل.س';
+      document.getElementById('anAvg').textContent    = avgOrder > 0 ? formatPrice(avgOrder) : '—';
+      document.getElementById('anTopCat').textContent = topCat;
+      document.getElementById('anRate').textContent   = rate + '%';
     } catch(e2) {
-      // keep default values
+      // keep default dashes
     }
 
   } catch(e) {
