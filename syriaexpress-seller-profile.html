@@ -598,6 +598,7 @@ const activityLabels = {
 
 let sellerData = {};
 let isEditing = false;
+let currentUserEmail = '';
 
 loadProfile();
 
@@ -609,6 +610,17 @@ async function loadProfile() {
     if (!res.ok) throw new Error();
     const data = await res.json();
     sellerData = data.seller || data;
+
+    // تحميل الإيميل من بيانات المستخدم
+    try {
+      const meRes = await fetch(`${API_BASE}/api/auth/me`, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (meRes.ok) {
+        const meData = await meRes.json();
+        currentUserEmail = meData.email || '';
+      }
+    } catch(e) {}
 
     // Orders stats
     const ordersRes = await fetch(`${API_BASE}/api/orders/seller`, {
@@ -680,7 +692,7 @@ function renderProfile() {
   document.getElementById('fieldGov').value = s.governorate || '';
   document.getElementById('fieldActivity').value = s.activity_type || '';
   document.getElementById('fieldPhone').value = s.phone || '';
-  if (document.getElementById('fieldEmail')) document.getElementById('fieldEmail').value = userData.email || '';
+  if (document.getElementById('fieldEmail')) document.getElementById('fieldEmail').value = currentUserEmail || '';
   document.getElementById('fieldYear').value = s.established_year || s.year_established || '';
   document.getElementById('fieldDesc').value = s.description || '';
 }
