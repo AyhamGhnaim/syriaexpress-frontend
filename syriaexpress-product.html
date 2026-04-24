@@ -689,6 +689,9 @@ async function loadProduct() {
       shipping_local: data.ship_inside !== false,
       shipping_national: data.ship_outside !== false,
       shipping_international: data.ship_international === true,
+      ship_price_inside: parseFloat(data.ship_price_inside) || 0,
+      ship_price_outside: parseFloat(data.ship_price_outside) || 0,
+      ship_price_intl: parseFloat(data.ship_price_intl) || 0,
       status: data.status,
     };
 
@@ -890,6 +893,9 @@ function addToCart() {
       seller_name: seller?.company_name || '',
       min_order_quantity: product.min_order || 1,
       min_order: product.min_order || 1,
+      ship_price_inside: product.ship_price_inside || 0,
+      ship_price_outside: product.ship_price_outside || 0,
+      ship_price_intl: product.ship_price_intl || 0,
       qty: quantity,
       quantity
     });
