@@ -506,14 +506,26 @@
       </div>
     </div>
 
-    <!-- Shipping -->
+    <!-- Address -->
     <div class="section">
-      <div class="section-title">🚚 طريقة الشحن</div>
-      <div class="shipping-options" id="shippingOptions"></div>
-      
-      <div class="form-group" style="margin-top:14px">
-        <label class="form-label">عنوان التسليم *</label>
+      <div class="section-title">📍 عنوان التسليم</div>
+      <div class="form-group">
         <input class="form-input" type="text" id="shippingAddress" placeholder="المحافظة، المنطقة، التفاصيل..." />
+      </div>
+    </div>
+
+    <!-- Payment -->
+    <div class="section">
+      <div class="section-title">💳 طريقة الدفع</div>
+      <div class="payment-options">
+        <div class="payment-option selected" id="pay-cash" onclick="selectPayment('cash')">
+          <div class="pay-icon">💵</div>
+          <div class="pay-label">كاش</div>
+        </div>
+        <div class="payment-option" id="pay-card" onclick="selectPayment('card')">
+          <div class="pay-icon">💳</div>
+          <div class="pay-label">كرت</div>
+        </div>
       </div>
     </div>
 
@@ -617,6 +629,7 @@ window.addEventListener('load', function() {
 
 let orderProduct = null;
 let selectedShipping = 'inside';
+let selectedPayment = 'cash';
 let shippingPrices = { inside: 0, outside: 0, international: 0 };
 
 function getToken() {
@@ -722,6 +735,12 @@ function renderShipping() {
   `).join('');
 }
 
+function selectPayment(method) {
+  selectedPayment = method;
+  document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+  document.getElementById('pay-' + method).classList.add('selected');
+}
+
 function selectShipping(key) {
   selectedShipping = key;
   renderShipping();
@@ -786,6 +805,7 @@ async function submitOrder() {
         product_id: orderProduct.id,
         quantity: qty,
         shipping_type: selectedShipping,
+        payment_method: selectedPayment,
         shipping_address: address,
         notes: document.getElementById('orderNotes').value.trim() || null
       })
