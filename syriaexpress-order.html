@@ -524,7 +524,28 @@
         </div>
         <div class="payment-option" id="pay-card" onclick="selectPayment('card')">
           <div class="pay-icon">💳</div>
-          <div class="pay-label">كرت</div>
+          <div class="pay-label">بطاقة</div>
+        </div>
+      </div>
+      <!-- Card fields - shown only when card selected -->
+      <div id="cardFields" style="display:none; margin-top:14px; display:none;">
+        <div class="form-group" style="margin-bottom:10px">
+          <label class="form-label">رقم البطاقة</label>
+          <input class="form-input" type="text" id="cardNumber" placeholder="0000 0000 0000 0000" maxlength="19" oninput="formatCardNumber(this)"/>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <div class="form-group" style="flex:1">
+            <label class="form-label">تاريخ الانتهاء</label>
+            <input class="form-input" type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5" oninput="formatExpiry(this)"/>
+          </div>
+          <div class="form-group" style="flex:1">
+            <label class="form-label">CVV</label>
+            <input class="form-input" type="text" id="cardCvv" placeholder="000" maxlength="3" inputmode="numeric"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">اسم حامل البطاقة</label>
+          <input class="form-input" type="text" id="cardName" placeholder="الاسم كما هو على البطاقة"/>
         </div>
       </div>
     </div>
@@ -739,6 +760,18 @@ function selectPayment(method) {
   selectedPayment = method;
   document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
   document.getElementById('pay-' + method).classList.add('selected');
+  document.getElementById('cardFields').style.display = method === 'card' ? 'block' : 'none';
+}
+
+function formatCardNumber(input) {
+  let v = input.value.replace(/\D/g, '').substring(0, 16);
+  input.value = v.replace(/(.{4})/g, '$1 ').trim();
+}
+
+function formatExpiry(input) {
+  let v = input.value.replace(/\D/g, '').substring(0, 4);
+  if (v.length >= 2) v = v.substring(0,2) + '/' + v.substring(2);
+  input.value = v;
 }
 
 function selectShipping(key) {
