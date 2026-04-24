@@ -376,20 +376,20 @@ body{transition:background .3s,color .3s;}
     </div>
     <div class="analytics-rows" id="analyticsRows">
       <div class="analytics-row">
-        <span class="analytics-label">إجمالي المبيعات</span>
-        <span class="analytics-val" id="anGMV">—</span>
-      </div>
-      <div class="analytics-row">
-        <span class="analytics-label">متوسط قيمة الطلب</span>
-        <span class="analytics-val" id="anAvg">—</span>
-      </div>
-      <div class="analytics-row">
-        <span class="analytics-label">أكثر الفئات نشاطاً</span>
-        <span class="analytics-val" id="anTopCat">—</span>
+        <span class="analytics-label">الطلبات المُستلَمة</span>
+        <span class="analytics-val" id="anDelivered">—</span>
       </div>
       <div class="analytics-row">
         <span class="analytics-label">معدل إتمام الطلبات</span>
         <span class="analytics-val" id="anRate">—</span>
+      </div>
+      <div class="analytics-row">
+        <span class="analytics-label">أكثر المحافظات نشاطاً</span>
+        <span class="analytics-val" id="anTopGov">—</span>
+      </div>
+      <div class="analytics-row">
+        <span class="analytics-label">أنشط بائع</span>
+        <span class="analytics-val" id="anTopSeller">—</span>
       </div>
     </div>
   </div>
@@ -447,22 +447,8 @@ async function loadStats() {
 
     document.getElementById('stat-orders-sub').textContent = 'إجمالي الطلبات';
 
-    // قسم التحليلات — من بيانات overview المُحسَّنة
-    try {
-      const gmv      = s.total_revenue    || 0;
-      const totalOrd = s.total_orders     || 0;
-      const delivered= s.delivered_orders || 0;
-      const topCat   = s.top_category     || '—';
-      const avgOrder = totalOrd > 0 ? Math.round(gmv / totalOrd) : 0;
-      const rate     = totalOrd > 0 ? Math.round((delivered / totalOrd) * 100) : 0;
-
-      document.getElementById('anGMV').textContent    = gmv > 0 ? formatPrice(gmv) : '0 ل.س';
-      document.getElementById('anAvg').textContent    = avgOrder > 0 ? formatPrice(avgOrder) : '—';
-      document.getElementById('anTopCat').textContent = topCat;
-      document.getElementById('anRate').textContent   = rate + '%';
-    } catch(e2) {
-      // keep default dashes
-    }
+    // قسم التحليلات — يُحمَّل من endpoint منفصل
+    loadAnalytics(s.total_orders || 0);
 
   } catch(e) {
     ['stat-users','stat-sellers','stat-pending','stat-orders'].forEach(id => {
@@ -471,6 +457,59 @@ async function loadStats() {
     document.getElementById('stat-users-sub').textContent = 'تعذّر الاتصال بالخادم';
     document.getElementById('stat-sellers-sub').textContent = '';
     document.getElementById('stat-orders-sub').textContent = '';
+  }
+}
+
+// ── تحميل التحليلات من /api/admin/analytics ──
+async function loadAnalytics(totalOrders) {
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/analytics`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('فشل تحميل التحليلات');
+    const a = await res.json();
+
+    // ١. عدد الطلبات المستلَمة (delivered) من byStatus
+    const byStatus = a.byStatus || [];
+    const deliveredRow = byStatus.find(r => r.status === 'delivered');
+    const delivered = deliveredRow ? parseInt(deliveredRow.count) : 0;
+    document.getElementById('anDelivered').textContent =
+      delivered.toLocaleString('ar-SY') + ' طلب';
+
+    // ٢. معدل إتمام الطلبات
+    const rate = totalOrders > 0 ? Math.round((delivered / totalOrders) * 100) : 0;
+    document.getElementById('anRate').textContent = rate + '%';
+
+    // ٣. أكثر المحافظات نشاطاً
+    const byGov = a.byGov || [];
+    const topGov = byGov[0];
+    if (topGov && topGov.governorate) {
+      document.getElementById('anTopGov').textContent =
+        `${topGov.governorate} (${topGov.orders})`;
+    } else {
+      document.getElementById('anTopGov').textContent = 'لا توجد بيانات';
+    }
+
+    // ٤. أنشط بائع
+    const topSellers = a.topSellers || [];
+    const activeSellers = topSellers.filter(s => parseInt(s.orders) > 0);
+    const topSeller = activeSellers[0];
+    if (topSeller) {
+      const name = topSeller.company_name_ar || 'بائع';
+      const trim = name.length > 14 ? name.substring(0, 14) + '…' : name;
+      document.getElementById('anTopSeller').textContent =
+        `${trim} (${topSeller.orders})`;
+    } else {
+      document.getElementById('anTopSeller').textContent = 'لا توجد بيانات';
+    }
+
+  } catch(e) {
+    console.error('خطأ في تحميل التحليلات:', e);
+    // عرض "—" للكل إذا فشل
+    ['anDelivered','anRate','anTopGov','anTopSeller'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '—';
+    });
   }
 }
 
