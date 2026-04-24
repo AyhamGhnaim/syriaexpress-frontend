@@ -528,12 +528,15 @@
     .verified-badge {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      background: transparent;
+      gap: 5px;
+      background: rgba(74,222,128,0.13);
+      border: 1px solid rgba(74,222,128,0.35);
+      border-radius: 20px;
+      padding: 3px 10px 3px 6px;
       font-family: 'Cairo', sans-serif;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
-      color: #C9A84C;
+      color: #22c55e;
       white-space: nowrap;
       vertical-align: middle;
     }
@@ -542,6 +545,7 @@
       height: 18px;
       object-fit: contain;
       flex-shrink: 0;
+      filter: saturate(2) brightness(0.75);
     }
   </style>
 </head>
@@ -739,7 +743,7 @@ function verifiedBadgeHTML() { return '<span class="verified-badge"><img class="
             <div class="seller-top-info">
               <div class="seller-name">${companyName}</div>
               <div class="seller-activity">${getActivityLabel(seller.activity_type)}</div>
-              ${(seller.is_verified || seller.verification_status === 'verified') ? `${verifiedBadgeHTML()}` : ''}
+              ${(seller.is_verified || (seller.verification_status === 'verified' || seller.verification_status === 'approved')) ? verifiedBadgeHTML() : ''}
               ${getTierBadge(seller.partner_tier)}
             </div>
           </div>
