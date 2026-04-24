@@ -319,7 +319,7 @@ window.addEventListener('load', function() {
 });
 
 let cart = JSON.parse(localStorage.getItem('cart') || '[]')
-  .map(i => ({ ...i, qty: Number(i.qty) || 1, price: Number(i.price) || 0 }));
+  .map(i => ({ ...i, qty: Number(i.qty || i.quantity) || 1, price: Number(i.price) || 0 }));
 let shippingCost = 0;
 
 renderCart();
@@ -360,8 +360,8 @@ function renderCart() {
   // Group by seller
   const bySeller = {};
   cart.forEach(item => {
-    const key = item.seller_id || 'unknown';
-    if (!bySeller[key]) bySeller[key] = { name: item.company_name_ar || 'بائع', items: [] };
+    const key = item.seller_id || item.seller_name || 'unknown';
+    if (!bySeller[key]) bySeller[key] = { name: item.company_name_ar || item.seller_name || 'بائع', items: [] };
     bySeller[key].items.push(item);
   });
 

@@ -875,16 +875,22 @@ function addToCart() {
   const cart = JSON.parse(localStorage.getItem('cart') || '[]');
   const existing = cart.find(i => i.id === productId);
   if (existing) {
-    existing.quantity += quantity;
+    existing.qty = (existing.qty || existing.quantity || 0) + quantity;
+    existing.quantity = existing.qty;
   } else {
     cart.push({
       id: productId,
+      name_ar: product.name,
       name: product.name,
       price: product.price,
       unit: product.unit,
       image_url: product.image_url,
+      seller_id: seller?.id || '',
+      company_name_ar: seller?.company_name || '',
       seller_name: seller?.company_name || '',
+      min_order_quantity: product.min_order || 1,
       min_order: product.min_order || 1,
+      qty: quantity,
       quantity
     });
   }
