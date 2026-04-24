@@ -826,20 +826,7 @@ function renderProduct() {
           </div>
           ${isVerified ? verifiedBadgeHTML() : ''}
         </div>
-        <div class="seller-stats">
-          <div class="seller-stat">
-            <div class="seller-stat-val">${seller.completed_orders ?? 0}</div>
-            <div class="seller-stat-lbl">طلب منجز</div>
-          </div>
-          <div class="seller-stat">
-            <div class="seller-stat-val">${seller.active_products ?? 0}</div>
-            <div class="seller-stat-lbl">منتج نشط</div>
-          </div>
-          <div class="seller-stat">
-            <div class="seller-stat-val">${seller.rating ? seller.rating.toFixed(1) : '—'}</div>
-            <div class="seller-stat-lbl">التقييم</div>
-          </div>
-        </div>
+
         <a href="syriaexpress-seller-public.html?id=${seller.id}" class="btn-seller-page">
           زيارة صفحة البائع ←
         </a>
