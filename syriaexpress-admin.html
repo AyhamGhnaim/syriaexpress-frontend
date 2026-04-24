@@ -539,7 +539,7 @@ async function loadUsers() {
     const typeMap = { buyer: 'مشترٍ', seller: 'بائع', admin: 'أدمن' };
     list.innerHTML = users.slice(0, 5).map(u => `
       <div class="user-row">
-        <div class="user-avatar">${(u.name || '؟')[0]}</div>
+        <div class="user-avatar">${u.avatar_url ? `<img src="${u.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.style.display='none'">` : (u.name || '؟')[0]}</div>
         <div class="user-info">
           <div class="user-name">${u.name || '—'}</div>
           <div class="user-email">${u.email || ''}</div>
