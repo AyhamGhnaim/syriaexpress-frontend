@@ -676,7 +676,7 @@ function renderProfile() {
   // Verification
   const vs = s.verification_status || s.is_verified;
   const badgeEl = document.getElementById('verifBadge');
-  if (vs === 'verified' || vs === true) {
+  if (vs === 'verified' || vs === 'approved' || vs === true) {
     badgeEl.innerHTML = verifiedBadgeHTML();
   } else if (vs === 'rejected') {
     let html = '<span class="verif-badge rejected">✕ مرفوض</span>';
