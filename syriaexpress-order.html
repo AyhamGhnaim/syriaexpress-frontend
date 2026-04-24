@@ -800,12 +800,8 @@ async function submitOrder() {
       return;
     }
 
-    // نجح الطلب
-    // امسح السلة
+    // نجح الطلب — أبقِ المنتجات بالسلة للطلبات المستقبلية
     localStorage.removeItem('orderCart');
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-    const newCart = cart.filter(i => i.id !== orderProduct.id);
-    localStorage.setItem('cart', JSON.stringify(newCart));
 
     // تقدم للخطوة 3
     document.getElementById('step2').classList.remove('active');
