@@ -107,16 +107,17 @@ body {
 /* ===== BREADCRUMB ===== */
 .breadcrumb {
   padding: 10px 16px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text2);
   display: flex;
   gap: 6px;
   align-items: center;
   flex-wrap: wrap;
 }
-.breadcrumb a { color: var(--text2); text-decoration: none; }
-.breadcrumb a:hover { color: var(--gold); }
+.breadcrumb a { color: var(--gold); text-decoration: none; font-weight: 600; cursor: pointer; }
+.breadcrumb a:hover { color: var(--text1); text-decoration: underline; }
 .breadcrumb span { color: var(--text2); }
+.breadcrumb .bc-current { color: var(--text2); font-size: 13px; }
 
 /* ===== MAIN ===== */
 main {
@@ -591,7 +592,7 @@ main {
   <span>›</span>
   <a href="syriaexpress-categories.html">الفئات</a>
   <span>›</span>
-  <span id="breadCat">...</span>
+  <a id="breadCat" href="#">...</a>
   <span>›</span>
   <span id="breadProduct">...</span>
 </div>
@@ -684,6 +685,7 @@ async function loadProduct() {
       min_order: data.min_order_quantity || data.min_order || 1,
       image_url: data.image_url || '',
       category_name: data.category_name_ar || data.category_name || '',
+      category_id: data.category_id || '',
       shipping_local: data.ship_inside !== false,
       shipping_national: data.ship_outside !== false,
       shipping_international: data.ship_international === true,
@@ -727,7 +729,12 @@ function showError(msg) {
 
 function renderProduct() {
   // Breadcrumb
-  document.getElementById('breadCat').textContent = product.category_name || 'الفئة';
+  const catEl = document.getElementById('breadCat');
+  catEl.textContent = product.category_name || 'الفئة';
+  if (product.category_id) {
+    catEl.href = `syriaexpress-products.html?category=${product.category_id}`;
+  }
+  document.getElementById('breadProduct').className = 'bc-current';
   document.getElementById('breadProduct').textContent = product.name || '';
 
   const hasImg = product.image_url;
