@@ -687,7 +687,7 @@ async function loadProduct() {
       city: data.seller_governorate || '',
       logo_url: data.seller_logo_url || '',
       phone: data.seller_phone || '',
-      is_verified: data.seller_verified || false,
+      is_verified: data.seller_verification_status === 'verified' || data.seller_verification_status === 'approved' || false,
       completed_orders: data.completed_orders ?? null,
       active_products: data.active_products ?? null,
       rating: data.rating || null,
