@@ -669,11 +669,25 @@ const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
 const CATEGORY_ICONS = {
   'غذائيات': '🌾',
   'كيماويات ومنظفات': '🧪',
+  'مواد كيميائية و منظفات': '🧪',
+  'مواد كيميائية ومنظفات': '🧪',
+  'كيماويات': '🧪',
   'ألبسة': '👕',
   'كهربائيات': '⚡',
   'مواد بناء': '🧱',
   'بلاستيكيات': '♻️',
-  'مستلزمات طبية': '💊'
+  'مستلزمات طبية': '💊',
+};
+
+// fallback by ID
+const CATEGORY_ICONS_BY_ID = {
+  'd91a982a-4943-41d2-a10d-190bdcc46dbf': '🌾',
+  'dbc84456-4a45-41bb-81b1-6c55866a84ae': '🧪',
+  '9cd45ecd-7b06-4908-9e96-0e3e5182372a': '👕',
+  '4a853f88-f000-4a81-ba5a-54f6b17f666f': '⚡',
+  '0450b35f-331b-4b91-b7d6-0fefbe0c3299': '🧱',
+  '2c2ebbf1-d69b-4808-a24b-b24e95cbb81c': '♻️',
+  '022f9e74-b115-4ce0-ab15-5951dab17f10': '💊',
 };
 
 // الحالة
@@ -745,7 +759,7 @@ async function loadCategoryInfo() {
       document.getElementById('categoryName').textContent = state.categoryName;
       document.getElementById('breadcrumbCategory').textContent = state.categoryName;
       document.getElementById('categoryIcon').textContent =
-        CATEGORY_ICONS[state.categoryName] || '📦';
+        CATEGORY_ICONS[state.categoryName] || CATEGORY_ICONS_BY_ID[state.categoryId] || '📦';
     } else {
       document.getElementById('categoryName').textContent = 'الفئة';
       document.getElementById('breadcrumbCategory').textContent = 'الفئة';
