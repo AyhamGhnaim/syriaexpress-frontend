@@ -364,7 +364,7 @@ function renderCart() {
   const clearBtn = document.querySelector('[onclick="clearCart()"]');
 
   const totalQty = cart.reduce((s, i) => s + i.qty, 0);
-  count.textContent = totalQty;
+  count.textContent = cart.length;
 
   if (!cart.length) {
     list.innerHTML = `
