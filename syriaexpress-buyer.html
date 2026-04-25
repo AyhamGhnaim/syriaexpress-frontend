@@ -114,10 +114,13 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 
 /* QUICK BROWSE */
 .cats-grid-small{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:16px;}
-.cat-btn{background:var(--bg4);border:1px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;transition:border-color 0.2s;text-decoration:none;color:inherit;display:block;}
-.cat-btn:hover{border-color:var(--border-gold)}
-.cat-btn .icon{font-size:24px;margin-bottom:4px}
+.cat-btn{background:var(--bg4);border:1px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;transition:all 0.2s;text-decoration:none;color:inherit;display:block;}
+.cat-btn:hover{border-color:var(--gold);transform:translateY(-1px)}
+.cat-btn .icon{font-size:26px;margin-bottom:6px}
 .cat-btn .name{font-size:12px;color:var(--text-dim)}
+.cat-btn.active{background:rgba(201,168,76,0.1);border:1.5px solid rgba(201,168,76,0.5);box-shadow:0 2px 8px rgba(201,168,76,0.15);}
+.cat-btn.active .name{color:var(--text1);font-weight:700;}
+.cat-btn.inactive{opacity:0.4;cursor:default;filter:grayscale(0.5);}
 .cats-grid-small .cat-btn:last-child:nth-child(3n+1){grid-column:2}
 
 /* SUGGESTED */
@@ -274,22 +277,22 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
       <div class="box-title"><span class="box-dot blue"></span> تصفح سريع</div>
     </div>
     <div class="cats-grid-small">
-      <a href="syriaexpress-categories.html" class="cat-btn">
+      <a href="syriaexpress-categories.html" class="cat-btn active">
         <div class="icon">🥫</div><div class="name">غذائيات</div>
       </a>
-      <div class="cat-btn" style="opacity:0.5">
+      <div class="cat-btn inactive">
         <div class="icon">💊</div><div class="name">طبية</div>
       </div>
-      <div class="cat-btn" style="opacity:0.5">
+      <div class="cat-btn inactive">
         <div class="icon">👔</div><div class="name">ألبسة</div>
       </div>
-      <div class="cat-btn" style="opacity:0.5">
+      <div class="cat-btn inactive">
         <div class="icon">🧴</div><div class="name">بلاستيكيات</div>
       </div>
-      <div class="cat-btn" style="opacity:0.5">
+      <div class="cat-btn inactive">
         <div class="icon">⚡</div><div class="name">كهربائيات</div>
       </div>
-      <div class="cat-btn" style="opacity:0.5">
+      <div class="cat-btn inactive">
         <div class="icon">🏗️</div><div class="name">مواد بناء</div>
       </div>
     </div>
@@ -452,11 +455,11 @@ async function loadCategories() {
       const name   = c.name_ar || c.name || '';
       const active = ACTIVE_IDS.includes(c.id);
       if (active) {
-        return `<a href="syriaexpress-products.html?cat=${c.id}" class="cat-btn">
+        return `<a href="syriaexpress-products.html?cat=${c.id}" class="cat-btn active">
           <div class="icon">${icon}</div><div class="name">${name}</div>
         </a>`;
       } else {
-        return `<div class="cat-btn" style="opacity:0.5">
+        return `<div class="cat-btn inactive">
           <div class="icon">${icon}</div><div class="name">${name}</div>
         </div>`;
       }
