@@ -433,7 +433,12 @@
     <img id="headerLogo" src="" alt="logo" style="display:none" onerror="this.style.display='none'">
   </a>
   <!-- يسار: فراغ لتوازن الترويسة -->
-  <div class="header-spacer"></div>
+  <div style="position:relative">
+    <button id="menuBtn" onclick="toggleMenu()" style="width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:var(--bg2);color:var(--text1);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">⋮</button>
+    <div id="dropMenu" style="display:none;position:absolute;left:0;top:44px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;min-width:150px;box-shadow:0 4px 20px rgba(0,0,0,0.3);z-index:100;overflow:hidden">
+      <button onclick="deleteAccount()" style="width:100%;padding:12px 16px;background:none;border:none;color:#f87171;font-family:Cairo,sans-serif;font-size:14px;font-weight:700;cursor:pointer;text-align:right;display:flex;align-items:center;gap:8px;justify-content:flex-end">حذف الحساب 🗑️</button>
+    </div>
+  </div>
 </div>
 
 <!-- Loading -->
@@ -620,7 +625,7 @@
 
     <!-- Logout -->
     <button class="logout-btn" onclick="logout()">🚪 تسجيل الخروج</button>
-    <button onclick="deleteAccount()" style="width:100%;background:transparent;border:1px solid #f87171;color:#f87171;padding:13px;border-radius:10px;font-family:'Cairo',sans-serif;font-size:14px;cursor:pointer;margin-bottom:16px">🗑️ حذف الحساب نهائياً</button>
+
 
   </div>
 </div>
@@ -1107,6 +1112,17 @@ function logout() {
       }
     }, { passive: true });
   })();
+
+function toggleMenu() {
+  const menu = document.getElementById('dropMenu');
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', function(e) {
+  if (!document.getElementById('menuBtn').contains(e.target)) {
+    const m = document.getElementById('dropMenu');
+    if (m) m.style.display = 'none';
+  }
+});
 </script>
 </body>
 </html>
