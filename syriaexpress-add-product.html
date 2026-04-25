@@ -506,7 +506,7 @@ textarea { resize: vertical; min-height: 90px; }
       </label>
       <div class="form-group" id="shipPriceNationalWrap" style="margin:0 0 8px;padding:0 4px;display:none">
         <label class="form-label">سعر الشحن خارج المحافظة (ل.س)</label>
-        <input type="number" class="form-input" id="shipPriceNational" min="0" value="2500" placeholder="2500">
+        <input type="number" class="form-input" id="shipPriceNational" min="0" value="0" placeholder="0">
       </div>
       <label class="shipping-option">
         <div class="ship-info">
@@ -520,7 +520,7 @@ textarea { resize: vertical; min-height: 90px; }
       </label>
       <div class="form-group" id="shipPriceIntlWrap" style="margin:0 0 8px;padding:0 4px;display:none">
         <label class="form-label">سعر الشحن الدولي (ل.س)</label>
-        <input type="number" class="form-input" id="shipPriceIntl" min="0" value="15000" placeholder="15000">
+        <input type="number" class="form-input" id="shipPriceIntl" min="0" value="0" placeholder="0">
       </div>
     </div>
   </div>
@@ -650,8 +650,8 @@ async function submitProduct() {
       ship_outside: document.getElementById('shipNational').checked,
       ship_international: document.getElementById('shipIntl').checked,
       ship_price_inside: parseInt(document.getElementById('shipPriceLocal').value) || 0,
-      ship_price_outside: document.getElementById('shipNational').checked ? (parseInt(document.getElementById('shipPriceNational').value) || 2500) : 0,
-      ship_price_intl: document.getElementById('shipIntl').checked ? (parseInt(document.getElementById('shipPriceIntl').value) || 15000) : 0
+      ship_price_outside: document.getElementById('shipNational').checked ? (parseInt(document.getElementById('shipPriceNational').value) || 0) : 0,
+      ship_price_intl: document.getElementById('shipIntl').checked ? (parseInt(document.getElementById('shipPriceIntl').value) || 0) : 0
     };
 
     const res = await fetch(`${API}/api/products`, {

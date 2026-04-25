@@ -806,8 +806,8 @@ function fillForm(p) {
   if (so.national || so.national_shipping || so.outside_province || p.ship_outside) toggleShipping('national', true);
   if (so.international || so.international_shipping || p.ship_international) toggleShipping('international', true);
   if (p.ship_price_inside !== undefined) document.getElementById('shipPriceLocal').value = p.ship_price_inside || 0;
-  if (p.ship_price_outside !== undefined) document.getElementById('shipPriceNational').value = p.ship_price_outside || 2500;
-  if (p.ship_price_intl !== undefined) document.getElementById('shipPriceIntl').value = p.ship_price_intl || 15000;
+  if (p.ship_price_outside !== undefined) document.getElementById('shipPriceNational').value = p.ship_price_outside || 0;
+  if (p.ship_price_intl !== undefined) document.getElementById('shipPriceIntl').value = p.ship_price_intl || 0;
 
   // Status
   setStatus(p.is_active !== false && p.status !== 'inactive' ? 'active' : 'inactive');
@@ -905,17 +905,12 @@ async function saveProduct() {
       min_order_quantity: parseInt(moq),
       stock_quantity: parseInt(document.getElementById('stock').value) || 0,
       is_active: selectedStatus === 'active',
-      shipping_options: {
-        local: shippingState.local,
-        national: shippingState.national,
-        international: shippingState.international,
-        ship_inside: shippingState.local,
-        ship_outside: shippingState.national,
-        ship_international: shippingState.international,
-        ship_price_inside: parseInt(document.getElementById('shipPriceLocal').value) || 0,
-        ship_price_outside: shippingState.national ? (parseInt(document.getElementById('shipPriceNational').value) || 2500) : 0,
-        ship_price_intl: shippingState.international ? (parseInt(document.getElementById('shipPriceIntl').value) || 15000) : 0
-      }
+      ship_inside: shippingState.local,
+      ship_outside: shippingState.national,
+      ship_international: shippingState.international,
+      ship_price_inside: parseInt(document.getElementById('shipPriceLocal').value) || 0,
+      ship_price_outside: shippingState.national ? (parseInt(document.getElementById('shipPriceNational').value) || 0) : 0,
+      ship_price_intl: shippingState.international ? (parseInt(document.getElementById('shipPriceIntl').value) || 0) : 0
     };
 
     const res = await fetch(`${API_BASE}/api/products/${productId}`, {
