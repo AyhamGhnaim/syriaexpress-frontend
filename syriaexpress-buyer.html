@@ -379,7 +379,21 @@ async function loadOrders() {
       shipped:'shipped', delivered:'delivered', cancelled:'pending'
     };
 
-    list.innerHTML = orders.slice(0,10).map((o, i) => {
+    // عرض فقط الطلبات الغير مسلّمة، آخر 5 فقط
+    const activeOrders = orders
+      .filter(o => o.status !== 'delivered' && o.status !== 'cancelled')
+      .slice(0, 5);
+
+    if (!activeOrders.length) {
+      list.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">✅</div>
+        <div class="empty-text">لا توجد طلبات نشطة</div>
+        <div class="empty-sub">جميع طلباتك تمت تسليمها</div>
+      </div>`;
+      return;
+    }
+
+    list.innerHTML = activeOrders.map((o, i) => {
       const name    = o.product_name_ar || o.product_name || 'منتج';
       const company = o.seller_company  || o.company_name_ar || 'بائع';
       const date    = o.created_at ? new Date(o.created_at).toLocaleDateString('ar-SY') : '';
