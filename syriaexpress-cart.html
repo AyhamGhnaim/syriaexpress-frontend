@@ -241,7 +241,20 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
     color: #C9A84C;
   }
   @keyframes ptr-spin { to { transform: rotate(360deg); } }
-  </style>
+  
+  .bottom-nav{
+    position:fixed;bottom:0;left:0;right:0;
+    background:var(--bg2);border-top:1px solid var(--border);
+    display:flex;padding:8px 0 20px;z-index:100;
+  }
+  .nav-item{
+    flex:1;display:flex;flex-direction:column;align-items:center;
+    gap:2px;text-decoration:none;color:var(--text2);
+    font-size:10px;padding:6px 0;transition:color 0.2s;
+  }
+  .nav-item:hover,.nav-item.active{color:var(--gold);}
+  .nav-icon{font-size:20px;}
+</style>
 </head>
 <body>
 
@@ -258,7 +271,7 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
   </div>
 </div>
 
-<main id="mainLayout">
+<main id="mainLayout" style="padding-bottom:80px">
 
   <div class="cart-and-shipping">
     <!-- CART ITEMS -->
@@ -482,6 +495,22 @@ function proceedToOrder() {
   location.href = 'syriaexpress-order.html';
 }
 </script>
+
+<div class="bottom-nav">
+  <a href="syriaexpress-landing.html" class="nav-item">
+    <span class="nav-icon">🏠</span>الرئيسية
+  </a>
+  <a href="syriaexpress-categories.html" class="nav-item">
+    <span class="nav-icon">📦</span>الفئات
+  </a>
+  <a href="syriaexpress-cart.html" class="nav-item active">
+    <span class="nav-icon">🛒</span>سلتي
+  </a>
+  <a href="syriaexpress-buyer.html" class="nav-item">
+    <span class="nav-icon">👤</span>حسابي
+  </a>
+</div>
+
 <script>
   // ── Pull to Refresh (iOS PWA compatible) ──
   (function() {
