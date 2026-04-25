@@ -506,7 +506,7 @@ function proceedToOrder() {
   <a href="syriaexpress-cart.html" class="nav-item active">
     <span class="nav-icon">🛒</span>سلتي
   </a>
-  <a href="syriaexpress-buyer.html" class="nav-item">
+  <a href="#" class="nav-item" onclick="goToAccount(event)">
     <span class="nav-icon">👤</span>حسابي
   </a>
 </div>
@@ -564,6 +564,21 @@ function proceedToOrder() {
       }
     }, { passive: true });
   })();
+
+function goToAccount(e) {
+  e.preventDefault();
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) { location.href = 'login.html'; return; }
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const type = payload.user_type || payload.type || '';
+    if (type === 'seller') location.href = 'syriaexpress-seller.html';
+    else if (type === 'admin') location.href = 'syriaexpress-admin.html';
+    else location.href = 'syriaexpress-buyer.html';
+  } catch(e) {
+    location.href = 'syriaexpress-buyer.html';
+  }
+}
 </script>
 </body>
 </html>
