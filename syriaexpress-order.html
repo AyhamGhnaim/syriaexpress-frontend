@@ -712,8 +712,8 @@ async function init() {
     return;
   }
 
-  // إذا الاسم ناقص، جيب البيانات الكاملة من API
-  if ((!orderProduct.name || orderProduct.name === 'منتج') && orderProduct.id) {
+  // جيب البيانات الكاملة من API دائماً لضمان صحة السعر والشحن
+  if (orderProduct.id) {
     try {
       const res = await fetch(`${API}/api/products/${orderProduct.id}`);
       if (res.ok) {
@@ -722,8 +722,11 @@ async function init() {
         orderProduct.seller_name = data.company_name_ar || data.company_name_en || orderProduct.seller_name || '';
         orderProduct.min_order = data.min_order_quantity || data.min_order || orderProduct.min_order || 1;
         orderProduct.unit = data.unit || orderProduct.unit;
-        orderProduct.price = data.price || orderProduct.price;
+        orderProduct.price = parseFloat(data.price) || parseFloat(orderProduct.price) || 0;
         orderProduct.image_url = data.image_url || orderProduct.image_url;
+        orderProduct.ship_price_inside = parseFloat(data.ship_price_inside) || 0;
+        orderProduct.ship_price_outside = parseFloat(data.ship_price_outside) || 0;
+        orderProduct.ship_price_intl = parseFloat(data.ship_price_intl) || 0;
       }
     } catch(e) {}
   }
@@ -747,9 +750,9 @@ function renderProduct() {
   document.getElementById('qtyInput').min = minQty;
 
   shippingPrices = {
-    inside: p.ship_price_inside || 0,
-    outside: p.ship_price_outside || 0,
-    international: p.ship_price_intl || 0
+    inside: parseFloat(p.ship_price_inside) || 0,
+    outside: parseFloat(p.ship_price_outside) || 0,
+    international: parseFloat(p.ship_price_intl) || 0
   };
 
   const container = document.getElementById('productSummaryContainer');
