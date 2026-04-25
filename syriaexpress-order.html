@@ -431,6 +431,34 @@
     .order-main { }
     .order-sidebar { }
   }
+
+    /* ── طريقة الدفع ── */
+    .payment-options {
+      display: flex;
+      flex-direction: row;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .payment-option {
+      flex: 1;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 10px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      background: var(--bg2);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .payment-option:hover { border-color: var(--gold); background: rgba(201,168,76,0.05); }
+    .payment-option.selected { border-color: var(--gold); background: rgba(201,168,76,0.1); }
+    .pay-icon { font-size: 22px; line-height: 1; }
+    .pay-label { font-size: 15px; font-weight: 700; color: var(--text1); }
 </style>
 </head>
 <body>
