@@ -490,7 +490,7 @@ textarea { resize: vertical; min-height: 90px; }
         </div>
         <input type="checkbox" class="ship-check" id="shipLocal" checked>
       </label>
-      <div class="form-group" id="shipLocalPriceWrap" style="margin:0 0 8px;padding:0 4px">
+      <div class="form-group" id="shipPriceLocalWrap" style="margin:0 0 8px;padding:0 4px">
         <label class="form-label">سعر الشحن المحلي (ل.س) — 0 يعني مجاناً</label>
         <input type="number" class="form-input" id="shipPriceLocal" min="0" value="0" placeholder="0">
       </div>
@@ -504,7 +504,7 @@ textarea { resize: vertical; min-height: 90px; }
         </div>
         <input type="checkbox" class="ship-check" id="shipNational" onchange="toggleShipPrice('National',this.checked)">
       </label>
-      <div class="form-group" id="shipNationalPriceWrap" style="margin:0 0 8px;padding:0 4px;display:none">
+      <div class="form-group" id="shipPriceNationalWrap" style="margin:0 0 8px;padding:0 4px;display:none">
         <label class="form-label">سعر الشحن خارج المحافظة (ل.س)</label>
         <input type="number" class="form-input" id="shipPriceNational" min="0" value="2500" placeholder="2500">
       </div>
@@ -518,7 +518,7 @@ textarea { resize: vertical; min-height: 90px; }
         </div>
         <input type="checkbox" class="ship-check" id="shipIntl" onchange="toggleShipPrice('Intl',this.checked)">
       </label>
-      <div class="form-group" id="shipIntlPriceWrap" style="margin:0 0 8px;padding:0 4px;display:none">
+      <div class="form-group" id="shipPriceIntlWrap" style="margin:0 0 8px;padding:0 4px;display:none">
         <label class="form-label">سعر الشحن الدولي (ل.س)</label>
         <input type="number" class="form-input" id="shipPriceIntl" min="0" value="15000" placeholder="15000">
       </div>

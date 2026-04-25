@@ -834,6 +834,13 @@ function toggleShipping(key, force) {
     shippingState[key] = !shippingState[key];
   }
   el.classList.toggle('selected', shippingState[key]);
+
+  // show/hide price field
+  const priceMap = { national: 'shipNationalPriceWrap', international: 'shipIntlPriceWrap' };
+  if (priceMap[key]) {
+    const wrap = document.getElementById(priceMap[key]);
+    if (wrap) wrap.style.display = shippingState[key] ? '' : 'none';
+  }
 }
 
 // ─── Status ───
