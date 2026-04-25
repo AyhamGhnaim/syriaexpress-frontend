@@ -322,7 +322,7 @@ const user = JSON.parse(localStorage.getItem('user') || '{}');
 
 // cart badge
 const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-const cartQty = cart.reduce((s,i) => s + i.qty, 0);
+const cartQty = cart.length;
 const badge = document.getElementById('cartBadge');
 if (badge && cartQty > 0) { badge.style.display = 'flex'; badge.textContent = cartQty; }
 
