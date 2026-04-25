@@ -252,6 +252,36 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
     color: #C9A84C;
   }
   @keyframes ptr-spin { to { transform: rotate(360deg); } }
+
+  /* ── فلتر الحالة ── */
+  .status-filters {
+    display: flex;
+    gap: 8px;
+    padding: 0 0 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .status-filters::-webkit-scrollbar { display: none; }
+  .filter-btn {
+    flex-shrink: 0;
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--bg2);
+    color: var(--text2);
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .filter-btn.active {
+    background: rgba(201,168,76,0.12);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
   </style>
 </head>
 <body>
@@ -286,6 +316,16 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
   <div class="loading-state" id="loadingState" style="display:none">
     <div class="spinner"></div>
     <div>جارٍ التحميل...</div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="status-filters" id="statusFilters">
+    <button class="filter-btn active" onclick="setFilter('all', this)">الكل</button>
+    <button class="filter-btn" onclick="setFilter('pending', this)">⏳ بانتظار التأكيد</button>
+    <button class="filter-btn" onclick="setFilter('confirmed', this)">✅ مؤكَّد</button>
+    <button class="filter-btn" onclick="setFilter('shipped', this)">🚚 قيد الشحن</button>
+    <button class="filter-btn" onclick="setFilter('delivered', this)">✓ مُسلَّم</button>
+    <button class="filter-btn" onclick="setFilter('cancelled', this)">✕ ملغى</button>
   </div>
 
   <!-- ORDERS -->
@@ -488,12 +528,37 @@ async function loadOrders() {
       return;
     }
 
-    const container = document.getElementById('ordersContainer');
-    container.innerHTML = `<div class="orders-grid">${orders.map(buildOrderCard).join('')}</div>`;
+    window.allOrders = orders;
+    renderFilteredOrders('all');
 
   } catch(err) {
     showLoading(false);
     showError('فشل الاتصال بالخادم');
+  }
+}
+
+
+let currentFilter = 'all';
+
+function setFilter(status, btn) {
+  currentFilter = status;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFilteredOrders(status);
+}
+
+function renderFilteredOrders(status) {
+  const orders = window.allOrders || [];
+  const filtered = status === 'all' ? orders : orders.filter(o => o.status === status);
+  const container = document.getElementById('ordersContainer');
+  const emptyState = document.getElementById('emptyState');
+
+  if (!filtered.length) {
+    container.innerHTML = '';
+    emptyState.style.display = 'block';
+  } else {
+    emptyState.style.display = 'none';
+    container.innerHTML = `<div class="orders-grid">${filtered.map(buildOrderCard).join('')}</div>`;
   }
 }
 
