@@ -332,7 +332,7 @@
   <a href="syriaexpress-landing.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
     <div style="text-align:center;">
       <div style="font-family:'Amiri',serif;color:var(--gold);font-size:17px;line-height:1;">SyriaExpress</div>
-      <div style="color:var(--text2);font-size:9px;letter-spacing:2px;">B2B MARKETPLACE</div>
+      <div style="color:var(--text2);font-size:9px;letter-spacing:2px;font-family:'Cairo',sans-serif;">B2B MARKETPLACE</div>
     </div>
     <img id="headerLogo" src="" alt="logo" style="display:none;height:42px;width:42px;object-fit:contain;" onerror="this.style.display='none'">
   </a>
@@ -527,6 +527,12 @@
     }, { passive: true });
   })();
 </script>
-<script src="logos.js"></script>
+<script src="https://ayhamghnaim.github.io/syriaexpress-frontend/logos.js"></script>
+<script>
+if (typeof LOGOS !== 'undefined' && LOGOS.main) {
+  const el = document.getElementById('headerLogo');
+  if (el) { el.src = LOGOS.main; el.style.display = 'block'; }
+}
+</script>
 </body>
 </html>
