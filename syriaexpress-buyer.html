@@ -206,7 +206,6 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
       <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       خروج
     </button>
-    <button class="btn-new-order" onclick="location.href='syriaexpress-categories.html'">+ طلب جديد</button>
   </div>
   <button class="header-title" onclick="location.href='syriaexpress-buyer-profile.html'" style="background:transparent;border:none;color:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;">لوحة المشتري ⚙️</button>
   <div class="header-right">
@@ -251,50 +250,20 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
     </div>
   </div>
 
-  <!-- على الكمبيوتر: طلبات + تتبع جنباً لجنب -->
-  <div class="two-col">
-
-    <!-- LATEST ORDERS -->
-    <div class="box">
-      <div class="box-header">
-        <div class="box-title"><span class="box-dot"></span> آخر الطلبات</div>
-        <a href="syriaexpress-order-track.html" class="box-link">عرض الكل ←</a>
-      </div>
-      <div class="orders-list">
-        <div class="empty-state">
-          <div class="empty-icon">📭</div>
-          <div class="empty-text">لا توجد طلبات بعد</div>
-          <div class="empty-sub">اضغط "طلب جديد" لتصفح المنتجات وإرسال أول طلب</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ACTIVE TRACKING -->
-    <div class="box">
-      <div class="box-header">
-        <div class="box-title"><span class="box-dot green"></span> تتبع نشط</div>
-        <a href="syriaexpress-order-track.html" class="box-link">عرض الكل ←</a>
-      </div>
-      <div class="empty-state">
-        <div class="empty-icon">🗺️</div>
-        <div class="empty-text">لا يوجد شحن نشط</div>
-        <div class="empty-sub">طلباتك قيد الشحن ستظهر هنا مع تتبع لحظي</div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- NOTIFICATIONS -->
+  <!-- LATEST ORDERS -->
   <div class="box">
     <div class="box-header">
-      <div class="box-title"><span class="box-dot"></span> إشعارات</div>
-      <a href="syriaexpress-order-track.html" class="box-link">الكل</a>
+      <div class="box-title"><span class="box-dot"></span> آخر الطلبات</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn-new-order" onclick="location.href='syriaexpress-categories.html'">+ طلب جديد</button>
+        <a href="syriaexpress-order-track.html" class="box-link">عرض الكل ←</a>
+      </div>
     </div>
-    <div class="notif-list">
+    <div class="orders-list">
       <div class="empty-state">
-        <div class="empty-icon">🔕</div>
-        <div class="empty-text">لا توجد إشعارات</div>
-        <div class="empty-sub">ستظهر تحديثات طلباتك هنا</div>
+        <div class="empty-icon">📭</div>
+        <div class="empty-text">لا توجد طلبات بعد</div>
+        <div class="empty-sub">اضغط "+ طلب جديد" لتصفح المنتجات وإرسال أول طلب</div>
       </div>
     </div>
   </div>
@@ -357,7 +326,6 @@ if (badge && cartQty > 0) { badge.style.display = 'flex'; badge.textContent = ca
 if (!token) location.href = 'login.html';
 
 loadOrders();
-loadNotifications();
 loadCategories();
 
 // ── طلبات المشتري ──
@@ -436,58 +404,10 @@ async function loadOrders() {
       `;
     }).join('');
 
-    // تتبع الشحن النشط
-    const activeShipping = orders.filter(o => o.status === 'shipped');
-    if (activeShipping.length) {
-      // البحث عن قسم التتبع (الـ box الثاني داخل two-col)
-      const twoCol = document.querySelector('.two-col');
-      if (twoCol) {
-        const trackEmpty = twoCol.querySelector('.box:last-child .empty-state');
-        if (trackEmpty) {
-          trackEmpty.innerHTML = `
-            <div class="tracker-box">
-              <div class="tracker-product">📦 ${activeShipping[0].product_name_ar || 'طلبك'}</div>
-              <div class="tracker-steps">
-                <div class="t-step"><div class="t-circle done">✓</div><div class="t-label">مؤكَّد</div></div>
-                <div class="t-line done"></div>
-                <div class="t-step"><div class="t-circle active">🚛</div><div class="t-label">شحن</div></div>
-                <div class="t-line"></div>
-                <div class="t-step"><div class="t-circle waiting">🏠</div><div class="t-label">تسليم</div></div>
-              </div>
-              <div class="tracker-eta">الطلبات النشطة: ${activeShipping.length}</div>
-            </div>
-          `;
-        }
-      }
-    }
-
   } catch(e) {}
 }
 
-// ── الإشعارات ──
-async function loadNotifications() {
-  try {
-    const res = await fetch(`${API_BASE}/api/notifications`, {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    if (!res.ok) return;
-    const data = await res.json();
-    const notifs = data.notifications || data || [];
-    if (!notifs.length) return;
 
-    const list = document.querySelector('.notif-list');
-    list.innerHTML = notifs.slice(0,5).map(n => `
-      <div class="notif-item">
-        <div class="notif-left-bar ${n.type === 'order' ? 'orange' : n.type === 'delivery' ? 'green' : 'blue'}"></div>
-        <div class="notif-icon-box">${n.type === 'order' ? '📦' : n.type === 'delivery' ? '✅' : '🔔'}</div>
-        <div>
-          <div class="notif-text">${n.message || n.title || ''}</div>
-          <div class="notif-time">${n.created_at ? new Date(n.created_at).toLocaleDateString('ar-SY') : ''}</div>
-        </div>
-      </div>
-    `).join('');
-  } catch(e) {}
-}
 
 // ── الفئات المتاحة ──
 async function loadCategories() {
