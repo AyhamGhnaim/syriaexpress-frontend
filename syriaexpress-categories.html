@@ -67,14 +67,16 @@
     font-family: 'Amiri', serif;
   }
 
-  /* النافبار العلوي */
+  /* النافبار السفلي */
   .navbar {
-    position: sticky;
-    top: 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     z-index: 100;
     background: var(--bg2);
-    border-bottom: 2px solid var(--gold);
-    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    padding: 8px 0 20px;
     box-shadow: var(--shadow);
   }
 
@@ -323,7 +325,21 @@
 </head>
 <body>
 
-<!-- النافبار العلوي -->
+
+<!-- HEADER -->
+<div class="header" style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bg2);border-bottom:2px solid var(--gold);position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);">
+  <div style="width:72px"></div>
+  <a href="syriaexpress-landing.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+    <div style="text-align:center;">
+      <div style="font-family:'Amiri',serif;color:var(--gold);font-size:17px;line-height:1;">SyriaExpress</div>
+      <div style="color:var(--text2);font-size:9px;letter-spacing:2px;">B2B MARKETPLACE</div>
+    </div>
+    <img id="headerLogo" src="" alt="logo" style="display:none;height:42px;width:42px;object-fit:contain;" onerror="this.style.display='none'">
+  </a>
+  <div style="width:72px"></div>
+</div>
+
+<!-- النافبار السفلي -->
 <nav class="navbar">
   <div class="nav-inner">
     <a href="syriaexpress-landing.html" class="nav-item">
@@ -511,5 +527,6 @@
     }, { passive: true });
   })();
 </script>
+<script src="logos.js"></script>
 </body>
 </html>
