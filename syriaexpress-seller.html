@@ -374,31 +374,6 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
     </div>
   </div>
 
-  <!-- THIS MONTH -->
-  <div class="box">
-    <div class="box-header">
-      <div class="box-title"><span class="box-dot green"></span> هذا الشهر</div>
-    </div>
-    <div class="month-rows">
-      <div class="month-row">
-        <span class="month-row-label">طلبات واردة</span>
-        <span class="month-row-val gold">—</span>
-      </div>
-      <div class="month-row">
-        <span class="month-row-label">تم التسليم</span>
-        <span class="month-row-val green">—</span>
-      </div>
-      <div class="month-row">
-        <span class="month-row-label">بانتظار الشحن</span>
-        <span class="month-row-val blue">—</span>
-      </div>
-      <div class="month-row">
-        <span class="month-row-label">معدل الرضا</span>
-        <span class="month-row-val green">—</span>
-      </div>
-    </div>
-  </div>
-
   <!-- TWO COLUMN: PRODUCTS -->
   <div class="two-col-desktop">
 
@@ -420,6 +395,31 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
   </div>
 
   </div> <!-- end two-col-desktop -->
+
+  <!-- THIS MONTH -->
+  <div class="box">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot green"></span> هذا الشهر</div>
+    </div>
+    <div class="month-rows">
+      <div class="month-row">
+        <span class="month-row-label">طلبات واردة</span>
+        <span id="mv-incoming" class="month-row-val gold">—</span>
+      </div>
+      <div class="month-row">
+        <span class="month-row-label">تم التسليم</span>
+        <span id="mv-delivered" class="month-row-val green">—</span>
+      </div>
+      <div class="month-row">
+        <span class="month-row-label">بانتظار الشحن</span>
+        <span id="mv-shipping" class="month-row-val blue">—</span>
+      </div>
+      <div class="month-row">
+        <span class="month-row-label">معدل الرضا</span>
+        <span id="mv-satisfaction" class="month-row-val green">—</span>
+      </div>
+    </div>
+  </div>
 
   <!-- ANALYTICS -->
   <div class="box" onclick="location.href='syriaexpress-seller-reports.html'" style="cursor:pointer;">
@@ -492,11 +492,14 @@ async function loadDashboard() {
       ? Math.round((monthDelivered / monthOrders.length) * 100) + '%'
       : '—';
 
-    const monthVals = document.querySelectorAll('.month-row-val');
-    if (monthVals[0]) monthVals[0].textContent = monthIncoming;
-    if (monthVals[1]) monthVals[1].textContent = monthDelivered;
-    if (monthVals[2]) monthVals[2].textContent = monthShipping;
-    if (monthVals[3]) monthVals[3].textContent = monthSatisfaction;
+    const mvIncoming = document.getElementById('mv-incoming');
+    const mvDelivered = document.getElementById('mv-delivered');
+    const mvShipping = document.getElementById('mv-shipping');
+    const mvSatisfaction = document.getElementById('mv-satisfaction');
+    if (mvIncoming) mvIncoming.textContent = monthIncoming;
+    if (mvDelivered) mvDelivered.textContent = monthDelivered;
+    if (mvShipping) mvShipping.textContent = monthShipping;
+    if (mvSatisfaction) mvSatisfaction.textContent = monthSatisfaction;
 
   } catch(e) {}
 }
