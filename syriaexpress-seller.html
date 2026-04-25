@@ -424,13 +424,26 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
   <!-- ANALYTICS -->
   <div class="box" onclick="location.href='syriaexpress-seller-reports.html'" style="cursor:pointer;">
     <div class="box-header">
-      <div class="box-title"><span class="box-dot"></span> التحليلات والتقارير</div>
+      <div class="box-title"><span class="box-dot gold"></span> التحليلات والتقارير</div>
       <span class="box-link">عرض التقارير ←</span>
     </div>
-    <div style="padding:24px 16px;text-align:center;">
-      <div style="font-size:40px;margin-bottom:10px;">📊</div>
-      <div style="font-size:15px;font-weight:700;color:var(--text-dim);margin-bottom:6px;">تقارير المبيعات والتحليلات</div>
-      <div style="font-size:12px;color:var(--text-dim);opacity:0.6;line-height:1.5;">إجمالي المبيعات، حالة الطلبات، الأكثر مبيعاً، الرسوم البيانية</div>
+    <div class="month-rows">
+      <div class="month-row">
+        <span class="month-row-label">إجمالي المبيعات</span>
+        <span id="an-revenue" class="month-row-val gold">—</span>
+      </div>
+      <div class="month-row">
+        <span class="month-row-label">إجمالي الطلبات</span>
+        <span id="an-total" class="month-row-val gold">—</span>
+      </div>
+      <div class="month-row">
+        <span class="month-row-label">طلبات مكتملة</span>
+        <span id="an-done" class="month-row-val green">—</span>
+      </div>
+      <div class="month-row">
+        <span class="month-row-label">أكثر منتج مبيعاً</span>
+        <span id="an-top" class="month-row-val" style="font-size:12px;text-align:left;">—</span>
+      </div>
     </div>
   </div>
 
@@ -500,6 +513,27 @@ async function loadDashboard() {
     if (mvDelivered) mvDelivered.textContent = monthDelivered;
     if (mvShipping) mvShipping.textContent = monthShipping;
     if (mvSatisfaction) mvSatisfaction.textContent = monthSatisfaction;
+
+    // ── التحليلات ──
+    const totalRevenue = orders
+      .filter(o => o.status === 'delivered')
+      .reduce((s, o) => s + (parseFloat(o.total_amount) || 0), 0);
+
+    const productCount = {};
+    orders.forEach(o => {
+      const name = o.product_name_ar || o.product_name || o.name || '';
+      if (name) productCount[name] = (productCount[name] || 0) + 1;
+    });
+    const topProduct = Object.entries(productCount).sort((a,b) => b[1]-a[1])[0];
+
+    const anRevenue = document.getElementById('an-revenue');
+    const anTotal = document.getElementById('an-total');
+    const anDone = document.getElementById('an-done');
+    const anTop = document.getElementById('an-top');
+    if (anRevenue) anRevenue.textContent = totalRevenue > 0 ? totalRevenue.toLocaleString('ar-SY') + ' ل.س' : '—';
+    if (anTotal) anTotal.textContent = orders.length;
+    if (anDone) anDone.textContent = completed;
+    if (anTop) anTop.textContent = topProduct ? topProduct[0] : '—';
 
   } catch(e) {}
 }
