@@ -370,7 +370,42 @@ let cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]')
   .map(i => ({ ...i, qty: Number(i.qty || i.quantity) || 1, price: Number(i.price) || 0 }));
 let shippingCost = 0;
 
-renderCart();
+const API_BASE = 'https://syriaexpress-backend.onrender.com';
+
+// ── مزامنة منتجات السلة مع السيرفر لضمان دقة حقول الشحن والأسعار ──
+async function syncCartWithServer() {
+  if (!cart.length) return;
+  const updated = await Promise.all(cart.map(async (item) => {
+    if (!item.id) return item;
+    try {
+      const r = await fetch(API_BASE + '/api/products/' + item.id);
+      if (!r.ok) return item;
+      const p = await r.json();
+      return {
+        ...item,
+        // حدّث حقول الشحن من السيرفر (المصدر الموثوق)
+        shipping_local:         p.ship_inside !== false,
+        shipping_national:      p.ship_outside === true,
+        shipping_international: p.ship_international === true,
+        ship_price_inside:  Number(p.ship_price_inside)  || 0,
+        ship_price_outside: Number(p.ship_price_outside) || 0,
+        ship_price_intl:    Number(p.ship_price_intl)    || 0,
+        // حدّث السعر والاسم في حالة تغييرهما
+        price: Number(p.price) || item.price,
+        name_ar: p.name_ar || item.name_ar,
+        name: p.name_ar || p.name_en || item.name,
+        image_url: p.image_url || item.image_url,
+      };
+    } catch (e) { return item; }
+  }));
+  cart = updated;
+  saveCart();
+}
+
+(async function init() {
+  await syncCartWithServer();
+  renderCart();
+})();
 
 function renderCart() {
   const list = document.getElementById('cartList');

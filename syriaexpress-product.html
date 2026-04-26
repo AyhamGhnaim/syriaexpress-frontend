@@ -719,7 +719,7 @@ async function loadProduct() {
       category_name: data.category_name_ar || data.category_name || '',
       category_id: data.category_id || '',
       shipping_local: data.ship_inside !== false,
-      shipping_national: data.ship_outside !== false,
+      shipping_national: data.ship_outside === true,
       shipping_international: data.ship_international === true,
       ship_price_inside: parseFloat(data.ship_price_inside) || 0,
       ship_price_outside: parseFloat(data.ship_price_outside) || 0,
