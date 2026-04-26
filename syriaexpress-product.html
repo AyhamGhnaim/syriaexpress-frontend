@@ -947,6 +947,9 @@ function addToCart() {
       ship_price_inside: product.ship_price_inside || 0,
       ship_price_outside: product.ship_price_outside || 0,
       ship_price_intl: product.ship_price_intl || 0,
+      shipping_local: product.shipping_local !== false,
+      shipping_national: product.shipping_national === true,
+      shipping_international: product.shipping_international === true,
       qty: quantity,
       quantity
     });
