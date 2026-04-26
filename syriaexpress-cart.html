@@ -355,6 +355,34 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 const token = localStorage.getItem('token');
 if (!token) location.href = 'login.html';
 
+// ── تحديد نوع المستخدم ومفتاح السلة الخاص به ──
+let CART_KEY = 'cart';
+let CURRENT_USER_ID = null;
+try {
+  const payload = JSON.parse(atob(token.split('.')[1]));
+  const userType = payload.user_type || payload.type || '';
+  CURRENT_USER_ID = payload.user_id || payload.id || payload.sub || '';
+
+  // البائع والإدارة لا يملكان سلة — تحويل تلقائي
+  if (userType === 'seller') { location.href = 'syriaexpress-seller.html'; }
+  else if (userType === 'admin') { location.href = 'syriaexpress-admin.html'; }
+
+  if (CURRENT_USER_ID) CART_KEY = 'cart_' + CURRENT_USER_ID;
+} catch(e) {
+  location.href = 'login.html';
+}
+
+// ── ترحيل السلة القديمة (cart الموحّد) إلى المفتاح الخاص بالمستخدم — مرة واحدة فقط ──
+(function migrateOldCart() {
+  const oldCart = localStorage.getItem('cart');
+  const newCart = localStorage.getItem(CART_KEY);
+  if (oldCart && CART_KEY !== 'cart' && !newCart) {
+    localStorage.setItem(CART_KEY, oldCart);
+  }
+  // امسح السلة الموحّدة القديمة دائماً (لمنع التسرّب بين الحسابات)
+  if (CART_KEY !== 'cart') localStorage.removeItem('cart');
+})();
+
 // لوغو
 window.addEventListener('load', function() {
   if (typeof LOGOS !== 'undefined' && LOGOS.main) {
@@ -363,7 +391,7 @@ window.addEventListener('load', function() {
   }
 });
 
-let cart = JSON.parse(localStorage.getItem('cart') || '[]')
+let cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]')
   .map(i => ({ ...i, qty: Number(i.qty || i.quantity) || 1, price: Number(i.price) || 0 }));
 let shippingCost = 0;
 
@@ -485,12 +513,13 @@ function selectShipping(el, type, cost) {
 }
 
 function saveCart() {
-  localStorage.setItem('cart', JSON.stringify(cart));
+  localStorage.setItem(CART_KEY, JSON.stringify(cart));
 }
 
 function proceedToOrder() {
   if (!cart.length) return;
-  localStorage.setItem('orderCart', JSON.stringify(cart));
+  localStorage.setItem('orderCart_' + (CURRENT_USER_ID || 'anon'), JSON.stringify(cart));
+  localStorage.setItem('orderCart', JSON.stringify(cart)); // توافق مع الإصدارات القديمة
   localStorage.setItem('shippingCost', shippingCost);
   location.href = 'syriaexpress-order.html';
 }

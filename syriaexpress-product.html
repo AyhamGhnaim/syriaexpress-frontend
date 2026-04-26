@@ -906,8 +906,27 @@ function updateTotal() {
 }
 
 // ===== CART =====
+function getCartKey() {
+  try {
+    const t = localStorage.getItem('token');
+    if (!t) return null;
+    const payload = JSON.parse(atob(t.split('.')[1]));
+    const userType = payload.user_type || payload.type || '';
+    // البائع والإدارة لا يستخدمان السلة
+    if (userType === 'seller' || userType === 'admin') return 'BLOCKED';
+    const uid = payload.user_id || payload.id || payload.sub || '';
+    return uid ? ('cart_' + uid) : 'cart';
+  } catch(e) { return 'cart'; }
+}
+
 function addToCart() {
-  const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+  const key = getCartKey();
+  if (!key) { location.href = 'login.html'; return; }
+  if (key === 'BLOCKED') {
+    alert('السلة متاحة للمشترين فقط');
+    return;
+  }
+  const cart = JSON.parse(localStorage.getItem(key) || '[]');
   const existing = cart.find(i => i.id === productId);
   if (existing) {
     existing.qty = (existing.qty || existing.quantity || 0) + quantity;
@@ -932,7 +951,7 @@ function addToCart() {
       quantity
     });
   }
-  localStorage.setItem('cart', JSON.stringify(cart));
+  localStorage.setItem(key, JSON.stringify(cart));
   
   const btn = document.getElementById('cartBtn');
   if (btn) {

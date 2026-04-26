@@ -320,8 +320,14 @@ const API_BASE = 'https://syriaexpress-backend.onrender.com';
 const token = localStorage.getItem('token');
 const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-// cart badge
-const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+// cart badge — مفتاح خاص بالمستخدم
+let __cartBadgeKey = 'cart';
+try {
+  const __p = JSON.parse(atob(token.split('.')[1]));
+  const __uid = __p.user_id || __p.id || __p.sub || '';
+  if (__uid) __cartBadgeKey = 'cart_' + __uid;
+} catch(e) {}
+const cart = JSON.parse(localStorage.getItem(__cartBadgeKey) || '[]');
 const cartQty = cart.length;
 const badge = document.getElementById('cartBadge');
 if (badge && cartQty > 0) { badge.style.display = 'flex'; badge.textContent = cartQty; }

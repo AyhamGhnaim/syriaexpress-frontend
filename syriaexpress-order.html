@@ -723,10 +723,22 @@ function formatPrice(p) {
 }
 
 async function init() {
+  // ── مفاتيح خاصة بالمستخدم ──
+  let __uid = '';
+  try {
+    const __t = localStorage.getItem('token');
+    if (__t) {
+      const __p = JSON.parse(atob(__t.split('.')[1]));
+      __uid = __p.user_id || __p.id || __p.sub || '';
+    }
+  } catch(e) {}
+  const orderKey = __uid ? ('orderCart_' + __uid) : 'orderCart';
+  const cartKey  = __uid ? ('cart_' + __uid) : 'cart';
+
   // حمّل البيانات من localStorage
-  const raw = localStorage.getItem('orderCart');
+  const raw = localStorage.getItem(orderKey) || localStorage.getItem('orderCart');
   if (!raw) {
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const cart = JSON.parse(localStorage.getItem(cartKey) || localStorage.getItem('cart') || '[]');
     if (cart.length === 0) {
       document.getElementById('emptyState').style.display = 'block';
       document.getElementById('orderForm').style.display = 'none';
@@ -918,6 +930,14 @@ async function submitOrder() {
 
     // نجح الطلب — أبقِ المنتجات بالسلة للطلبات المستقبلية
     localStorage.removeItem('orderCart');
+    try {
+      const __t2 = localStorage.getItem('token');
+      if (__t2) {
+        const __p2 = JSON.parse(atob(__t2.split('.')[1]));
+        const __uid2 = __p2.user_id || __p2.id || __p2.sub || '';
+        if (__uid2) localStorage.removeItem('orderCart_' + __uid2);
+      }
+    } catch(e) {}
 
     // تقدم للخطوة 3
     document.getElementById('step2').classList.remove('active');
