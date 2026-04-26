@@ -708,8 +708,9 @@ window.addEventListener('load', function() {
   }
 });
 
-let orderProduct = null;
-let selectedShipping = 'inside';
+let orderProducts = [];
+let orderProduct = null; // = orderProducts[0] للتوافق
+let selectedShipping = localStorage.getItem('shippingType') || 'inside';
 let selectedPayment = 'cash';
 let shippingPrices = { inside: 0, outside: 0, international: 0 };
 
@@ -744,36 +745,42 @@ async function init() {
       document.getElementById('orderForm').style.display = 'none';
       return;
     }
-    orderProduct = cart[0];
+    orderProducts = [cart[0]];
   } else {
     const parsed = JSON.parse(raw);
-    orderProduct = Array.isArray(parsed) ? parsed[0] : parsed;
+    orderProducts = Array.isArray(parsed) ? parsed : [parsed];
   }
 
-  if (!orderProduct) {
+  if (!orderProducts.length) {
     document.getElementById('emptyState').style.display = 'block';
     document.getElementById('orderForm').style.display = 'none';
     return;
   }
 
-  // جيب البيانات الكاملة من API دائماً لضمان صحة السعر والشحن
-  if (orderProduct.id) {
+  orderProduct = orderProducts[0]; // للتوافق مع الكود القديم
+
+  // جيب البيانات الكاملة من API لكل منتج لضمان صحة السعر والشحن
+  await Promise.all(orderProducts.map(async (op, idx) => {
+    if (!op.id) return;
     try {
-      const res = await fetch(`${API}/api/products/${orderProduct.id}`);
+      const res = await fetch(`${API}/api/products/${op.id}`);
       if (res.ok) {
         const data = await res.json();
-        orderProduct.name = data.name_ar || data.name_en || orderProduct.name;
-        orderProduct.seller_name = data.company_name_ar || data.company_name_en || orderProduct.seller_name || '';
-        orderProduct.min_order = data.min_order_quantity || data.min_order || orderProduct.min_order || 1;
-        orderProduct.unit = data.unit || orderProduct.unit;
-        orderProduct.price = parseFloat(data.price) || parseFloat(orderProduct.price) || 0;
-        orderProduct.image_url = data.image_url || orderProduct.image_url;
-        orderProduct.ship_price_inside = parseFloat(data.ship_price_inside) || 0;
-        orderProduct.ship_price_outside = parseFloat(data.ship_price_outside) || 0;
-        orderProduct.ship_price_intl = parseFloat(data.ship_price_intl) || 0;
+        op.name = data.name_ar || data.name_en || op.name;
+        op.seller_name = data.company_name_ar || data.company_name_en || op.seller_name || '';
+        op.min_order = data.min_order_quantity || data.min_order || op.min_order || 1;
+        op.unit = data.unit || op.unit;
+        op.price = parseFloat(data.price) || parseFloat(op.price) || 0;
+        op.image_url = data.image_url || op.image_url;
+        op.ship_price_inside = parseFloat(data.ship_price_inside) || 0;
+        op.ship_price_outside = parseFloat(data.ship_price_outside) || 0;
+        op.ship_price_intl = parseFloat(data.ship_price_intl) || 0;
+        op.qty = Number(op.qty || op.quantity) || op.min_order || 1;
       }
     } catch(e) {}
-  }
+  }));
+
+  orderProduct = orderProducts[0]; // re-sync بعد الـ fetch
 
   renderProduct();
   renderShipping();
@@ -781,47 +788,115 @@ async function init() {
 }
 
 function renderProduct() {
-  const p = orderProduct;
-  // دعم الحقلين القديم (من API) والجديد (من localStorage بعد الـ normalize)
-  const minQty = p.min_order || p.min_order_quantity || 1;
-  const productName = p.name || p.name_ar || p.name_en || 'منتج';
-  const sellerName = p.seller_name || p.company_name_ar || p.company_name_en || '';
-  
-  document.getElementById('minQty').textContent = minQty;
-  document.getElementById('unitLabel').textContent = p.unit || '';
-  document.getElementById('qtyUnit').textContent = p.unit || '';
-  document.getElementById('qtyInput').value = p.quantity || p.qty || minQty;
-  document.getElementById('qtyInput').min = minQty;
+  if (!orderProducts.length) return;
 
+  // إذا منتج واحد — أخفِ قسم الكمية المنفصل (سيُدار من داخل المنتج نفسه)
+  const qtySection = document.getElementById('qtySection');
+  if (qtySection) qtySection.style.display = 'none';
+
+  // أسعار الشحن = أعلى سعر بين المنتجات (الطلب موحّد)
   shippingPrices = {
-    inside: parseFloat(p.ship_price_inside) || 0,
-    outside: parseFloat(p.ship_price_outside) || 0,
-    international: parseFloat(p.ship_price_intl) || 0
+    inside:        Math.max(0, ...orderProducts.map(p => parseFloat(p.ship_price_inside)  || 0)),
+    outside:       Math.max(0, ...orderProducts.map(p => parseFloat(p.ship_price_outside) || 0)),
+    international: Math.max(0, ...orderProducts.map(p => parseFloat(p.ship_price_intl)    || 0))
   };
 
   const container = document.getElementById('productSummaryContainer');
-  container.innerHTML = `
-    <div class="product-summary">
-      ${p.image_url
-        ? `<img class="product-img" src="${p.image_url}" onerror="this.style.display='none'" />`
-        : `<div class="product-img-placeholder">📦</div>`}
-      <div class="product-info">
-        <div class="product-name">${productName}</div>
-        <div class="product-company">${sellerName}</div>
-        <div class="product-price">${formatPrice(p.price)} / ${p.unit || 'وحدة'}</div>
+  const headerHtml = orderProducts.length > 1
+    ? `<div style="font-size:13px;color:var(--gold);font-weight:700;margin-bottom:10px">📦 ${orderProducts.length} منتجات في الطلب</div>`
+    : '';
+
+  container.innerHTML = headerHtml + orderProducts.map((p, idx) => {
+    const minQty = p.min_order || p.min_order_quantity || 1;
+    const productName = p.name || p.name_ar || p.name_en || 'منتج';
+    const sellerName = p.seller_name || p.company_name_ar || p.company_name_en || '';
+    const qty = p.qty || p.quantity || minQty;
+    return `
+      <div class="product-summary" style="flex-direction:column;align-items:stretch;gap:12px">
+        <div style="display:flex;gap:12px;align-items:center">
+          ${p.image_url
+            ? `<img class="product-img" src="${p.image_url}" onerror="this.style.display='none'" />`
+            : `<div class="product-img-placeholder">📦</div>`}
+          <div class="product-info">
+            <div class="product-name">${productName}</div>
+            <div class="product-company">${sellerName}</div>
+            <div class="product-price">${formatPrice(p.price)} / ${p.unit || 'وحدة'}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:10px;border-top:1px solid var(--border)">
+          <div style="font-size:12px;color:var(--text2)">الحد الأدنى: ${minQty} ${p.unit || ''}</div>
+          <div class="qty-control" style="display:flex;align-items:center;gap:8px">
+            <button class="qty-btn" onclick="changeItemQty(${idx}, -1)">−</button>
+            <input class="qty-input" type="number" id="qty_${idx}" value="${qty}" min="${minQty}" oninput="setItemQty(${idx}, this.value)" style="width:70px;text-align:center" />
+            <button class="qty-btn" onclick="changeItemQty(${idx}, 1)">+</button>
+          </div>
+        </div>
       </div>
-    </div>
-  `;
+    `;
+  }).join('');
+}
+
+function changeItemQty(idx, delta) {
+  const p = orderProducts[idx];
+  if (!p) return;
+  const min = p.min_order || p.min_order_quantity || 1;
+  const cur = Number(p.qty || p.quantity) || min;
+  p.qty = Math.max(min, cur + delta);
+  p.quantity = p.qty;
+  const inp = document.getElementById('qty_' + idx);
+  if (inp) inp.value = p.qty;
+  updateTotal();
+}
+
+function setItemQty(idx, val) {
+  const p = orderProducts[idx];
+  if (!p) return;
+  const min = p.min_order || p.min_order_quantity || 1;
+  p.qty = Math.max(min, parseInt(val) || min);
+  p.quantity = p.qty;
+  updateTotal();
 }
 
 function renderShipping() {
-  const opts = [
+  const allOpts = [
     { key: 'inside', label: 'شحن محلي', icon: '🏙️' },
     { key: 'outside', label: 'خارج المحافظة', icon: '🗺️' },
     { key: 'international', label: 'شحن دولي', icon: '✈️' }
   ];
 
+  // خيار متاح فقط إذا كان مدعوماً من جميع المنتجات في الطلب
+  const supports = (item, type) => {
+    if (type === 'inside') {
+      if (item.shipping_local === false) return false;
+      if (item.shipping_local === true) return true;
+      return item.ship_price_inside !== undefined;
+    }
+    if (type === 'outside') {
+      if (item.shipping_national === true) return true;
+      if (item.shipping_national === false) return false;
+      return Number(item.ship_price_outside) > 0;
+    }
+    if (type === 'international') {
+      if (item.shipping_international === true) return true;
+      if (item.shipping_international === false) return false;
+      return Number(item.ship_price_intl) > 0;
+    }
+    return false;
+  };
+
+  const opts = allOpts.filter(o => orderProducts.every(p => supports(p, o.key)));
+
+  // إذا الخيار المحفوظ لم يعد متاحاً، اختر أول خيار متاح
+  if (opts.length && !opts.find(o => o.key === selectedShipping)) {
+    selectedShipping = opts[0].key;
+  }
+
   const container = document.getElementById('shippingOptions');
+  if (!opts.length) {
+    container.innerHTML = `<div style="padding:14px;text-align:center;color:var(--text2);font-size:13px">لا توجد خيارات شحن مشتركة بين المنتجات</div>`;
+    return;
+  }
+
   container.innerHTML = opts.map(o => `
     <div class="shipping-option ${selectedShipping === o.key ? 'selected' : ''}" onclick="selectShipping('${o.key}')">
       <div class="icon">${o.icon}</div>
@@ -856,7 +931,9 @@ function selectShipping(key) {
 }
 
 function changeQty(delta) {
+  // متروكة للتوافق فقط — قسم الكمية المنفصل مُخفى الآن، استخدم changeItemQty
   const input = document.getElementById('qtyInput');
+  if (!input) return;
   const min = parseInt(input.min) || 1;
   let val = parseInt(input.value) || min;
   val = Math.max(min, val + delta);
@@ -865,14 +942,27 @@ function changeQty(delta) {
 }
 
 function updateTotal() {
-  const qty = parseInt(document.getElementById('qtyInput').value) || 1;
-  const price = orderProduct?.price || 0;
+  let subtotal = 0;
+  let totalQtyText = '';
+  orderProducts.forEach((p, i) => {
+    const q = Number(p.qty || p.quantity) || 0;
+    subtotal += q * (Number(p.price) || 0);
+    totalQtyText += (i ? ' + ' : '') + q + ' ' + (p.unit || '');
+  });
   const ship = shippingPrices[selectedShipping] || 0;
-  const subtotal = qty * price;
   const total = subtotal + ship;
 
-  document.getElementById('unitPrice').textContent = formatPrice(price);
-  document.getElementById('totalQty').textContent = qty + ' ' + (orderProduct?.unit || '');
+  // عرض السعر — للمنتج الواحد نُظهر سعر الوحدة، للمتعدد نُظهر "متعدد"
+  const unitPriceEl = document.getElementById('unitPrice');
+  if (unitPriceEl) {
+    if (orderProducts.length === 1) {
+      unitPriceEl.textContent = formatPrice(orderProducts[0].price);
+    } else {
+      unitPriceEl.textContent = orderProducts.length + ' منتجات';
+    }
+  }
+  const totalQtyEl = document.getElementById('totalQty');
+  if (totalQtyEl) totalQtyEl.textContent = totalQtyText || '—';
   document.getElementById('shippingCost').textContent = ship ? formatPrice(ship) : 'مجاني';
   document.getElementById('grandTotal').textContent = formatPrice(total);
 }
@@ -890,11 +980,19 @@ async function submitOrder() {
     return;
   }
 
-  const qty = parseInt(document.getElementById('qtyInput').value);
-  const minQty = parseInt(document.getElementById('qtyInput').min) || 1;
-  if (qty < minQty) {
-    showError(`الحد الأدنى للطلب هو ${minQty} ${orderProduct?.unit || ''}`);
+  if (!orderProducts.length) {
+    showError('لا توجد منتجات للطلب');
     return;
+  }
+
+  // تحقق من الحد الأدنى لكل منتج
+  for (const p of orderProducts) {
+    const min = p.min_order || p.min_order_quantity || 1;
+    const q = Number(p.qty || p.quantity) || 0;
+    if (q < min) {
+      showError(`الحد الأدنى لـ "${p.name || p.name_ar || 'منتج'}" هو ${min} ${p.unit || ''}`);
+      return;
+    }
   }
 
   const btn = document.getElementById('submitBtn');
@@ -902,60 +1000,100 @@ async function submitOrder() {
   btn.innerHTML = 'جارٍ الإرسال... <span class="loading"></span>';
   hideError();
 
-  try {
-    const res = await fetch(`${API}/api/orders`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        product_id: orderProduct.id,
-        quantity: qty,
-        shipping_type: selectedShipping,
-        payment_method: selectedPayment,
-        shipping_address: address,
-        notes: document.getElementById('orderNotes').value.trim() || null
-      })
-    });
+  const notes = document.getElementById('orderNotes').value.trim() || null;
+  const successfulIds = [];
+  const failures = [];
+  let lastOrderId = null;
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      showError(data.error || 'حدث خطأ، حاول مرة أخرى');
-      btn.disabled = false;
-      btn.innerHTML = 'إرسال الطلب 🚀';
-      return;
-    }
-
-    // نجح الطلب — أبقِ المنتجات بالسلة للطلبات المستقبلية
-    localStorage.removeItem('orderCart');
+  // أرسل طلباً لكل منتج بالتسلسل
+  for (const p of orderProducts) {
     try {
-      const __t2 = localStorage.getItem('token');
-      if (__t2) {
-        const __p2 = JSON.parse(atob(__t2.split('.')[1]));
-        const __uid2 = __p2.user_id || __p2.id || __p2.sub || '';
-        if (__uid2) localStorage.removeItem('orderCart_' + __uid2);
+      const res = await fetch(`${API}/api/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          product_id: p.id,
+          quantity: Number(p.qty || p.quantity) || 1,
+          shipping_type: selectedShipping,
+          payment_method: selectedPayment,
+          shipping_address: address,
+          notes: notes
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        failures.push({ name: p.name || p.name_ar || 'منتج', error: data.error || 'فشل الطلب' });
+      } else {
+        successfulIds.push(p.id);
+        if (data.order && data.order.id) lastOrderId = data.order.id;
       }
-    } catch(e) {}
+    } catch (err) {
+      failures.push({ name: p.name || p.name_ar || 'منتج', error: 'فشل الاتصال' });
+    }
+  }
 
-    // تقدم للخطوة 3
-    document.getElementById('step2').classList.remove('active');
-    document.getElementById('step2').classList.add('done');
-    document.getElementById('step2').querySelector('.step-circle').textContent = '✓';
-    document.getElementById('step3').classList.add('active');
-    document.getElementById('line2').classList.add('done');
-
-    // اعرض شاشة النجاح
-    document.getElementById('orderForm').style.display = 'none';
-    const successScreen = document.getElementById('successScreen');
-    successScreen.style.display = 'block';
-    document.getElementById('successOrderId').textContent = `رقم الطلب: #${data.order?.id?.slice(0,8) || '—'}`;
-
-  } catch (err) {
-    showError('فشل الاتصال بالخادم');
+  // إذا فشلت كل الطلبات
+  if (!successfulIds.length) {
+    const msg = failures.length === 1
+      ? failures[0].error
+      : 'فشل إرسال جميع الطلبات. حاول مرة أخرى.';
+    showError(msg);
     btn.disabled = false;
     btn.innerHTML = 'إرسال الطلب 🚀';
+    return;
+  }
+
+  // نجح الطلب (كلياً أو جزئياً) — احذف المنتجات الناجحة فقط من السلة
+  localStorage.removeItem('orderCart');
+  try {
+    const __t2 = localStorage.getItem('token');
+    if (__t2) {
+      const __p2 = JSON.parse(atob(__t2.split('.')[1]));
+      const __uid2 = __p2.user_id || __p2.id || __p2.sub || '';
+      if (__uid2) localStorage.removeItem('orderCart_' + __uid2);
+
+      // احذف من السلة الرئيسية كل المنتجات اللي تم طلبها بنجاح
+      if (__uid2 && successfulIds.length) {
+        const cartKey2 = 'cart_' + __uid2;
+        const fullCart = JSON.parse(localStorage.getItem(cartKey2) || '[]');
+        const remaining = fullCart.filter(i => !successfulIds.includes(i.id));
+        localStorage.setItem(cartKey2, JSON.stringify(remaining));
+      }
+    }
+  } catch(e) {}
+
+  // تقدم للخطوة 3
+  document.getElementById('step2').classList.remove('active');
+  document.getElementById('step2').classList.add('done');
+  document.getElementById('step2').querySelector('.step-circle').textContent = '✓';
+  document.getElementById('step3').classList.add('active');
+  document.getElementById('line2').classList.add('done');
+
+  // اعرض شاشة النجاح
+  document.getElementById('orderForm').style.display = 'none';
+  const successScreen = document.getElementById('successScreen');
+  successScreen.style.display = 'block';
+
+  // عنوان النجاح: لو طلب واحد نُظهر رقمه، لو متعدد نُظهر العدد
+  const idLabel = document.getElementById('successOrderId');
+  if (idLabel) {
+    if (successfulIds.length === 1 && lastOrderId) {
+      idLabel.textContent = `رقم الطلب: #${String(lastOrderId).slice(0,8)}`;
+    } else {
+      idLabel.textContent = `تم إرسال ${successfulIds.length} طلبات بنجاح`;
+    }
+  }
+
+  // إذا كان فيه فشل جزئي — أعرض تنبيه
+  if (failures.length) {
+    const names = failures.map(f => f.name).join('، ');
+    setTimeout(() => {
+      alert(`تم إرسال ${successfulIds.length} من ${orderProducts.length} طلبات.\nلم تنجح: ${names}`);
+    }, 300);
   }
 }
 

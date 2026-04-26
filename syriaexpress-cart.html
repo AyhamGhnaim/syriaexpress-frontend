@@ -81,6 +81,30 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 [data-theme="light"] .cart-item{border-bottom-color:rgba(208,203,192,0.5);}
 .cart-item:last-child{border-bottom:none}
 .cart-item:hover{background:rgba(201,168,76,0.03)}
+.cart-item.unselected{opacity:0.55;}
+/* Custom checkbox */
+.item-check{
+  width:22px;height:22px;border-radius:6px;
+  border:2px solid var(--border);background:var(--bg4);
+  cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;
+  appearance:none;-webkit-appearance:none;margin:0;
+}
+.item-check:hover{border-color:var(--gold);}
+.item-check:checked{
+  background:var(--gold);border-color:var(--gold);
+}
+.item-check:checked::after{
+  content:'✓';color:#fff;font-size:14px;font-weight:900;line-height:1;
+}
+.select-all-row{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 16px;border-bottom:1px solid rgba(42,38,32,0.5);
+  font-size:12px;color:var(--text-dim);font-weight:700;
+}
+[data-theme="light"] .select-all-row{border-bottom-color:rgba(208,203,192,0.5);}
+.select-all-row label{display:flex;align-items:center;gap:8px;cursor:pointer;}
 .item-img{
   width:52px;height:52px;border-radius:10px;
   background:var(--bg4);border:1px solid var(--border);
@@ -370,6 +394,10 @@ let cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]')
   .map(i => ({ ...i, qty: Number(i.qty || i.quantity) || 1, price: Number(i.price) || 0 }));
 let shippingCost = 0;
 
+// المنتجات المحدّدة للطلب الحالي
+const selectedIds = new Set();
+const explicitlyDeselected = new Set();
+
 const API_BASE = 'https://syriaexpress-backend.onrender.com';
 
 // ── مزامنة منتجات السلة مع السيرفر لضمان دقة حقول الشحن والأسعار ──
@@ -440,6 +468,19 @@ function renderCart() {
   shippingBox.style.display = '';
   summaryBox.style.display = '';
 
+  // ── حالة الاختيار: اجعل أي منتج جديد مختاراً افتراضياً ──
+  cart.forEach(item => {
+    if (!selectedIds.has(item.id) && !explicitlyDeselected.has(item.id)) {
+      selectedIds.add(item.id);
+    }
+  });
+  // نظّف أي ID مختار لمنتج لم يعد بالسلة
+  for (const id of [...selectedIds]) {
+    if (!cart.find(i => i.id === id)) selectedIds.delete(id);
+  }
+
+  const allSelected = cart.length > 0 && cart.every(i => selectedIds.has(i.id));
+
   // Group by seller
   const bySeller = {};
   cart.forEach(item => {
@@ -448,13 +489,25 @@ function renderCart() {
     bySeller[key].items.push(item);
   });
 
-  let html = '';
+  // سطر "تحديد الكل"
+  let html = `
+    <div class="select-all-row">
+      <label>
+        <input type="checkbox" class="item-check" id="selectAllCheck" ${allSelected ? 'checked' : ''} onchange="toggleSelectAll(this.checked)">
+        <span>تحديد الكل</span>
+      </label>
+      <span style="margin-right:auto;color:var(--gold);font-weight:700">${selectedIds.size} / ${cart.length} مُختار</span>
+    </div>
+  `;
+
   Object.values(bySeller).forEach(group => {
     html += `<div class="seller-label">🏭 <span>${group.name}</span></div>`;
     group.items.forEach(item => {
+      const isSelected = selectedIds.has(item.id);
       const subtotal = (item.price * item.qty).toLocaleString('ar-SY');
       html += `
-        <div class="cart-item">
+        <div class="cart-item${isSelected ? '' : ' unselected'}">
+          <input type="checkbox" class="item-check" ${isSelected ? 'checked' : ''} onchange="toggleItemSelected('${item.id}', this.checked)">
           <div class="item-img">${item.image_url ? `<img src="${item.image_url}" alt="">` : (item.emoji || '📦')}</div>
           <div class="item-info">
             <div class="item-name">${item.name_ar || item.name || 'منتج'}</div>
@@ -481,15 +534,57 @@ function renderCart() {
   updateSummary();
 }
 
+function toggleItemSelected(id, checked) {
+  if (checked) {
+    selectedIds.add(id);
+    explicitlyDeselected.delete(id);
+  } else {
+    selectedIds.delete(id);
+    explicitlyDeselected.add(id);
+  }
+  renderCart();
+}
+
+function toggleSelectAll(checked) {
+  if (checked) {
+    cart.forEach(i => { selectedIds.add(i.id); explicitlyDeselected.delete(i.id); });
+  } else {
+    selectedIds.clear();
+    cart.forEach(i => explicitlyDeselected.add(i.id));
+  }
+  renderCart();
+}
+
+function getSelectedItems() {
+  return cart.filter(i => selectedIds.has(i.id));
+}
+
 function updateSummary() {
-  const subtotal = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+  const selected = getSelectedItems();
+  const subtotal = selected.reduce((s, i) => s + (i.price * i.qty), 0);
   const total = subtotal + shippingCost;
-  const totalQty = cart.reduce((s, i) => s + i.qty, 0);
+  const totalQty = selected.reduce((s, i) => s + i.qty, 0);
 
   document.getElementById('sumItems').textContent = totalQty + ' منتج';
   document.getElementById('sumSubtotal').textContent = subtotal.toLocaleString('ar-SY') + ' ل.س';
   document.getElementById('sumShipping').textContent = shippingCost > 0 ? shippingCost.toLocaleString('ar-SY') + ' ل.س' : 'مجاناً';
   document.getElementById('sumTotal').textContent = total.toLocaleString('ar-SY') + ' ل.س';
+
+  // عطّل زر "متابعة الطلب" إذا لا يوجد شيء محدّد
+  const btn = document.getElementById('checkoutBtn');
+  if (btn) {
+    if (selected.length === 0) {
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+      btn.style.cursor = 'not-allowed';
+      btn.textContent = 'اختر منتجاً للمتابعة';
+    } else {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      btn.textContent = `متابعة طلب ${selected.length} منتج ←`;
+    }
+  }
 }
 
 function changeQty(id, delta) {
@@ -517,9 +612,20 @@ function clearCart() {
 // ── خيارات الشحن المتاحة بناءً على منتجات السلة ──
 function renderShippingOptions() {
   const container = document.getElementById('shippingOptions');
-  if (!container || !cart.length) return;
+  if (!container) return;
 
-  // خيار متاح فقط إذا كان مدعوماً من جميع المنتجات في السلة
+  const items = getSelectedItems();
+  const shippingBox = document.getElementById('shippingBox');
+
+  // إذا لا يوجد منتج محدّد — أخفِ صندوق الشحن
+  if (!items.length) {
+    if (shippingBox) shippingBox.style.display = 'none';
+    shippingCost = 0;
+    return;
+  }
+  if (shippingBox) shippingBox.style.display = '';
+
+  // خيار متاح فقط إذا كان مدعوماً من جميع المنتجات المحدّدة
   // إذا الحقل غير موجود (منتج قديم في السلة)، نعتمد على السعر: السعر >= 0 يعني الخيار يعمل (حتى لو 0 = مجاناً)
   const supports = (item, type) => {
     if (type === 'inside') {
@@ -540,14 +646,14 @@ function renderShippingOptions() {
     return false;
   };
 
-  const allInside  = cart.every(i => supports(i, 'inside'));
-  const allOutside = cart.every(i => supports(i, 'outside'));
-  const allIntl    = cart.every(i => supports(i, 'international'));
+  const allInside  = items.every(i => supports(i, 'inside'));
+  const allOutside = items.every(i => supports(i, 'outside'));
+  const allIntl    = items.every(i => supports(i, 'international'));
 
-  // السعر = أعلى سعر بين المنتجات (مجموع الشحن لكل بائع لاحقاً، لكن هنا نعرض الحد الأقصى)
-  const priceInside = Math.max(0, ...cart.map(i => Number(i.ship_price_inside) || 0));
-  const priceOutside = Math.max(0, ...cart.map(i => Number(i.ship_price_outside) || 0));
-  const priceIntl = Math.max(0, ...cart.map(i => Number(i.ship_price_intl) || 0));
+  // السعر = أعلى سعر بين المنتجات المحدّدة
+  const priceInside  = Math.max(0, ...items.map(i => Number(i.ship_price_inside)  || 0));
+  const priceOutside = Math.max(0, ...items.map(i => Number(i.ship_price_outside) || 0));
+  const priceIntl    = Math.max(0, ...items.map(i => Number(i.ship_price_intl)    || 0));
 
   const opts = [];
   if (allInside)  opts.push({ type:'inside',        name:'داخل المحافظة', desc:'1–2 يوم عمل',  cost: priceInside });
@@ -598,9 +704,13 @@ function saveCart() {
 }
 
 function proceedToOrder() {
-  if (!cart.length) return;
-  localStorage.setItem('orderCart_' + (CURRENT_USER_ID || 'anon'), JSON.stringify(cart));
-  localStorage.setItem('orderCart', JSON.stringify(cart)); // توافق مع الإصدارات القديمة
+  const selected = getSelectedItems();
+  if (!selected.length) {
+    alert('يرجى اختيار منتج واحد على الأقل للمتابعة');
+    return;
+  }
+  localStorage.setItem('orderCart_' + (CURRENT_USER_ID || 'anon'), JSON.stringify(selected));
+  localStorage.setItem('orderCart', JSON.stringify(selected)); // توافق مع الإصدارات القديمة
   localStorage.setItem('shippingCost', shippingCost);
   location.href = 'syriaexpress-order.html';
 }
