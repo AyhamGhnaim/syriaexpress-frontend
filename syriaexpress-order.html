@@ -1047,7 +1047,8 @@ async function submitOrder() {
     return;
   }
 
-  // نجح الطلب (كلياً أو جزئياً) — احذف المنتجات الناجحة فقط من السلة
+  // نجح الطلب — أبقِ المنتجات في السلة (تُحذف فقط يدوياً من قبل المستخدم)
+  // امسح فقط مفتاح "orderCart" المؤقت المستخدم لتمرير البيانات بين الصفحات
   localStorage.removeItem('orderCart');
   try {
     const __t2 = localStorage.getItem('token');
@@ -1055,14 +1056,6 @@ async function submitOrder() {
       const __p2 = JSON.parse(atob(__t2.split('.')[1]));
       const __uid2 = __p2.user_id || __p2.id || __p2.sub || '';
       if (__uid2) localStorage.removeItem('orderCart_' + __uid2);
-
-      // احذف من السلة الرئيسية كل المنتجات اللي تم طلبها بنجاح
-      if (__uid2 && successfulIds.length) {
-        const cartKey2 = 'cart_' + __uid2;
-        const fullCart = JSON.parse(localStorage.getItem(cartKey2) || '[]');
-        const remaining = fullCart.filter(i => !successfulIds.includes(i.id));
-        localStorage.setItem(cartKey2, JSON.stringify(remaining));
-      }
     }
   } catch(e) {}
 
