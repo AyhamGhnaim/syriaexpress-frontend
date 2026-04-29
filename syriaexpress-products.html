@@ -747,7 +747,8 @@ let state = {
   limit: 12,
   total: 0,
   pages: 1,
-  viewMode: localStorage.getItem('productsViewMode') || 'grid'
+  viewMode: localStorage.getItem('productsViewMode') || 'grid',
+  buyerGovernorate: ''
 };
 
 let searchTimer = null;
@@ -830,6 +831,7 @@ async function loadProducts() {
     // ملاحظة مهمة: الـ backend يحاول فلترة بـ category_slug لكن العمود غير موجود في v_products_full
     // فيرجع خطأ 500. الحل: نجيب كل المنتجات ونفلتر على الفرونت إند بـ category_id.
     if (state.shipping) params.set('shipping', state.shipping);
+    if (state.shipping === 'inside' && state.buyerGovernorate) params.set('governorate', state.buyerGovernorate);
     if (state.search) params.set('search', state.search);
     // جيب كمية كبيرة إذا نحتاج فلترة بالفئة على الفرونت إند
     params.set('page', state.categoryId ? 1 : state.page);
@@ -1033,10 +1035,45 @@ function initViewToggle() {
 }
 
 // ═══════════════════ INIT ═══════════════════
+// ═══════════════════ BUYER GOVERNORATE ═══════════════════
+async function fetchBuyerGovernorate() {
+  try {
+    // أولاً: حاول من الـ token مباشرة
+    const token = localStorage.getItem('token');
+    if (token) {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.governorate) {
+        state.buyerGovernorate = payload.governorate;
+        updateInsideBtn();
+        return;
+      }
+    }
+    // ثانياً: اجلب من الـ API
+    if (!token) return;
+    const res = await fetch(`${API_BASE}/api/auth/me`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    const gov = data.governorate || data.user?.governorate || '';
+    if (gov) {
+      state.buyerGovernorate = gov;
+      updateInsideBtn();
+    }
+  } catch(e) {}
+}
+
+function updateInsideBtn() {
+  if (!state.buyerGovernorate) return;
+  const btn = document.querySelector('#shippingFilters .filter-chip[data-shipping="inside"]');
+  if (btn) btn.textContent = `داخل ${state.buyerGovernorate}`;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initLogo();
   initFilters();
   initViewToggle();
+  fetchBuyerGovernorate();
   loadCategoryInfo(); // يستدعي loadProducts() بالداخل بعد ما يجيب الـ slug
 });
 </script>
