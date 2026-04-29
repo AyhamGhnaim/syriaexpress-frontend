@@ -689,12 +689,25 @@ main {
   <a href="syriaexpress-landing.html"><span class="icon">🏠</span><span>الرئيسية</span></a>
   <a href="syriaexpress-categories.html" class="active"><span class="icon">📂</span><span>الفئات</span></a>
   <a href="syriaexpress-cart.html"><span class="icon">🛒</span><span>سلتي</span></a>
-  <a href="syriaexpress-buyer.html"><span class="icon">👤</span><span>حسابي</span></a>
+  <a id="accountNavLink" href="syriaexpress-buyer.html"><span class="icon">👤</span><span>حسابي</span></a>
 </nav>
 
 <!-- ═══════════════════ SCRIPTS ═══════════════════ -->
 <script src="logos.js"></script>
 <script>
+// ===== ACCOUNT LINK =====
+(function() {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const type = payload.user_type || payload.type || payload.role || '';
+    const map = { seller: 'syriaexpress-seller.html', admin: 'syriaexpress-admin.html', buyer: 'syriaexpress-buyer.html' };
+    const el = document.getElementById('accountNavLink');
+    if (el) el.href = map[type] || 'syriaexpress-buyer.html';
+  } catch(e) {}
+})();
+
 const API_BASE = 'https://syriaexpress-backend-production.up.railway.app';
 
 // خريطة أيقونات الفئات
