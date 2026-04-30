@@ -1095,7 +1095,7 @@ async function loadSellers() {
       sellersMap[sid] = {
         id: sid,
         name: p.company_name_ar || p.company_name_en || p.company_name || p.seller_name || 'بائع سوري',
-        logo: p.seller_logo || p.logo_url || '',
+        logo: p.seller_logo_url || p.seller_logo || p.logo_url || '',
         gov: p.seller_governorate || p.governorate || '',
         verified: p.seller_verified || p.is_verified || false,
         count: 1
