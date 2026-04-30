@@ -268,6 +268,42 @@ main {
   background: var(--gold);
   color: #0F0E0C;
 }
+
+/* ===== SELLERS GRID ===== */
+.sellers-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-top: 8px;
+}
+.seller-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color .2s, transform .15s;
+}
+.seller-card:hover { border-color: var(--gold); transform: translateY(-1px); }
+.seller-logo {
+  width: 58px; height: 58px;
+  border-radius: 12px;
+  background: var(--bg3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; flex-shrink: 0; overflow: hidden;
+}
+.seller-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+.seller-info { flex: 1; min-width: 0; }
+.seller-card-name { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.seller-card-gov { font-size: 12px; color: var(--text2); margin-bottom: 6px; }
+.seller-card-stats { display: flex; gap: 12px; }
+.seller-stat { font-size: 12px; color: var(--text2); }
+.seller-stat b { color: var(--gold); }
+.seller-arrow { color: var(--gold); font-size: 18px; flex-shrink: 0; }
 .view-btn svg {
   width: 16px;
   height: 16px;
@@ -664,20 +700,29 @@ main {
   <!-- شريط النتائج + زر تبديل طريقة العرض -->
   <div class="results-bar" id="resultsBar">
     <span id="resultsText">تم العثور على <b>0</b> منتج</span>
-    <div class="view-toggle" role="group" aria-label="طريقة العرض">
-      <button class="view-btn active" data-view="grid" aria-label="عرض شبكي" title="عرض شبكي">
-        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        <span>شبكة</span>
-      </button>
-      <button class="view-btn" data-view="list" aria-label="عرض قائمة" title="عرض قائمة">
-        <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1.2"/><circle cx="4" cy="12" r="1.2"/><circle cx="4" cy="18" r="1.2"/></svg>
-        <span>قائمة</span>
-      </button>
+    <div style="display:inline-flex;gap:6px;align-items:center;">
+      <div class="view-toggle" role="group">
+        <button class="view-btn active" id="modeProducts" onclick="switchMode('products')">🛒 منتجات</button>
+        <button class="view-btn" id="modeSellers" onclick="switchMode('sellers')">🏭 موردين</button>
+      </div>
+      <div class="view-toggle" role="group" aria-label="طريقة العرض">
+        <button class="view-btn active" data-view="grid" aria-label="عرض شبكي" title="عرض شبكي">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <span>شبكة</span>
+        </button>
+        <button class="view-btn" data-view="list" aria-label="عرض قائمة" title="عرض قائمة">
+          <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1.2"/><circle cx="4" cy="12" r="1.2"/><circle cx="4" cy="18" r="1.2"/></svg>
+          <span>قائمة</span>
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- شبكة المنتجات -->
   <div class="products-grid" id="productsGrid"></div>
+
+  <!-- شبكة الموردين -->
+  <div class="sellers-grid" id="sellersGrid" style="display:none"></div>
 
   <!-- ترقيم الصفحات -->
   <div class="pagination" id="pagination"></div>
@@ -1011,6 +1056,71 @@ function initFilters() {
       loadProducts();
     }, 400);
   });
+}
+
+// ═══════════════════ CONTENT MODE (منتجات / موردين) ═══════════════════
+let contentMode = 'products';
+
+function switchMode(mode) {
+  contentMode = mode;
+  document.getElementById('modeProducts').classList.toggle('active', mode === 'products');
+  document.getElementById('modeSellers').classList.toggle('active', mode === 'sellers');
+  document.getElementById('productsGrid').style.display = mode === 'products' ? '' : 'none';
+  document.getElementById('sellersGrid').style.display = mode === 'sellers' ? '' : 'none';
+  document.getElementById('pagination').style.display = mode === 'products' ? '' : 'none';
+  if (mode === 'sellers') loadSellers();
+  else document.getElementById('resultsText').innerHTML = `تم العثور على <b>${state.total}</b> منتج`;
+}
+
+async function loadSellers() {
+  const grid = document.getElementById('sellersGrid');
+  grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2)">جارٍ التحميل...</div>';
+  try {
+    const params = new URLSearchParams();
+    params.set('limit', state.categoryId ? 500 : 200);
+    const res = await fetch(`${API_BASE}/api/products?${params}`);
+    const data = await res.json();
+    let products = data.products || data.items || (Array.isArray(data) ? data : []);
+    if (state.categoryId) products = products.filter(p => p.category_id === state.categoryId);
+
+    const sellersMap = {};
+    products.forEach(p => {
+      const sid = p.seller_id || p.user_id;
+      if (!sid) return;
+      if (sellersMap[sid]) { sellersMap[sid].count++; return; }
+      sellersMap[sid] = {
+        id: sid,
+        name: p.company_name_ar || p.company_name_en || p.company_name || p.seller_name || 'بائع سوري',
+        logo: p.seller_logo || p.logo_url || '',
+        gov: p.seller_governorate || p.governorate || '',
+        verified: p.seller_verified || p.is_verified || false,
+        count: 1
+      };
+    });
+
+    const sellers = Object.values(sellersMap);
+    document.getElementById('resultsText').innerHTML = `تم العثور على <b>${sellers.length}</b> مورد`;
+    if (sellers.length === 0) {
+      grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2)">لا يوجد موردون في هذه الفئة</div>';
+      return;
+    }
+    grid.innerHTML = sellers.map(s => {
+      const logoHTML = s.logo ? `<img src="${escapeHtml(s.logo)}" alt="" onerror="this.remove()">` : '🏭';
+      const verBadge = s.verified ? ' <span style="color:var(--gold);font-size:11px">✓ موثّق</span>' : '';
+      return `
+        <a class="seller-card" href="syriaexpress-seller-public.html?id=${encodeURIComponent(s.id)}">
+          <div class="seller-logo">${logoHTML}</div>
+          <div class="seller-info">
+            <div class="seller-card-name">${escapeHtml(s.name)}${verBadge}</div>
+            ${s.gov ? `<div class="seller-card-gov">📍 ${escapeHtml(s.gov)}</div>` : ''}
+            <div class="seller-card-stats"><span class="seller-stat"><b>${s.count}</b> منتج</span></div>
+          </div>
+          <span class="seller-arrow">←</span>
+        </a>`;
+    }).join('');
+  } catch(e) {
+    grid.innerHTML = '<div style="text-align:center;padding:40px">⚠️ تعذّر تحميل الموردين</div>';
+  }
 }
 
 // ═══════════════════ VIEW MODE TOGGLE ═══════════════════
