@@ -1053,7 +1053,8 @@ function initFilters() {
     searchTimer = setTimeout(() => {
       state.search = e.target.value.trim();
       state.page = 1;
-      loadProducts();
+      if (contentMode === 'sellers') loadSellers();
+      else loadProducts();
     }, 400);
   });
 }
@@ -1068,6 +1069,7 @@ function switchMode(mode) {
   document.getElementById('productsGrid').style.display = mode === 'products' ? '' : 'none';
   document.getElementById('sellersGrid').style.display = mode === 'sellers' ? '' : 'none';
   document.getElementById('pagination').style.display = mode === 'products' ? '' : 'none';
+  document.getElementById('searchInput').placeholder = mode === 'sellers' ? 'ابحث عن مورد...' : 'ابحث في المنتجات...';
   if (mode === 'sellers') loadSellers();
   else document.getElementById('resultsText').innerHTML = `تم العثور على <b>${state.total}</b> منتج`;
 }
@@ -1083,6 +1085,8 @@ async function loadSellers() {
     let products = data.products || data.items || (Array.isArray(data) ? data : []);
     if (state.categoryId) products = products.filter(p => p.category_id === state.categoryId);
 
+    // فلترة البحث على الموردين
+    let sellers = [];
     const sellersMap = {};
     products.forEach(p => {
       const sid = p.seller_id || p.user_id;
@@ -1098,7 +1102,16 @@ async function loadSellers() {
       };
     });
 
-    const sellers = Object.values(sellersMap);
+    sellers = Object.values(sellersMap);
+
+    // فلتر البحث
+    if (state.search) {
+      const q = state.search.toLowerCase();
+      sellers = sellers.filter(s =>
+        s.name.toLowerCase().includes(q) ||
+        (s.gov && s.gov.toLowerCase().includes(q))
+      );
+    }
     document.getElementById('resultsText').innerHTML = `تم العثور على <b>${sellers.length}</b> مورد`;
     if (sellers.length === 0) {
       grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2)">لا يوجد موردون في هذه الفئة</div>';
