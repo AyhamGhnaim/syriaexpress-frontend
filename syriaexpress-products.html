@@ -883,18 +883,18 @@ async function loadProducts() {
   const grid = document.getElementById('productsGrid');
   grid.innerHTML = skeletonHTML(8);
 
+  let retries = 0;
+  while (retries <= 3) {
   try {
     const params = new URLSearchParams();
-    // ملاحظة مهمة: الـ backend يحاول فلترة بـ category_slug لكن العمود غير موجود في v_products_full
-    // فيرجع خطأ 500. الحل: نجيب كل المنتجات ونفلتر على الفرونت إند بـ category_id.
     if (state.shipping) params.set('shipping', state.shipping);
     if (state.shipping === 'inside' && state.buyerGovernorate) params.set('governorate', state.buyerGovernorate);
     if (state.search) params.set('search', state.search);
-    // جيب كمية كبيرة إذا نحتاج فلترة بالفئة على الفرونت إند
     params.set('page', state.categoryId ? 1 : state.page);
     params.set('limit', state.categoryId ? 500 : state.limit);
 
     const res = await fetch(`${API_BASE}/api/products?${params}`);
+    if (!res.ok) throw new Error('server error');
     const data = await res.json();
 
     let products = data.products || data.items || (Array.isArray(data) ? data : []);
@@ -929,17 +929,28 @@ async function loadProducts() {
 
     grid.innerHTML = products.map((p, i) => renderProduct(p, i)).join('');
     renderPagination();
+    break; // نجح — اخرج من الـ loop
 
   } catch (err) {
-    console.error('خطأ في تحميل المنتجات:', err);
-    grid.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">⚠️</div>
-        <div class="empty-text">تعذّر تحميل المنتجات</div>
-        <div class="empty-sub">يُرجى المحاولة لاحقاً</div>
-      </div>`;
+    retries++;
+    if (retries <= 3) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">⏳</div>
+          <div class="empty-text">جارٍ تنشيط الخادم...</div>
+          <div class="empty-sub">المحاولة ${retries} من 3 — يرجى الانتظار</div>
+        </div>`;
+      await new Promise(r => setTimeout(r, 4000));
+    } else {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">⚠️</div>
+          <div class="empty-text">تعذّر تحميل المنتجات</div>
+          <div class="empty-sub"><button onclick="loadProducts()" style="color:var(--gold);background:none;border:1px solid var(--gold);padding:6px 16px;border-radius:8px;cursor:pointer;font-family:inherit">إعادة المحاولة</button></div>
+        </div>`;
+    }
   }
-}
+  } // end while
 
 function pickFirst(obj, keys) {
   for (const k of keys) {
