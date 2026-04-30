@@ -251,6 +251,37 @@ textarea { resize: vertical; min-height: 90px; }
   flex-shrink: 0;
 }
 
+.gov-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.gov-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg2);
+  transition: all 0.2s;
+  user-select: none;
+}
+.gov-chip:has(input:checked) {
+  background: rgba(201,168,76,0.15);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.gov-chip.all-chip:has(input:checked) {
+  background: var(--gold);
+  color: #fff;
+}
+.gov-chip input { display: none; }
+
 /* ===== IMAGE UPLOAD ===== */
 .upload-zone {
   border: 2px dashed var(--border);
@@ -504,6 +535,28 @@ textarea { resize: vertical; min-height: 90px; }
         </div>
         <input type="checkbox" class="ship-check" id="shipNational" onchange="toggleShipPrice('National',this.checked)">
       </label>
+      <div id="shipGovWrap" style="display:none;margin:0 0 8px;padding:0 4px;">
+        <label class="form-label">المحافظات المشمولة بالشحن</label>
+        <div class="gov-grid" id="govGrid">
+          <label class="gov-chip all-chip">
+            <input type="checkbox" id="govAll" onchange="toggleAllGov(this.checked)"> الكل
+          </label>
+          <label class="gov-chip"><input type="checkbox" class="gov-cb" value="دمشق"> دمشق</label>
+          <label class="gov-chip"><input type="checkbox" class="gov-cb" value="ريف دمشق"> ريف دمشق</label>
+          <label class="gov-chip"><input type="checkbox" class="gov-cb" value="حلب"> حلب</label>
+          <label class="gov-chip"><input type="checkbox" class="gov-cb" value="حمص"> حمص</label>
+          <label class="gov-chip"><input type="checkbox" class="gov-cb" value="حماة"> حماة</label>
+          <label class="gov-chip"><input type="checkbox" class="gov-cb" value="اللاذقية"> اللاذقية</label>
+          <label class="gov-chip"><input type="checkbox" class="gov-cb" value="طرطوس"> طرطوس</label>
+          <label class="gov-chip"><input type="checkbox" class="gov-cb" value="إدلب"> إدلب</label>
+          <label class="gov-chip"><input type="checkbox" class="gov-cb" value="الرقة"> الرقة</label>
+          <label class="gov-chip"><input type="checkbox" class="gov-cb" value="دير الزور"> دير الزور</label>
+          <label class="gov-chip"><input type="checkbox" class="gov-cb" value="الحسكة"> الحسكة</label>
+          <label class="gov-chip"><input type="checkbox" class="gov-cb" value="القنيطرة"> القنيطرة</label>
+          <label class="gov-chip"><input type="checkbox" class="gov-cb" value="السويداء"> السويداء</label>
+          <label class="gov-chip"><input type="checkbox" class="gov-cb" value="درعا"> درعا</label>
+        </div>
+      </div>
       <div class="form-group" id="shipPriceNationalWrap" style="margin:0 0 8px;padding:0 4px;display:none">
         <label class="form-label">سعر الشحن خارج المحافظة (ل.س)</label>
         <input type="number" class="form-input" id="shipPriceNational" min="0" value="0" placeholder="0">
@@ -611,6 +664,18 @@ function removeImage() {
 // ===== Submit =====
 function toggleShipPrice(type, show) {
   document.getElementById('shipPrice' + type + 'Wrap').style.display = show ? '' : 'none';
+  if (type === 'National') {
+    document.getElementById('shipGovWrap').style.display = show ? '' : 'none';
+  }
+}
+
+function toggleAllGov(checked) {
+  document.querySelectorAll('.gov-cb').forEach(cb => cb.checked = checked);
+}
+
+function getSelectedGovernorates() {
+  if (document.getElementById('govAll').checked) return ['الكل'];
+  return [...document.querySelectorAll('.gov-cb:checked')].map(cb => cb.value);
 }
 
 async function submitProduct() {
@@ -648,6 +713,7 @@ async function submitProduct() {
       shipping_options: shipping,
       ship_inside: document.getElementById('shipLocal').checked,
       ship_outside: document.getElementById('shipNational').checked,
+      outside_governorates: document.getElementById('shipNational').checked ? getSelectedGovernorates() : [],
       ship_international: document.getElementById('shipIntl').checked,
       ship_price_inside: parseInt(document.getElementById('shipPriceLocal').value) || 0,
       ship_price_outside: document.getElementById('shipNational').checked ? (parseInt(document.getElementById('shipPriceNational').value) || 0) : 0,
