@@ -297,6 +297,18 @@ main {
   font-size: 26px; flex-shrink: 0; overflow: hidden;
 }
 .seller-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+.seller-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg, var(--gold), #a07830);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  border-radius: 12px;
+  font-family: 'Cairo', sans-serif;
+}
 .seller-info { flex: 1; min-width: 0; }
 .seller-card-name { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
 .seller-card-gov { font-size: 12px; color: var(--text2); margin-bottom: 6px; }
@@ -1118,11 +1130,15 @@ async function loadSellers() {
       return;
     }
     grid.innerHTML = sellers.map(s => {
-      const logoHTML = s.logo ? `<img src="${escapeHtml(s.logo)}" alt="" onerror="this.remove()">` : '🏭';
+      const initials = s.name.trim().split(' ').slice(0,2).map(w=>w[0]).join('');
+      const logoHTML = s.logo
+        ? `<img src="${escapeHtml(s.logo)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+        : '';
+      const avatarHTML = `<span class="seller-initials" style="${s.logo ? 'display:none' : ''}">${initials}</span>`;
       const verBadge = s.verified ? ' <span style="color:var(--gold);font-size:11px">✓ موثّق</span>' : '';
       return `
         <a class="seller-card" href="syriaexpress-seller-public.html?id=${encodeURIComponent(s.id)}">
-          <div class="seller-logo">${logoHTML}</div>
+          <div class="seller-logo">${logoHTML}${avatarHTML}</div>
           <div class="seller-info">
             <div class="seller-card-name">${escapeHtml(s.name)}${verBadge}</div>
             ${s.gov ? `<div class="seller-card-gov">📍 ${escapeHtml(s.gov)}</div>` : ''}
