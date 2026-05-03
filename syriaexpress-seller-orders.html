@@ -539,8 +539,11 @@ function getStatusInfo(s) {
   return map[s] || { label: s, icon: '•', cls: 'status-pending' };
 }
 
-function getShippingLabel(t) {
-  return { inside: 'محلي', outside: 'خارج المحافظة', international: 'دولي' }[t] || t;
+function getShippingLabel(t, buyerGov) {
+  if (t === 'inside') return 'داخل المحافظة';
+  if (t === 'outside') return buyerGov ? `إلى ${buyerGov}` : 'خارج المحافظة';
+  if (t === 'international') return 'دولي';
+  return t;
 }
 
 function getNextActions(status) {
@@ -581,7 +584,7 @@ function buildOrderCard(order) {
           : `<div class="product-placeholder">📦</div>`}
         <div class="product-info">
           <div class="product-name">${order.name_ar || order.name_en || 'منتج'}</div>
-          <div class="product-qty">الكمية: <span>${order.quantity} ${order.unit || ''}</span> &nbsp;|&nbsp; ${getShippingLabel(order.shipping_type)}</div>
+          <div class="product-qty">الكمية: <span>${order.quantity} ${order.unit || ''}</span> &nbsp;|&nbsp; ${getShippingLabel(order.shipping_type, order.buyer_gov)}</div>
           <div class="product-total">${formatPrice(total)}</div>
         </div>
       </div>

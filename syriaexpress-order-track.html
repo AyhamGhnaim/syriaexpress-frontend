@@ -394,9 +394,11 @@ function getStatusInfo(status) {
   return map[status] || { label:status, icon:'•', cls:'status-pending' };
 }
 
-function getShippingLabel(type) {
-  const map = { inside:'شحن محلي', outside:'خارج المحافظة', international:'شحن دولي' };
-  return map[type] || type || '—';
+function getShippingLabel(type, sellerGov) {
+  if (type === 'inside') return sellerGov ? `داخل ${sellerGov}` : 'شحن محلي';
+  if (type === 'outside') return 'خارج المحافظة';
+  if (type === 'international') return 'شحن دولي';
+  return type || '—';
 }
 
 function buildTimeline(order) {
@@ -475,7 +477,7 @@ function buildOrderCard(order) {
           <div class="product-company">${order.company_name_ar || ''}</div>
           <div class="product-meta">
             الكمية: <span>${order.quantity} ${order.unit || ''}</span> &nbsp;|&nbsp;
-            الشحن: <span>${getShippingLabel(order.shipping_type)}</span>
+            الشحن: <span>${getShippingLabel(order.shipping_type, order.seller_governorate)}</span>
           </div>
         </div>
       </div>

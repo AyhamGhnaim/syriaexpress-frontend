@@ -666,6 +666,14 @@ const API_BASE = 'https://syriaexpress-backend.onrender.com';
 const params = new URLSearchParams(location.search);
 const productId = params.get('id');
 
+// HTML escape helper
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 // Logo injection
 if (typeof LOGOS !== 'undefined' && LOGOS.main) {
   const el = document.getElementById('headerLogo');
@@ -726,6 +734,8 @@ async function loadProduct() {
       ship_price_inside: parseFloat(data.ship_price_inside) || 0,
       ship_price_outside: parseFloat(data.ship_price_outside) || 0,
       ship_price_intl: parseFloat(data.ship_price_intl) || 0,
+      outside_governorates: Array.isArray(data.outside_governorates) ? data.outside_governorates : [],
+      seller_governorate: data.seller_governorate || '',
       status: data.status,
     };
 
@@ -787,6 +797,24 @@ function renderProduct() {
   const shippingNational = product.shipping_national !== false;
   const shippingIntl = product.shipping_international !== false;
 
+  // أسماء المحافظات للشحن
+  const sellerGov = product.seller_governorate || seller?.city || '';
+  const outsideGovs = Array.isArray(product.outside_governorates)
+    ? product.outside_governorates.filter(g => typeof g === 'string' && g.trim())
+    : [];
+  const insideLabel = sellerGov ? `🏙️ ${sellerGov}` : '🏙️ شحن محلي';
+  let outsideLabel = '🗺️ خارج المحافظة';
+  if (outsideGovs.length > 0) {
+    if (outsideGovs.length <= 2) {
+      outsideLabel = `🗺️ ${outsideGovs.join('، ')}`;
+    } else {
+      outsideLabel = `🗺️ ${outsideGovs.slice(0,2).join('، ')} (و${outsideGovs.length - 2} أخرى)`;
+    }
+  }
+  const outsideTitle = outsideGovs.length ? outsideGovs.join('، ') : '';
+  // إخفاء شارة "خارج المحافظة" إذا ما في محافظات محددة
+  const showOutside = shippingNational && outsideGovs.length > 0;
+
   const totalPrice = (quantity * (product.price || 0)).toLocaleString('ar-SY');
 
   document.getElementById('mainContent').innerHTML = `
@@ -843,8 +871,8 @@ function renderProduct() {
     <div class="section">
       <div class="section-title">🚚 خيارات الشحن</div>
       <div class="shipping-options">
-        ${shippingLocal ? '<div class="ship-badge active">🏙️ شحن محلي</div>' : ''}
-        ${shippingNational ? '<div class="ship-badge active">🗺️ خارج المحافظة</div>' : ''}
+        ${shippingLocal ? `<div class="ship-badge active">${escapeHtml(insideLabel)}</div>` : ''}
+        ${showOutside ? `<div class="ship-badge active" title="${escapeHtml(outsideTitle)}">${escapeHtml(outsideLabel)}</div>` : ''}
         ${shippingIntl ? '<div class="ship-badge">✈️ شحن دولي</div>' : ''}
       </div>
     </div>
