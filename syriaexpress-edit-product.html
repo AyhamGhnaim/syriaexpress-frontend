@@ -995,7 +995,8 @@ async function saveProduct() {
     });
     if (!res.ok) {
       const errData = await res.json().catch(() => ({}));
-      throw new Error(errData.error || 'فشل حفظ التعديلات');
+      const msg = errData.details ? `${errData.error}: ${errData.details}` : (errData.error || 'فشل حفظ التعديلات');
+      throw new Error(msg);
     }
 
     // Upload image if new
