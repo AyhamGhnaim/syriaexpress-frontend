@@ -711,10 +711,31 @@ async function loadProduct() {
     showError('لم يتم تحديد المنتج');
     return;
   }
-  try {
-    const res = await fetch(`${API_BASE}/api/products/${productId}`);
-    if (!res.ok) throw new Error('فشل تحميل المنتج');
-    const data = await res.json();
+
+  // عرض رسالة "تنشيط الخادم" بعد 3.5 ثانية إذا لم يستجب
+  let slowTimer = setTimeout(() => {
+    const main = document.getElementById('mainContent');
+    if (main) main.innerHTML = `
+      <div class="error-state">
+        <h3>⏳ جارٍ تنشيط الخادم...</h3>
+        <p>قد يستغرق ذلك حتى دقيقة عند أول زيارة</p>
+      </div>`;
+  }, 3500);
+
+  let retries = 0;
+  const maxRetries = 4;
+  while (retries <= maxRetries) {
+    try {
+      const timeoutMs = retries === 0 ? 15000 : 60000;
+      const ac = new AbortController();
+      const tid = setTimeout(() => ac.abort(), timeoutMs);
+
+      const res = await fetch(`${API_BASE}/api/products/${productId}`, { signal: ac.signal });
+      clearTimeout(tid);
+      clearTimeout(slowTimer);
+
+      if (!res.ok) throw new Error('فشل تحميل المنتج');
+      const data = await res.json();
 
     // Normalize field names from API response
     product = {
@@ -759,9 +780,25 @@ async function loadProduct() {
     isSaved = saved.includes(productId);
 
     renderProduct();
+    return; // نجح
   } catch(e) {
-    showError(e.message);
+    retries++;
+    if (retries <= maxRetries) {
+      const main = document.getElementById('mainContent');
+      if (main) main.innerHTML = `
+        <div class="error-state">
+          <h3>⏳ جارٍ تنشيط الخادم...</h3>
+          <p>المحاولة ${retries} من ${maxRetries} — قد يستغرق ذلك حتى دقيقة</p>
+        </div>`;
+      const wait = [3000, 5000, 8000, 12000][retries - 1] || 12000;
+      await new Promise(r => setTimeout(r, wait));
+    } else {
+      clearTimeout(slowTimer);
+      showError('تعذّر تحميل المنتج، يُرجى المحاولة لاحقاً');
+      return;
+    }
   }
+  } // end while
 }
 
 function showError(msg) {
