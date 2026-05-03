@@ -577,7 +577,8 @@ main {
   grid-template-columns: repeat(4, 1fr);
   padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom));
   z-index: 50;
-  backdrop-filter: blur(12px);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
   transition: background .3s, border-color .3s;
 }
 .bottom-nav a {
