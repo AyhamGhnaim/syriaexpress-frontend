@@ -977,6 +977,7 @@ async function saveProduct() {
       min_order_quantity: parseInt(moq),
       stock_quantity: parseInt(document.getElementById('stock').value) || 0,
       is_active: selectedStatus === 'active',
+      status: selectedStatus === 'active' ? 'active' : 'inactive',
       ship_inside: shippingState.local,
       ship_outside: shippingState.national,
       ship_international: shippingState.international,
