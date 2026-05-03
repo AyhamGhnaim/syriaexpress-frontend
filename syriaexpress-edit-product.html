@@ -230,6 +230,36 @@ main {
 }
 
 /* ─── Shipping Options ─── */
+.gov-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.gov-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg2);
+  transition: all 0.2s;
+  user-select: none;
+}
+.gov-chip:has(input:checked) {
+  background: rgba(201,168,76,0.15);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.gov-chip.all-chip:has(input:checked) {
+  background: var(--gold);
+  color: #fff;
+}
+.gov-chip input { display: none; }
 .shipping-options { display: flex; flex-direction: column; gap: 12px; }
 .shipping-option {
   display: flex;
@@ -644,6 +674,28 @@ main {
         </div>
       </div>
       <div style="padding:6px 4px 8px" id="shipNationalPriceWrap" style="display:none">
+        <div id="shipGovWrap" style="margin-bottom:10px">
+          <label style="font-size:12px;color:var(--text2)">المحافظات المشمولة بالشحن</label>
+          <div class="gov-grid" id="govGrid">
+            <label class="gov-chip all-chip">
+              <input type="checkbox" id="govAll" onchange="toggleAllGov(this.checked)"> الكل
+            </label>
+            <label class="gov-chip"><input type="checkbox" class="gov-cb" value="دمشق"> دمشق</label>
+            <label class="gov-chip"><input type="checkbox" class="gov-cb" value="ريف دمشق"> ريف دمشق</label>
+            <label class="gov-chip"><input type="checkbox" class="gov-cb" value="حلب"> حلب</label>
+            <label class="gov-chip"><input type="checkbox" class="gov-cb" value="حمص"> حمص</label>
+            <label class="gov-chip"><input type="checkbox" class="gov-cb" value="حماة"> حماة</label>
+            <label class="gov-chip"><input type="checkbox" class="gov-cb" value="اللاذقية"> اللاذقية</label>
+            <label class="gov-chip"><input type="checkbox" class="gov-cb" value="طرطوس"> طرطوس</label>
+            <label class="gov-chip"><input type="checkbox" class="gov-cb" value="إدلب"> إدلب</label>
+            <label class="gov-chip"><input type="checkbox" class="gov-cb" value="الرقة"> الرقة</label>
+            <label class="gov-chip"><input type="checkbox" class="gov-cb" value="دير الزور"> دير الزور</label>
+            <label class="gov-chip"><input type="checkbox" class="gov-cb" value="الحسكة"> الحسكة</label>
+            <label class="gov-chip"><input type="checkbox" class="gov-cb" value="القنيطرة"> القنيطرة</label>
+            <label class="gov-chip"><input type="checkbox" class="gov-cb" value="السويداء"> السويداء</label>
+            <label class="gov-chip"><input type="checkbox" class="gov-cb" value="درعا"> درعا</label>
+          </div>
+        </div>
         <label style="font-size:12px;color:var(--text2)">سعر الشحن خارج المحافظة (ل.س)</label>
         <input type="number" id="shipPriceNational" min="0" value="2500" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-family:Cairo,sans-serif;margin-top:4px">
       </div>
@@ -695,7 +747,7 @@ main {
       <h2>حالة المنتج</h2>
     </div>
     <div class="status-toggle">
-      <button class="status-btn active-status" id="statusActive" onclick="setStatus('active')">✅ نشط — يظهر للمشترين</button>
+      <button class="status-btn" id="statusActive" onclick="setStatus('active')">✅ نشط — يظهر للمشترين</button>
       <button class="status-btn" id="statusInactive" onclick="setStatus('inactive')">⏸️ موقوف مؤقتاً</button>
     </div>
   </div>
@@ -809,6 +861,18 @@ function fillForm(p) {
   if (p.ship_price_outside !== undefined) document.getElementById('shipPriceNational').value = p.ship_price_outside || 0;
   if (p.ship_price_intl !== undefined) document.getElementById('shipPriceIntl').value = p.ship_price_intl || 0;
 
+  // Governorates
+  const govs = p.outside_governorates || [];
+  if (govs.length > 0) {
+    document.querySelectorAll('.gov-cb').forEach(cb => {
+      cb.checked = govs.includes(cb.value);
+    });
+    const all = document.querySelectorAll('.gov-cb');
+    const allChecked = [...all].every(cb => cb.checked);
+    const govAllEl = document.getElementById('govAll');
+    if (govAllEl) govAllEl.checked = allChecked;
+  }
+
   // Status
   setStatus(p.is_active !== false && p.status !== 'inactive' ? 'active' : 'inactive');
 
@@ -841,6 +905,14 @@ function toggleShipping(key, force) {
     const wrap = document.getElementById(priceMap[key]);
     if (wrap) wrap.style.display = shippingState[key] ? '' : 'none';
   }
+}
+
+// ─── Governorates ───
+function toggleAllGov(checked) {
+  document.querySelectorAll('.gov-cb').forEach(cb => cb.checked = checked);
+}
+function getSelectedGovernorates() {
+  return [...document.querySelectorAll('.gov-cb:checked')].map(cb => cb.value);
 }
 
 // ─── Status ───
@@ -910,7 +982,8 @@ async function saveProduct() {
       ship_international: shippingState.international,
       ship_price_inside: parseInt(document.getElementById('shipPriceLocal').value) || 0,
       ship_price_outside: shippingState.national ? (parseInt(document.getElementById('shipPriceNational').value) || 0) : 0,
-      ship_price_intl: shippingState.international ? (parseInt(document.getElementById('shipPriceIntl').value) || 0) : 0
+      ship_price_intl: shippingState.international ? (parseInt(document.getElementById('shipPriceIntl').value) || 0) : 0,
+      outside_governorates: shippingState.national ? getSelectedGovernorates() : []
     };
 
     const res = await fetch(`${API_BASE}/api/products/${productId}`, {
