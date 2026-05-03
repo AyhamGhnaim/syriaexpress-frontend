@@ -982,7 +982,8 @@ async function saveProduct() {
       ship_international: shippingState.international,
       ship_price_inside: parseInt(document.getElementById('shipPriceLocal').value) || 0,
       ship_price_outside: shippingState.national ? (parseInt(document.getElementById('shipPriceNational').value) || 0) : 0,
-      ship_price_intl: shippingState.international ? (parseInt(document.getElementById('shipPriceIntl').value) || 0) : 0
+      ship_price_intl: shippingState.international ? (parseInt(document.getElementById('shipPriceIntl').value) || 0) : 0,
+      outside_governorates: shippingState.national ? getSelectedGovernorates() : []
     };
 
     const res = await fetch(`${API_BASE}/api/products/${productId}`, {

@@ -494,6 +494,7 @@ main {
 .tag-ship-inside { background: rgba(76,175,80,0.15); color: var(--success); }
 .tag-ship-outside { background: rgba(33,150,243,0.15); color: var(--info); }
 .tag-ship-intl { background: rgba(201,168,76,0.15); color: var(--gold); }
+.tag-extra { opacity: 0.7; font-size: 11px; margin-right: 2px; }
 
 /* ═══════════════════ SKELETON ═══════════════════ */
 .skeleton-card {
@@ -1007,10 +1008,37 @@ function renderProduct(p, i) {
     ? `<img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(productName)}" loading="lazy" onerror="this.remove()">`
     : `<span class="placeholder">📦</span>`;
 
-  // وسوم الشحن
+  // وسوم الشحن — مع أسماء المحافظات الفعلية
   const shippingTags = [];
-  if (p.ship_inside || p.shipping_inside) shippingTags.push('<span class="tag tag-ship-inside">محلي</span>');
-  if (p.ship_outside || p.shipping_outside) shippingTags.push('<span class="tag tag-ship-outside">خارج المحافظة</span>');
+
+  // محلي → اسم محافظة البائع
+  if (p.ship_inside || p.shipping_inside) {
+    const sellerGov = p.seller_governorate || p.governorate || '';
+    const insideLabel = sellerGov ? escapeHtml(sellerGov) : 'محلي';
+    shippingTags.push(`<span class="tag tag-ship-inside" title="شحن داخل المحافظة">${insideLabel}</span>`);
+  }
+
+  // خارج المحافظة → أول محافظتين + (و N أخرى)
+  if (p.ship_outside || p.shipping_outside) {
+    const outsideList = Array.isArray(p.outside_governorates)
+      ? p.outside_governorates.filter(g => typeof g === 'string' && g.trim())
+      : [];
+    if (outsideList.length > 0) {
+      const titleAttr = escapeHtml(outsideList.join('، '));
+      let label;
+      if (outsideList.length <= 2) {
+        label = outsideList.map(escapeHtml).join('، ');
+      } else {
+        const firstTwo = outsideList.slice(0, 2).map(escapeHtml).join('، ');
+        const rest = outsideList.length - 2;
+        label = `${firstTwo} <span class="tag-extra">(و${rest} أخرى)</span>`;
+      }
+      shippingTags.push(`<span class="tag tag-ship-outside" title="${titleAttr}">${label}</span>`);
+    }
+    // إذا outsideList فاضية → نخفي الشارة كلياً (لا نضيفها)
+  }
+
+  // دولي → كما هي
   if (p.ship_international || p.shipping_international) shippingTags.push('<span class="tag tag-ship-intl">دولي</span>');
 
   return `
