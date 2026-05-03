@@ -832,11 +832,15 @@ async function saveProfile() {
     const emailVal = document.getElementById('fieldEmail').value.trim();
     const phoneVal = document.getElementById('fieldPhone').value.trim();
     if (emailVal || phoneVal) {
-      await fetch(`${API_BASE}/api/auth/me`, {
+      const authRes = await fetch(`${API_BASE}/api/auth/me`, {
         method: 'PUT',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailVal, phone: phoneVal })
       });
+      if (!authRes.ok) {
+        const authErr = await authRes.json().catch(() => ({}));
+        throw new Error(authErr.error || 'تم حفظ بيانات الشركة، لكن تعذّر تحديث الإيميل/الهاتف');
+      }
     }
 
     sellerData = { ...sellerData, ...body };

@@ -600,25 +600,50 @@ async function saveProfile() {
     governorate: document.getElementById('fieldGov').value.trim(),
   };
 
+  // تحقق محلي قبل الإرسال
+  if (!body.name || !body.email || !body.phone) {
+    showError('يرجى تعبئة جميع الحقول الأساسية');
+    btn.disabled = false;
+    btn.textContent = 'حفظ التغييرات';
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
+    showError('يرجى إدخال بريد إلكتروني صحيح');
+    btn.disabled = false;
+    btn.textContent = 'حفظ التغييرات';
+    return;
+  }
+
   try {
     const res = await fetch(`${API}/api/auth/me`, {
       method:'PUT',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
       body: JSON.stringify(body)
     });
-    const updated = res.ok ? await res.json() : {};
-    userData = { ...userData, ...body, ...updated };
-    localStorage.setItem('user', JSON.stringify(userData));
-  } catch(e) {
-    userData = { ...userData, ...body };
-    localStorage.setItem('user', JSON.stringify(userData));
-  }
+    const data = await res.json().catch(() => ({}));
 
-  renderProfile();
-  cancelEdit();
-  showSuccess('تم حفظ المعلومات بنجاح ✓');
-  btn.disabled = false;
-  btn.textContent = 'حفظ التغييرات';
+    if (!res.ok) {
+      // الباك رفض التحديث — لا نحدّث localStorage
+      showError(data.error || 'تعذّر حفظ التعديلات');
+      btn.disabled = false;
+      btn.textContent = 'حفظ التغييرات';
+      return;
+    }
+
+    // نجاح فعلي — نحدّث localStorage
+    userData = { ...userData, ...body, ...(data.user || data) };
+    localStorage.setItem('user', JSON.stringify(userData));
+
+    renderProfile();
+    cancelEdit();
+    showSuccess('تم حفظ المعلومات بنجاح ✓');
+  } catch(e) {
+    // فشل شبكة فقط — لا نحدّث localStorage حتى لا يضلل المستخدم
+    showError('تعذّر الاتصال بالخادم، يرجى المحاولة لاحقاً');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'حفظ التغييرات';
+  }
 }
 
 async function changePassword() {
@@ -665,6 +690,11 @@ function showSuccess(msg) {
   const el = document.getElementById('successMsg');
   el.textContent = msg; el.style.display = 'block';
   setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+function showError(msg) {
+  const el = document.getElementById('profileError');
+  el.textContent = msg; el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 5000);
 }
 function showPwError(msg) {
   const el = document.getElementById('pwError');
