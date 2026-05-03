@@ -454,7 +454,7 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 // ===== تطبيق الثيم تلقائياً من localStorage =====
 (function() {
   const saved = localStorage.getItem('theme');
-  if (saved === 'light') {
+  if (saved !== 'dark') {
     document.documentElement.setAttribute('data-theme', 'light');
   }
 })();

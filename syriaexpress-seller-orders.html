@@ -499,7 +499,7 @@
 // ===== تطبيق الثيم تلقائياً من localStorage =====
 (function() {
   var saved = localStorage.getItem('theme');
-  if (saved === 'light') {
+  if (saved !== 'dark') {
     document.documentElement.setAttribute('data-theme', 'light');
   }
 })();

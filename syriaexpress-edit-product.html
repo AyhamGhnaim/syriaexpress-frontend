@@ -778,7 +778,7 @@ if (typeof LOGOS !== 'undefined' && LOGOS.main) {
 // ─── Theme ───
 (function() {
   var saved = localStorage.getItem('theme');
-  if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+  if (saved !== 'dark') document.documentElement.setAttribute('data-theme', 'light');
 })();
 
 // ─── Config ───
