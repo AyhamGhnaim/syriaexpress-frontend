@@ -975,7 +975,6 @@ async function saveProduct() {
       price: parseFloat(price),
       unit,
       min_order_quantity: parseInt(moq),
-      stock_quantity: parseInt(document.getElementById('stock').value) || 0,
       is_active: selectedStatus === 'active',
       status: selectedStatus === 'active' ? 'active' : 'inactive',
       ship_inside: shippingState.local,
@@ -983,8 +982,7 @@ async function saveProduct() {
       ship_international: shippingState.international,
       ship_price_inside: parseInt(document.getElementById('shipPriceLocal').value) || 0,
       ship_price_outside: shippingState.national ? (parseInt(document.getElementById('shipPriceNational').value) || 0) : 0,
-      ship_price_intl: shippingState.international ? (parseInt(document.getElementById('shipPriceIntl').value) || 0) : 0,
-      outside_governorates: shippingState.national ? getSelectedGovernorates() : []
+      ship_price_intl: shippingState.international ? (parseInt(document.getElementById('shipPriceIntl').value) || 0) : 0
     };
 
     const res = await fetch(`${API_BASE}/api/products/${productId}`, {
