@@ -674,11 +674,13 @@
     const govSelect = document.getElementById('governorate');
     if (govOutside) {
       if (type === 'seller') {
-        govOutside.style.display = 'none';
+        govOutside.hidden = true;
+        govOutside.disabled = true;
         // إذا كان المشتري قد اختار خارج سوريا ثم بدّل لبائع، نعيد التحديد
         if (govSelect && govSelect.value === 'خارج سوريا') govSelect.value = '';
       } else {
-        govOutside.style.display = '';
+        govOutside.hidden = false;
+        govOutside.disabled = false;
       }
     }
   }
