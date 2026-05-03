@@ -106,6 +106,7 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 .form-input:focus{border-color:var(--gold);}
 .form-input:disabled{opacity:0.5;cursor:not-allowed;}
 .form-input.readonly{border-color:transparent;background:transparent;padding-right:0;color:var(--text);}
+select.form-input.readonly{appearance:none;-webkit-appearance:none;-moz-appearance:none;background-image:none;}
 
 /* EDIT TOGGLE */
 .edit-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
@@ -348,7 +349,24 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
             </div>
             <div class="form-group">
               <label class="form-label">المحافظة</label>
-              <input class="form-input readonly" type="text" id="fieldGov" disabled />
+              <select class="form-input readonly" id="fieldGov" disabled>
+                <option value="">اختر المحافظة</option>
+                <option value="دمشق">دمشق</option>
+                <option value="ريف دمشق">ريف دمشق</option>
+                <option value="حلب">حلب</option>
+                <option value="حمص">حمص</option>
+                <option value="حماة">حماة</option>
+                <option value="اللاذقية">اللاذقية</option>
+                <option value="طرطوس">طرطوس</option>
+                <option value="إدلب">إدلب</option>
+                <option value="دير الزور">دير الزور</option>
+                <option value="الرقة">الرقة</option>
+                <option value="الحسكة">الحسكة</option>
+                <option value="درعا">درعا</option>
+                <option value="السويداء">السويداء</option>
+                <option value="القنيطرة">القنيطرة</option>
+                <option value="خارج سوريا">خارج سوريا</option>
+              </select>
             </div>
           </div>
 
@@ -528,7 +546,20 @@ function renderProfile() {
   document.getElementById('fieldName').value  = name !== '—' ? name : '';
   document.getElementById('fieldEmail').value = userData.email || '';
   document.getElementById('fieldPhone').value = userData.phone || '';
-  document.getElementById('fieldGov').value   = userData.governorate || '';
+
+  // المحافظة: لو القيمة المحفوظة ما توافق أي option، نضيفها كـ option ديناميكي
+  const govSel = document.getElementById('fieldGov');
+  const savedGov = userData.governorate || '';
+  if (savedGov) {
+    const exists = Array.from(govSel.options).some(o => o.value === savedGov);
+    if (!exists) {
+      const opt = document.createElement('option');
+      opt.value = savedGov;
+      opt.textContent = savedGov;
+      govSel.appendChild(opt);
+    }
+  }
+  govSel.value = savedGov;
 }
 
 function toggleEdit() {

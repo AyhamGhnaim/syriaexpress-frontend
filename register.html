@@ -555,6 +555,7 @@
           <option value="درعا">درعا</option>
           <option value="السويداء">السويداء</option>
           <option value="القنيطرة">القنيطرة</option>
+          <option value="خارج سوريا" id="govOutside">خارج سوريا</option>
         </select>
       </div>
 
@@ -667,6 +668,19 @@
     const docsSection = document.getElementById('docs-section');
     if (type === 'seller') { sellerFields.classList.add('show'); docsSection.style.display = 'block'; }
     else { sellerFields.classList.remove('show'); docsSection.style.display = 'none'; }
+
+    // خيار "خارج سوريا" متاح للمشتري فقط
+    const govOutside = document.getElementById('govOutside');
+    const govSelect = document.getElementById('governorate');
+    if (govOutside) {
+      if (type === 'seller') {
+        govOutside.style.display = 'none';
+        // إذا كان المشتري قد اختار خارج سوريا ثم بدّل لبائع، نعيد التحديد
+        if (govSelect && govSelect.value === 'خارج سوريا') govSelect.value = '';
+      } else {
+        govOutside.style.display = '';
+      }
+    }
   }
 
   function showAlert(msg, type) {
@@ -727,6 +741,9 @@
         const gov = document.getElementById('governorate').value;
         if (!name || !phone || !email || !gov) {
           showAlert('يرجى تعبئة جميع الحقول', 'error'); return;
+        }
+        if (selectedType === 'seller' && gov === 'خارج سوريا') {
+          showAlert('البائعون يجب أن يكونوا داخل سوريا', 'error'); return;
         }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
           showAlert('يرجى إدخال بريد إلكتروني صحيح', 'error'); return;
