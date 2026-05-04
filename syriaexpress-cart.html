@@ -434,6 +434,18 @@ async function syncCartWithServer() {
 }
 
 (async function init() {
+  // إذا محافظة المشتري مفقودة من JWT (تسجيل دخول قديم)، جلبها من API
+  if (!window.BUYER_GOVERNORATE) {
+    try {
+      const r = await fetch(API_BASE + '/api/auth/me', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (r.ok) {
+        const d = await r.json();
+        window.BUYER_GOVERNORATE = d.governorate || d.user?.governorate || '';
+      }
+    } catch(e) {}
+  }
   await syncCartWithServer();
   renderCart();
 })();
