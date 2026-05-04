@@ -638,18 +638,29 @@ function renderShippingOptions() {
   if (buyerGov) {
     // كل منتج يصل المشتري إما عبر inside (نفس المحافظة) أو outside (ضمن القائمة)
     const reachInfo = items.map(i => {
-      const sameGov = i.seller_governorate && i.seller_governorate === buyerGov;
+      const sellerGov = i.seller_governorate || '';
+      const sameGov = sellerGov && sellerGov === buyerGov;
+
       // inside: البائع بنفس محافظة المشتري + يدعم الشحن الداخلي
       if (sameGov && i.shipping_local) {
         return { ok: true, mode: 'inside', price: Number(i.ship_price_inside) || 0 };
       }
-      // outside: البائع بمحافظة أخرى + يدعم الشحن الخارجي + المحافظة في القائمة (أو القائمة فاضية = الكل)
-      if (!sameGov && i.shipping_national) {
+      // outside: يدعم الشحن الخارجي + (المحافظة بالقائمة OR القائمة فاضية = الكل)
+      // ملاحظة: إذا seller_governorate غير معروف، نسمح بـ outside لأن المنتج لا يستطيع تحديد inside
+      if (i.shipping_national) {
         const list = Array.isArray(i.outside_governorates) ? i.outside_governorates : [];
         if (list.length === 0 || list.includes(buyerGov)) {
           return { ok: true, mode: 'outside', price: Number(i.ship_price_outside) || 0 };
         }
       }
+      // تشخيص — اطبع سبب الفشل
+      console.warn('[shipping] منتج لا يصل للمشتري:', {
+        product: i.name_ar || i.name || i.id,
+        sellerGov, buyerGov, sameGov,
+        ship_inside: i.shipping_local,
+        ship_outside: i.shipping_national,
+        outside_governorates: i.outside_governorates
+      });
       return { ok: false };
     });
 
@@ -659,6 +670,8 @@ function renderShippingOptions() {
       const priceToBuyer = Math.max(0, ...reachInfo.map(r => r.price));
       opts.push({ type: 'to_buyer', name: `إلى ${buyerGov}`, desc: '1–4 أيام عمل', cost: priceToBuyer });
     }
+  } else {
+    console.warn('[shipping] buyerGov مفقود — يجب على المشتري تحديد محافظته');
   }
 
   // خيار خارج سوريا
