@@ -840,16 +840,6 @@ function renderProduct() {
     ? product.outside_governorates.filter(g => typeof g === 'string' && g.trim())
     : [];
   const insideLabel = sellerGov ? `🏙️ ${sellerGov}` : '🏙️ شحن محلي';
-  let outsideLabel = '🗺️ خارج المحافظة';
-  if (outsideGovs.length > 0) {
-    if (outsideGovs.length <= 2) {
-      outsideLabel = `🗺️ ${outsideGovs.join('، ')}`;
-    } else {
-      outsideLabel = `🗺️ ${outsideGovs.slice(0,2).join('، ')} (و${outsideGovs.length - 2} أخرى)`;
-    }
-  }
-  const outsideTitle = outsideGovs.length ? outsideGovs.join('، ') : '';
-  // إخفاء شارة "خارج المحافظة" إذا ما في محافظات محددة
   const showOutside = shippingNational && outsideGovs.length > 0;
 
   const totalPrice = (quantity * (product.price || 0)).toLocaleString('ar-SY');
@@ -909,7 +899,7 @@ function renderProduct() {
       <div class="section-title">🚚 خيارات الشحن</div>
       <div class="shipping-options">
         ${shippingLocal ? `<div class="ship-badge active">${escapeHtml(insideLabel)}</div>` : ''}
-        ${showOutside ? `<div class="ship-badge active" title="${escapeHtml(outsideTitle)}">${escapeHtml(outsideLabel)}</div>` : ''}
+        ${showOutside ? outsideGovs.map(g => `<div class="ship-badge active">🗺️ ${escapeHtml(g)}</div>`).join('') : ''}
         ${shippingIntl ? '<div class="ship-badge">✈️ شحن دولي</div>' : ''}
       </div>
     </div>
