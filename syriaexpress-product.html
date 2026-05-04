@@ -899,7 +899,7 @@ function renderProduct() {
       <div class="section-title">🚚 خيارات الشحن</div>
       <div class="shipping-options">
         ${shippingLocal ? `<div class="ship-badge active">${escapeHtml(insideLabel)}</div>` : ''}
-        ${showOutside ? `<div class="ship-badge active">🗺️ خارج المحافظة (${escapeHtml(outsideGovs.join('، '))})</div>` : ''}
+        ${showOutside ? `<div class="ship-badge active">🗺️ ${escapeHtml(outsideGovs.join('، '))}</div>` : ''}
         ${shippingIntl ? '<div class="ship-badge">✈️ شحن دولي</div>' : ''}
       </div>
     </div>
