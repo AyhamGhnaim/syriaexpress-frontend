@@ -184,6 +184,29 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 .shipping-section{padding:14px 16px;border-top:1px solid var(--border);}
 .shipping-title{font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text-dim);}
 .shipping-options{display:flex;flex-direction:column;gap:8px;}
+
+/* SELLER GROUP SHIPPING */
+.seller-group{
+  margin-bottom:16px;padding-bottom:8px;
+  border-bottom:1px dashed var(--border);
+}
+.seller-group:last-child{border-bottom:none;margin-bottom:0;}
+.seller-shipping{
+  margin:8px 16px 8px 16px;padding:12px;
+  background:rgba(201,168,76,0.04);
+  border:1px solid var(--border);border-radius:10px;
+}
+[data-theme="light"] .seller-shipping{background:rgba(201,168,76,0.05);}
+.seller-shipping-title{
+  font-size:12px;font-weight:700;color:var(--text-dim);
+  margin-bottom:8px;display:flex;align-items:center;gap:6px;
+}
+.seller-shipping-title::before{
+  content:"🚚";font-size:13px;
+}
+.seller-shipping-empty{
+  font-size:12px;color:#e74c3c;text-align:center;padding:8px;
+}
 .ship-opt{
   display:flex;align-items:center;gap:10px;
   padding:10px 12px;border-radius:10px;
@@ -320,15 +343,6 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
       </div>
     </div>
 
-    <!-- SHIPPING -->
-    <div class="box" id="shippingBox" style="display:none">
-      <div class="box-header">
-        <div class="box-title"><span class="box-dot"></span> خيار الشحن</div>
-      </div>
-      <div class="shipping-section">
-        <div class="shipping-options" id="shippingOptions"></div>
-      </div>
-    </div>
   </div>
 
   <!-- SUMMARY -->
@@ -511,7 +525,11 @@ function renderCart() {
   const bySeller = {};
   cart.forEach(item => {
     const key = item.seller_id || item.seller_name || 'unknown';
-    if (!bySeller[key]) bySeller[key] = { name: item.company_name_ar || item.seller_name || 'بائع', items: [] };
+    if (!bySeller[key]) bySeller[key] = { 
+      key: key,
+      name: item.company_name_ar || item.seller_name || 'بائع', 
+      items: [] 
+    };
     bySeller[key].items.push(item);
   });
 
@@ -527,6 +545,7 @@ function renderCart() {
   `;
 
   Object.values(bySeller).forEach(group => {
+    html += `<div class="seller-group" data-seller-key="${group.key}">`;
     html += `<div class="seller-label">🏭 <span>${group.name}</span></div>`;
     group.items.forEach(item => {
       const isSelected = selectedIds.has(item.id);
@@ -553,6 +572,12 @@ function renderCart() {
         </div>
       `;
     });
+    // حاوية خيارات الشحن لهذا البائع — تُملأ من renderShippingOptions
+    html += `<div class="seller-shipping" id="shipFor_${group.key}" style="display:none">
+      <div class="seller-shipping-title">خيار الشحن من هذا البائع</div>
+      <div class="shipping-options" id="shipOpts_${group.key}"></div>
+    </div>`;
+    html += `</div>`;
   });
 
   list.innerHTML = html;
@@ -636,107 +661,182 @@ function clearCart() {
 }
 
 // ── خيارات الشحن المتاحة بناءً على منتجات السلة ──
-function renderShippingOptions() {
-  const container = document.getElementById('shippingOptions');
-  if (!container) return;
+// ── خريطة شحن البائعين: { sellerKey: { type, cost, label } } ──
+let sellerShipping = {};
 
-  const items = getSelectedItems();
-  const shippingBox = document.getElementById('shippingBox');
+// تحميل الاختيارات السابقة من localStorage (إن وُجدت)
+try {
+  const saved = JSON.parse(localStorage.getItem('sellerShipping') || '{}');
+  if (saved && typeof saved === 'object') sellerShipping = saved;
+} catch(e) { sellerShipping = {}; }
 
-  // إذا لا يوجد منتج محدّد — أخفِ صندوق الشحن
-  if (!items.length) {
-    if (shippingBox) shippingBox.style.display = 'none';
-    shippingCost = 0;
-    return;
-  }
-  if (shippingBox) shippingBox.style.display = '';
-
+// حساب خيارات الشحن المتاحة لمجموعة منتجات بائع واحد
+function computeSellerShippingOptions(group) {
   const buyerGov = window.BUYER_GOVERNORATE || '';
-
-  const allIntl = items.every(i => i.shipping_international === true);
-
+  const items = group.items;
   const opts = [];
 
-  // ── شرط أساسي: لازم نعرف محافظة المشتري ──
-  if (buyerGov) {
-    // كل منتج يصل المشتري إما عبر inside (نفس المحافظة) أو outside (ضمن القائمة)
-    const reachInfo = items.map(i => {
-      const sellerGov = i.seller_governorate || '';
-      const sameGov = sellerGov && sellerGov === buyerGov;
+  // محافظة البائع — نأخذها من أول منتج في المجموعة
+  const sellerGov = items[0]?.seller_governorate || '';
 
-      // inside: البائع بنفس محافظة المشتري + يدعم الشحن الداخلي
-      if (sameGov && i.shipping_local) {
-        return { ok: true, mode: 'inside', price: Number(i.ship_price_inside) || 0 };
-      }
-      // outside: يدعم الشحن الخارجي + (المحافظة بالقائمة OR القائمة فاضية = الكل)
-      // ملاحظة: إذا seller_governorate غير معروف، نسمح بـ outside لأن المنتج لا يستطيع تحديد inside
-      if (i.shipping_national) {
-        const list = Array.isArray(i.outside_governorates) ? i.outside_governorates : [];
-        if (list.length === 0 || list.includes(buyerGov)) {
-          return { ok: true, mode: 'outside', price: Number(i.ship_price_outside) || 0 };
-        }
-      }
-      return { ok: false };
-    });
+  // كل منتجات هذا البائع تدعم الشحن الدولي؟
+  const allIntl = items.every(i => i.shipping_international === true);
 
-    const allReach = reachInfo.every(r => r.ok);
-    if (allReach) {
-      // السعر = أعلى سعر بين المنتجات (لتغطية تكلفة كل البائعين)
-      const priceToBuyer = Math.max(0, ...reachInfo.map(r => r.price));
-      opts.push({ type: 'to_buyer', name: `إلى ${buyerGov}`, desc: '1–4 أيام عمل', cost: priceToBuyer });
+  // ── حالة المشتري خارج سوريا ──
+  if (buyerGov === 'خارج سوريا') {
+    if (allIntl) {
+      const priceIntl = Math.max(0, ...items.map(i => Number(i.ship_price_intl) || 0));
+      opts.push({ type: 'international', name: 'خارج سوريا', desc: '7–14 يوم عمل', cost: priceIntl });
+    }
+    return opts;
+  }
+
+  // ── حالة المشتري داخل سوريا ──
+  if (!buyerGov) return opts; // محافظة المشتري غير معروفة
+
+  const sameGov = sellerGov && sellerGov === buyerGov;
+
+  // الشحن الداخلي: نفس محافظة المشتري + كل المنتجات تدعم الشحن الداخلي
+  const allInside = items.every(i => i.shipping_local === true);
+  // الشحن الخارجي (داخل سوريا): كل المنتجات تدعم outside + كل قوائمها تشمل محافظة المشتري
+  const allOutside = items.every(i => {
+    if (!i.shipping_national) return false;
+    const list = Array.isArray(i.outside_governorates) ? i.outside_governorates : [];
+    return list.length === 0 || list.includes(buyerGov);
+  });
+
+  if (sameGov) {
+    // البائع والمشتري بنفس المحافظة
+    if (allInside) {
+      const priceInside = Math.max(0, ...items.map(i => Number(i.ship_price_inside) || 0));
+      opts.push({ type: 'inside', name: `داخل ${buyerGov}`, desc: '1–4 أيام عمل', cost: priceInside });
+    }
+    if (allOutside) {
+      const priceOutside = Math.max(0, ...items.map(i => Number(i.ship_price_outside) || 0));
+      opts.push({ type: 'outside', name: `خارج ${buyerGov}`, desc: '2–5 أيام عمل', cost: priceOutside });
+    }
+  } else {
+    // البائع والمشتري بمحافظتين مختلفتين
+    if (sellerGov && allInside) {
+      // "محافظة [البائع]" — يعني البائع يخدم محافظته فقط (ليس متاحاً للمشتري إن لم يكن منها)
+      // هذا الخيار يعني عميل من محافظة البائع لكن المشتري ليس منها → غير متاح
+      // → لا نعرضه
+    }
+    if (allOutside) {
+      const priceOutside = Math.max(0, ...items.map(i => Number(i.ship_price_outside) || 0));
+      opts.push({ type: 'outside', name: `إلى محافظة ${buyerGov}`, desc: '2–5 أيام عمل', cost: priceOutside });
     }
   }
 
-  // خيار خارج سوريا
-  if (allIntl) {
-    const priceIntl = Math.max(0, ...items.map(i => Number(i.ship_price_intl) || 0));
-    opts.push({ type: 'international', name: 'خارج سوريا', desc: '7–14 يوم عمل', cost: priceIntl });
-  }
-
-  if (!opts.length) {
-    const govMsg = buyerGov
-      ? `لا يوجد شحن إلى محافظة <b>${buyerGov}</b> لهذه المنتجات`
-      : 'يجب تحديد محافظتك من الملف الشخصي لإكمال الطلب';
-    container.innerHTML = `<div style="padding:14px;text-align:center;color:#e74c3c;font-size:13px">${govMsg}</div>`;
-    shippingCost = 0;
-    const checkoutBtn = document.querySelector('.btn-checkout');
-    if (checkoutBtn) { checkoutBtn.disabled = true; checkoutBtn.style.opacity = '0.5'; checkoutBtn.style.cursor = 'not-allowed'; }
-    return;
-  }
-  // تفعيل زر الطلب
-  const checkoutBtn = document.querySelector('.btn-checkout');
-  if (checkoutBtn) { checkoutBtn.disabled = false; checkoutBtn.style.opacity = ''; checkoutBtn.style.cursor = ''; }
-
-  // اختر الخيار المحفوظ سابقاً إن كان لا يزال متاحاً، وإلا الأرخص
-  const savedType = localStorage.getItem('shippingType');
-  let selected = opts.find(o => o.type === savedType) || opts.reduce((a, b) => a.cost <= b.cost ? a : b);
-
-  container.innerHTML = opts.map(o => {
-    const isSel = o.type === selected.type;
-    const priceLabel = o.cost > 0 ? (Number(o.cost).toLocaleString('ar-SY') + ' ل.س') : 'مجاناً';
-    return `
-      <label class="ship-opt${isSel ? ' selected' : ''}" onclick="selectShipping(this,'${o.type}',${o.cost})">
-        <input type="radio" name="ship" value="${o.type}"${isSel ? ' checked' : ''}>
-        <div class="ship-opt-info">
-          <div class="ship-opt-name">${o.name}</div>
-          <div class="ship-opt-desc">${o.desc}</div>
-        </div>
-        <div class="ship-opt-price">${priceLabel}</div>
-      </label>
-    `;
-  }).join('');
-
-  shippingCost = selected.cost;
-  localStorage.setItem('shippingType', selected.type);
-  localStorage.setItem('shippingCost', selected.cost);
+  return opts;
 }
 
-function selectShipping(el, type, cost) {
-  document.querySelectorAll('.ship-opt').forEach(o => o.classList.remove('selected'));
-  el.classList.add('selected');
-  shippingCost = cost;
-  localStorage.setItem('shippingType', type);
-  localStorage.setItem('shippingCost', cost);
+// ── خيارات الشحن لكل بائع ──
+function renderShippingOptions() {
+  const items = getSelectedItems();
+
+  // إعادة بناء خريطة المختار حسب البائع
+  const bySeller = {};
+  items.forEach(item => {
+    const key = item.seller_id || item.seller_name || 'unknown';
+    if (!bySeller[key]) bySeller[key] = { key: key, items: [] };
+    bySeller[key].items.push(item);
+  });
+
+  // إذا لا يوجد منتج محدّد — صفّر التكلفة
+  if (!Object.keys(bySeller).length) {
+    shippingCost = 0;
+    sellerShipping = {};
+    localStorage.setItem('sellerShipping', JSON.stringify({}));
+    return;
+  }
+
+  let totalShipping = 0;
+  let allReachable = true;
+  const newSellerShipping = {};
+
+  Object.values(bySeller).forEach(group => {
+    const wrap = document.getElementById('shipFor_' + group.key);
+    const optsBox = document.getElementById('shipOpts_' + group.key);
+    if (!wrap || !optsBox) return;
+
+    const opts = computeSellerShippingOptions(group);
+
+    if (!opts.length) {
+      wrap.style.display = '';
+      const buyerGov = window.BUYER_GOVERNORATE || '';
+      const msg = buyerGov
+        ? (buyerGov === 'خارج سوريا'
+            ? 'هذا البائع لا يوفّر شحن خارج سوريا'
+            : `هذا البائع لا يشحن إلى محافظة <b>${buyerGov}</b>`)
+        : 'يجب تحديد محافظتك من الملف الشخصي';
+      optsBox.innerHTML = `<div class="seller-shipping-empty">${msg}</div>`;
+      allReachable = false;
+      return;
+    }
+
+    wrap.style.display = '';
+
+    // اختيار محفوظ لهذا البائع أم الأرخص
+    const prevSel = sellerShipping[group.key];
+    let selected = (prevSel && opts.find(o => o.type === prevSel.type))
+      || opts.reduce((a, b) => a.cost <= b.cost ? a : b);
+
+    optsBox.innerHTML = opts.map(o => {
+      const isSel = o.type === selected.type;
+      const priceLabel = o.cost > 0 ? (Number(o.cost).toLocaleString('ar-SY') + ' ل.س') : 'مجاناً';
+      return `
+        <label class="ship-opt${isSel ? ' selected' : ''}" onclick="selectSellerShipping('${group.key}','${o.type}',${o.cost},'${o.name.replace(/'/g, "\\'")}')">
+          <input type="radio" name="ship_${group.key}" value="${o.type}"${isSel ? ' checked' : ''}>
+          <div class="ship-opt-info">
+            <div class="ship-opt-name">${o.name}</div>
+            <div class="ship-opt-desc">${o.desc}</div>
+          </div>
+          <div class="ship-opt-price">${priceLabel}</div>
+        </label>
+      `;
+    }).join('');
+
+    newSellerShipping[group.key] = { type: selected.type, cost: selected.cost, label: selected.name };
+    totalShipping += selected.cost;
+  });
+
+  sellerShipping = newSellerShipping;
+  localStorage.setItem('sellerShipping', JSON.stringify(sellerShipping));
+  shippingCost = totalShipping;
+
+  // تفعيل/تعطيل زر الطلب
+  const checkoutBtn = document.querySelector('.btn-checkout') || document.getElementById('checkoutBtn');
+  if (checkoutBtn) {
+    if (allReachable && Object.keys(newSellerShipping).length) {
+      checkoutBtn.disabled = false;
+      checkoutBtn.style.opacity = '';
+      checkoutBtn.style.cursor = '';
+    } else {
+      checkoutBtn.disabled = true;
+      checkoutBtn.style.opacity = '0.5';
+      checkoutBtn.style.cursor = 'not-allowed';
+    }
+  }
+}
+
+function selectSellerShipping(sellerKey, type, cost, label) {
+  // علّم المختار
+  const optsBox = document.getElementById('shipOpts_' + sellerKey);
+  if (optsBox) {
+    optsBox.querySelectorAll('.ship-opt').forEach(o => o.classList.remove('selected'));
+    const radios = optsBox.querySelectorAll('input[type=radio]');
+    radios.forEach(r => {
+      if (r.value === type) {
+        r.checked = true;
+        r.closest('.ship-opt').classList.add('selected');
+      }
+    });
+  }
+  sellerShipping[sellerKey] = { type, cost: Number(cost) || 0, label: label || '' };
+  localStorage.setItem('sellerShipping', JSON.stringify(sellerShipping));
+  // أعد حساب الإجمالي
+  shippingCost = Object.values(sellerShipping).reduce((s, v) => s + (Number(v.cost) || 0), 0);
   updateSummary();
 }
 
@@ -750,16 +850,35 @@ function proceedToOrder() {
     alert('يرجى اختيار منتج واحد على الأقل للمتابعة');
     return;
   }
-  // تحقق من وجود خيار شحن صالح
-  const shipType = localStorage.getItem('shippingType');
-  const hasShipOption = !!document.querySelector('.ship-opt.selected');
-  if (!shipType || !hasShipOption) {
+
+  // تجميع المنتجات المختارة حسب البائع
+  const sellerKeys = new Set();
+  selected.forEach(item => {
+    sellerKeys.add(item.seller_id || item.seller_name || 'unknown');
+  });
+
+  // تحقق من أن كل بائع له خيار شحن صالح
+  const missing = [];
+  sellerKeys.forEach(k => {
+    if (!sellerShipping[k] || typeof sellerShipping[k].cost === 'undefined') {
+      missing.push(k);
+    }
+  });
+  if (missing.length) {
     const buyerGov = window.BUYER_GOVERNORATE || '';
-    alert(buyerGov ? `لا يوجد شحن إلى محافظة ${buyerGov} لهذه المنتجات` : 'يرجى اختيار طريقة الشحن');
+    alert(buyerGov
+      ? `لا يوجد شحن متاح من بعض البائعين إلى محافظة ${buyerGov}`
+      : 'يرجى تحديد محافظتك من الملف الشخصي قبل المتابعة');
     return;
   }
+
+  // فلتر sellerShipping ليحتوي فقط البائعين المختارين
+  const filteredShipping = {};
+  sellerKeys.forEach(k => { if (sellerShipping[k]) filteredShipping[k] = sellerShipping[k]; });
+
   localStorage.setItem('orderCart_' + (CURRENT_USER_ID || 'anon'), JSON.stringify(selected));
   localStorage.setItem('orderCart', JSON.stringify(selected)); // توافق مع الإصدارات القديمة
+  localStorage.setItem('sellerShipping', JSON.stringify(filteredShipping));
   localStorage.setItem('shippingCost', shippingCost);
   location.href = 'syriaexpress-order.html';
 }
