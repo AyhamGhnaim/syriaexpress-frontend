@@ -262,7 +262,6 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 @media(min-width:1200px){
   main{max-width:900px;padding:32px 24px;flex-direction:row;align-items:flex-start;gap:24px;}
   .box{flex:1;}
-  #shippingBox{flex:none;width:100%;}
   .cart-and-shipping{flex:1;display:flex;flex-direction:column;gap:20px;}
   .summary-box{width:320px;flex-shrink:0;position:sticky;top:72px;}
   .header-title{font-size:16px;}
@@ -446,6 +445,8 @@ async function syncCartWithServer() {
         ship_price_intl:    Number(p.ship_price_intl)    || 0,
         outside_governorates: Array.isArray(p.outside_governorates) ? p.outside_governorates : [],
         seller_governorate: p.seller_governorate || '',
+        seller_id: p.seller_id || item.seller_id || '',
+        company_name_ar: p.company_name_ar || item.company_name_ar || '',
         // حدّث السعر والاسم في حالة تغييرهما
         price: Number(p.price) || item.price,
         name_ar: p.name_ar || item.name_ar,
@@ -478,7 +479,6 @@ async function syncCartWithServer() {
 function renderCart() {
   const list = document.getElementById('cartList');
   const count = document.getElementById('cartCount');
-  const shippingBox = document.getElementById('shippingBox');
   const summaryBox = document.getElementById('summaryBox');
   const clearBtn = document.querySelector('[onclick="clearCart()"]');
 
@@ -498,14 +498,12 @@ function renderCart() {
         </button>
       </div>
     `;
-    shippingBox.style.display = 'none';
     summaryBox.style.display = 'none';
     if (clearBtn) clearBtn.style.display = 'none';
     return;
   }
 
   if (clearBtn) clearBtn.style.display = '';
-  shippingBox.style.display = '';
   summaryBox.style.display = '';
 
   // ── حالة الاختيار: اجعل أي منتج جديد مختاراً افتراضياً ──
