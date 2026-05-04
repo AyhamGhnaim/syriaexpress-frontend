@@ -9,6 +9,17 @@
 <title>إرسال الطلب — سوريا إكسبريس</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 <script>
+function decodeJWT(token) {
+  try {
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
+    const json = decodeURIComponent(atob(padded).split('').map(c =>
+      '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+    ).join(''));
+    return JSON.parse(json);
+  } catch(e) { return {}; }
+}
+
 (function() {
   var saved = localStorage.getItem('theme');
   if (saved !== 'dark') document.documentElement.setAttribute('data-theme', 'light');
@@ -692,7 +703,7 @@ const API = 'https://syriaexpress-backend.onrender.com';
   try {
     const token = localStorage.getItem('token');
     if (!token) return;
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const payload = decodeJWT(token);
     const type = payload.user_type || payload.type || payload.role || '';
     const map = { seller: 'syriaexpress-seller.html', admin: 'syriaexpress-admin.html', buyer: 'syriaexpress-buyer.html' };
     const el = document.getElementById('accountNavLink');
@@ -719,7 +730,7 @@ async function loadBuyerGov() {
   try {
     const token = localStorage.getItem('token');
     if (!token) return;
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const payload = decodeJWT(token);
     BUYER_GOVERNORATE = payload.governorate || '';
     if (!BUYER_GOVERNORATE) {
       const r = await fetch(`${API}/api/auth/me`, { headers: { 'Authorization': 'Bearer ' + token } });
