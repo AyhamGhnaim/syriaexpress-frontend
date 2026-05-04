@@ -635,11 +635,15 @@ function renderShippingOptions() {
     if (type === 'inside') {
       // داخل المحافظة: البائع يشحن داخلياً + من نفس محافظة المشتري
       if (!item.shipping_local) return false;
-      if (buyerGov && item.seller_governorate && item.seller_governorate !== buyerGov) return false;
+      if (buyerGov) {
+        // إن لم نعرف محافظة البائع (مزامنة فشلت)، نخفي الخيار للأمان
+        if (!item.seller_governorate) return false;
+        if (item.seller_governorate !== buyerGov) return false;
+      }
       return true;
     }
     if (type === 'outside') {
-      // خارج المحافظة: يشحن خارجياً + محافظة المشتري ضمن القائمة
+      // خارج المحافظة: يشحن خارجياً + محافظة المشتري ضمن القائمة (إن وُجدت قائمة)
       if (!item.shipping_national) return false;
       if (buyerGov && Array.isArray(item.outside_governorates) && item.outside_governorates.length > 0) {
         if (!item.outside_governorates.includes(buyerGov)) return false;
@@ -720,6 +724,14 @@ function proceedToOrder() {
   const selected = getSelectedItems();
   if (!selected.length) {
     alert('يرجى اختيار منتج واحد على الأقل للمتابعة');
+    return;
+  }
+  // تحقق من وجود خيار شحن صالح
+  const shipType = localStorage.getItem('shippingType');
+  const hasShipOption = !!document.querySelector('.ship-opt.selected');
+  if (!shipType || !hasShipOption) {
+    const buyerGov = window.BUYER_GOVERNORATE || '';
+    alert(buyerGov ? `لا يوجد شحن إلى محافظة ${buyerGov} لهذه المنتجات` : 'يرجى اختيار طريقة الشحن');
     return;
   }
   localStorage.setItem('orderCart_' + (CURRENT_USER_ID || 'anon'), JSON.stringify(selected));
