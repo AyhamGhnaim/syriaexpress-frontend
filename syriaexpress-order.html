@@ -710,9 +710,26 @@ window.addEventListener('load', function() {
 
 let orderProducts = [];
 let orderProduct = null; // = orderProducts[0] للتوافق
-let selectedShipping = localStorage.getItem('shippingType') || 'inside';
+let selectedShipping = localStorage.getItem('shippingType') || 'to_buyer';
 let selectedPayment = 'cash';
-let shippingPrices = { inside: 0, outside: 0, international: 0 };
+let shippingPrices = { to_buyer: 0, international: 0 };
+let BUYER_GOVERNORATE = '';
+
+async function loadBuyerGov() {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    BUYER_GOVERNORATE = payload.governorate || '';
+    if (!BUYER_GOVERNORATE) {
+      const r = await fetch(`${API}/api/auth/me`, { headers: { 'Authorization': 'Bearer ' + token } });
+      if (r.ok) {
+        const d = await r.json();
+        BUYER_GOVERNORATE = d.governorate || d.user?.governorate || '';
+      }
+    }
+  } catch(e) {}
+}
 
 function getToken() {
   return localStorage.getItem('token');
@@ -724,6 +741,9 @@ function formatPrice(p) {
 }
 
 async function init() {
+  // جلب محافظة المشتري أولاً
+  await loadBuyerGov();
+
   // ── مفاتيح خاصة بالمستخدم ──
   let __uid = '';
   try {
@@ -775,6 +795,11 @@ async function init() {
         op.ship_price_inside = parseFloat(data.ship_price_inside) || 0;
         op.ship_price_outside = parseFloat(data.ship_price_outside) || 0;
         op.ship_price_intl = parseFloat(data.ship_price_intl) || 0;
+        op.shipping_local = data.ship_inside !== false;
+        op.shipping_national = data.ship_outside === true;
+        op.shipping_international = data.ship_international === true;
+        op.seller_governorate = data.seller_governorate || '';
+        op.outside_governorates = Array.isArray(data.outside_governorates) ? data.outside_governorates : [];
         op.qty = Number(op.qty || op.quantity) || op.min_order || 1;
       }
     } catch(e) {}
@@ -794,11 +819,27 @@ function renderProduct() {
   const qtySection = document.getElementById('qtySection');
   if (qtySection) qtySection.style.display = 'none';
 
-  // أسعار الشحن = أعلى سعر بين المنتجات (الطلب موحّد)
+  // حساب أسعار الشحن وفق منطق to_buyer
+  const reachInfo = orderProducts.map(p => {
+    const sellerGov = p.seller_governorate || '';
+    const sameGov = sellerGov && sellerGov === BUYER_GOVERNORATE;
+    if (sameGov && p.shipping_local) {
+      return { ok: true, price: parseFloat(p.ship_price_inside) || 0 };
+    }
+    if (p.shipping_national) {
+      const list = Array.isArray(p.outside_governorates) ? p.outside_governorates : [];
+      if (list.length === 0 || list.includes(BUYER_GOVERNORATE)) {
+        return { ok: true, price: parseFloat(p.ship_price_outside) || 0 };
+      }
+    }
+    return { ok: false };
+  });
+  const allReach = BUYER_GOVERNORATE && reachInfo.every(r => r.ok);
+  const allIntl = orderProducts.every(p => p.shipping_international === true);
+
   shippingPrices = {
-    inside:        Math.max(0, ...orderProducts.map(p => parseFloat(p.ship_price_inside)  || 0)),
-    outside:       Math.max(0, ...orderProducts.map(p => parseFloat(p.ship_price_outside) || 0)),
-    international: Math.max(0, ...orderProducts.map(p => parseFloat(p.ship_price_intl)    || 0))
+    to_buyer: allReach ? Math.max(0, ...reachInfo.map(r => r.price)) : 0,
+    international: allIntl ? Math.max(0, ...orderProducts.map(p => parseFloat(p.ship_price_intl) || 0)) : 0
   };
 
   const container = document.getElementById('productSummaryContainer');
@@ -858,42 +899,41 @@ function setItemQty(idx, val) {
 }
 
 function renderShipping() {
-  const allOpts = [
-    { key: 'inside', label: 'شحن محلي', icon: '🏙️' },
-    { key: 'outside', label: 'خارج المحافظة', icon: '🗺️' },
-    { key: 'international', label: 'شحن دولي', icon: '✈️' }
-  ];
+  const container = document.getElementById('shippingOptions');
+  const opts = [];
 
-  // خيار متاح فقط إذا كان مدعوماً من جميع المنتجات في الطلب
-  const supports = (item, type) => {
-    if (type === 'inside') {
-      if (item.shipping_local === false) return false;
-      if (item.shipping_local === true) return true;
-      return item.ship_price_inside !== undefined;
+  // خيار "إلى محافظة المشتري" — يتوفر إذا كل المنتجات تصل
+  if (BUYER_GOVERNORATE && shippingPrices.to_buyer >= 0) {
+    const reachable = orderProducts.every(p => {
+      const sellerGov = p.seller_governorate || '';
+      const sameGov = sellerGov && sellerGov === BUYER_GOVERNORATE;
+      if (sameGov && p.shipping_local) return true;
+      if (p.shipping_national) {
+        const list = Array.isArray(p.outside_governorates) ? p.outside_governorates : [];
+        return list.length === 0 || list.includes(BUYER_GOVERNORATE);
+      }
+      return false;
+    });
+    if (reachable) {
+      opts.push({ key: 'to_buyer', label: `إلى ${BUYER_GOVERNORATE}`, icon: '📦' });
     }
-    if (type === 'outside') {
-      if (item.shipping_national === true) return true;
-      if (item.shipping_national === false) return false;
-      return Number(item.ship_price_outside) > 0;
-    }
-    if (type === 'international') {
-      if (item.shipping_international === true) return true;
-      if (item.shipping_international === false) return false;
-      return Number(item.ship_price_intl) > 0;
-    }
-    return false;
-  };
+  }
 
-  const opts = allOpts.filter(o => orderProducts.every(p => supports(p, o.key)));
+  // خيار خارج سوريا
+  if (orderProducts.every(p => p.shipping_international === true)) {
+    opts.push({ key: 'international', label: 'خارج سوريا', icon: '✈️' });
+  }
 
   // إذا الخيار المحفوظ لم يعد متاحاً، اختر أول خيار متاح
   if (opts.length && !opts.find(o => o.key === selectedShipping)) {
     selectedShipping = opts[0].key;
   }
 
-  const container = document.getElementById('shippingOptions');
   if (!opts.length) {
-    container.innerHTML = `<div style="padding:14px;text-align:center;color:var(--text2);font-size:13px">لا توجد خيارات شحن مشتركة بين المنتجات</div>`;
+    const msg = BUYER_GOVERNORATE
+      ? `لا يوجد شحن إلى محافظة <b>${BUYER_GOVERNORATE}</b> لهذه المنتجات`
+      : 'يجب تحديد محافظتك من الملف الشخصي';
+    container.innerHTML = `<div style="padding:14px;text-align:center;color:#e74c3c;font-size:13px">${msg}</div>`;
     return;
   }
 
@@ -993,6 +1033,15 @@ async function submitOrder() {
       showError(`الحد الأدنى لـ "${p.name || p.name_ar || 'منتج'}" هو ${min} ${p.unit || ''}`);
       return;
     }
+  }
+
+  // تحقق من توفر خيار شحن صالح
+  const validShippingTypes = ['to_buyer', 'international'];
+  if (!validShippingTypes.includes(selectedShipping) || !document.querySelector('.shipping-option.selected')) {
+    showError(BUYER_GOVERNORATE
+      ? `لا يوجد شحن إلى محافظة ${BUYER_GOVERNORATE} لهذه المنتجات`
+      : 'يجب تحديد محافظتك من الملف الشخصي');
+    return;
   }
 
   const btn = document.getElementById('submitBtn');
