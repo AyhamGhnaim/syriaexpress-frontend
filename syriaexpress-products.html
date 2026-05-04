@@ -706,7 +706,7 @@ main {
   <!-- الفلاتر -->
   <div class="filters" id="shippingFilters">
     <button class="filter-chip active" data-shipping="">الكل</button>
-    <button class="filter-chip" data-shipping="inside">داخل المحافظة</button>
+    <button class="filter-chip" data-shipping="to_buyer">إلى محافظتي</button>
     <button class="filter-chip" data-shipping="international">شحن دولي</button>
   </div>
 
@@ -900,7 +900,7 @@ async function loadProducts() {
   try {
     const params = new URLSearchParams();
     if (state.shipping) params.set('shipping', state.shipping);
-    if ((state.shipping === 'inside' || state.shipping === 'outside') && state.buyerGovernorate) params.set('governorate', state.buyerGovernorate);
+    if (state.shipping === 'to_buyer' && state.buyerGovernorate) params.set('governorate', state.buyerGovernorate);
     if (state.search) params.set('search', state.search);
     params.set('page', state.categoryId ? 1 : state.page);
     params.set('limit', state.categoryId ? 500 : state.limit);
@@ -1266,10 +1266,8 @@ async function fetchBuyerGovernorate() {
 
 function updateInsideBtn() {
   if (!state.buyerGovernorate) return;
-  const insideBtn = document.querySelector('#shippingFilters .filter-chip[data-shipping="inside"]');
-  if (insideBtn) insideBtn.textContent = `داخل ${state.buyerGovernorate}`;
-  const outsideBtn = document.querySelector('#shippingFilters .filter-chip[data-shipping="outside"]');
-  if (outsideBtn) outsideBtn.textContent = `خارج ${state.buyerGovernorate}`;
+  const toBuyerBtn = document.querySelector('#shippingFilters .filter-chip[data-shipping="to_buyer"]');
+  if (toBuyerBtn) toBuyerBtn.textContent = `إلى ${state.buyerGovernorate}`;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
