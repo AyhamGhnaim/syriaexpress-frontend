@@ -712,12 +712,14 @@ const API = 'https://syriaexpress-backend.onrender.com';
 })();
 
 // تحميل اللوغو من logos.js
-window.addEventListener('load', function() {
-  if (window.LOGOS && window.LOGOS.main) {
+function initLogo() {
+  if (typeof LOGOS !== 'undefined' && LOGOS.main) {
     const el = document.getElementById('headerLogo');
-    if (el) { el.src = window.LOGOS.main; el.style.display = 'inline-block'; }
+    if (el) { el.src = LOGOS.main; el.style.display = 'inline-block'; }
   }
-});
+}
+initLogo();
+window.addEventListener('load', initLogo);
 
 let orderProducts = [];
 let orderProduct = null; // = orderProducts[0] للتوافق
@@ -789,6 +791,11 @@ async function init() {
   }
 
   orderProduct = orderProducts[0]; // للتوافق مع الكود القديم
+
+  // عرض أولي من localStorage (قبل API) لضمان ظهور الأسعار
+  renderProduct();
+  renderShipping();
+  updateTotal();
 
   // جيب البيانات الكاملة من API لكل منتج لضمان صحة السعر والشحن
   await Promise.all(orderProducts.map(async (op, idx) => {
