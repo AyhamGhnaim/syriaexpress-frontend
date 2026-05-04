@@ -361,6 +361,7 @@ try {
   const payload = JSON.parse(atob(token.split('.')[1]));
   const userType = payload.user_type || payload.type || '';
   CURRENT_USER_ID = payload.user_id || payload.id || payload.sub || '';
+  window.BUYER_GOVERNORATE = payload.governorate || '';
 
   // البائع والإدارة لا يملكان سلة — تحويل تلقائي
   if (userType === 'seller') { location.href = 'syriaexpress-seller.html'; }
@@ -418,6 +419,8 @@ async function syncCartWithServer() {
         ship_price_inside:  Number(p.ship_price_inside)  || 0,
         ship_price_outside: Number(p.ship_price_outside) || 0,
         ship_price_intl:    Number(p.ship_price_intl)    || 0,
+        outside_governorates: Array.isArray(p.outside_governorates) ? p.outside_governorates : [],
+        seller_governorate: p.seller_governorate || '',
         // حدّث السعر والاسم في حالة تغييرهما
         price: Number(p.price) || item.price,
         name_ar: p.name_ar || item.name_ar,
@@ -625,23 +628,26 @@ function renderShippingOptions() {
   }
   if (shippingBox) shippingBox.style.display = '';
 
-  // خيار متاح فقط إذا كان مدعوماً من جميع المنتجات المحدّدة
-  // إذا الحقل غير موجود (منتج قديم في السلة)، نعتمد على السعر: السعر >= 0 يعني الخيار يعمل (حتى لو 0 = مجاناً)
+  // خيار متاح فقط إذا كان مدعوماً من جميع المنتجات المحدّدة مع مراعاة محافظة المشتري
+  const buyerGov = window.BUYER_GOVERNORATE || '';
+
   const supports = (item, type) => {
     if (type === 'inside') {
-      if (item.shipping_local === false) return false;
-      if (item.shipping_local === true) return true;
-      return item.ship_price_inside !== undefined; // منتج قديم: نفترض متاح
+      // داخل المحافظة: البائع يشحن داخلياً + من نفس محافظة المشتري
+      if (!item.shipping_local) return false;
+      if (buyerGov && item.seller_governorate && item.seller_governorate !== buyerGov) return false;
+      return true;
     }
     if (type === 'outside') {
-      if (item.shipping_national === true) return true;
-      if (item.shipping_national === false) return false;
-      return Number(item.ship_price_outside) > 0; // قديم: متاح فقط إذا له سعر
+      // خارج المحافظة: يشحن خارجياً + محافظة المشتري ضمن القائمة
+      if (!item.shipping_national) return false;
+      if (buyerGov && Array.isArray(item.outside_governorates) && item.outside_governorates.length > 0) {
+        if (!item.outside_governorates.includes(buyerGov)) return false;
+      }
+      return true;
     }
     if (type === 'international') {
-      if (item.shipping_international === true) return true;
-      if (item.shipping_international === false) return false;
-      return Number(item.ship_price_intl) > 0;
+      return item.shipping_international === true;
     }
     return false;
   };
@@ -661,10 +667,17 @@ function renderShippingOptions() {
   if (allIntl)    opts.push({ type:'international', name:'خارج سوريا',    desc:'7–14 يوم عمل', cost: priceIntl });
 
   if (!opts.length) {
-    container.innerHTML = `<div style="padding:14px;text-align:center;color:var(--text-dim);font-size:13px">لا توجد خيارات شحن مشتركة بين منتجات السلة</div>`;
+    const govMsg = buyerGov ? `لا يوجد شحن إلى محافظة <b>${buyerGov}</b> لهذه المنتجات` : 'لا توجد خيارات شحن مشتركة بين منتجات السلة';
+    container.innerHTML = `<div style="padding:14px;text-align:center;color:#e74c3c;font-size:13px">${govMsg}</div>`;
     shippingCost = 0;
+    // تعطيل زر الطلب
+    const checkoutBtn = document.querySelector('.btn-checkout');
+    if (checkoutBtn) { checkoutBtn.disabled = true; checkoutBtn.style.opacity = '0.5'; checkoutBtn.style.cursor = 'not-allowed'; }
     return;
   }
+  // تفعيل زر الطلب
+  const checkoutBtn = document.querySelector('.btn-checkout');
+  if (checkoutBtn) { checkoutBtn.disabled = false; checkoutBtn.style.opacity = ''; checkoutBtn.style.cursor = ''; }
 
   // اختر الخيار المحفوظ سابقاً إن كان لا يزال متاحاً، وإلا الأرخص
   const savedType = localStorage.getItem('shippingType');
