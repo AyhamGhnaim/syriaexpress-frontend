@@ -1000,6 +1000,8 @@ function changeQty(delta) {
 }
 
 function updateTotal() {
+  console.log('[updateTotal] orderProducts:', orderProducts.length, orderProducts.map(p => ({name: p.name, price: p.price, qty: p.qty})));
+  console.log('[updateTotal] selectedShipping:', selectedShipping, 'shippingPrices:', shippingPrices);
   let subtotal = 0;
   let totalQtyText = '';
   orderProducts.forEach((p, i) => {
