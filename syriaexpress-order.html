@@ -694,7 +694,7 @@ function decodeJWT(token) {
   </a>
 </div>
 
-<script src="https://ayhamghnaim.github.io/syriaexpress-frontend/logos.js"></script>
+<script src="logos.js"></script>
 <script>
 const API = 'https://syriaexpress-backend.onrender.com';
 
@@ -760,7 +760,7 @@ async function init() {
   try {
     const __t = localStorage.getItem('token');
     if (__t) {
-      const __p = JSON.parse(atob(__t.split('.')[1]));
+      const __p = decodeJWT(__t);
       __uid = __p.user_id || __p.id || __p.sub || '';
     }
   } catch(e) {}
@@ -1113,7 +1113,7 @@ async function submitOrder() {
   try {
     const __t2 = localStorage.getItem('token');
     if (__t2) {
-      const __p2 = JSON.parse(atob(__t2.split('.')[1]));
+      const __p2 = decodeJWT(__t2);
       const __uid2 = __p2.user_id || __p2.id || __p2.sub || '';
       if (__uid2) localStorage.removeItem('orderCart_' + __uid2);
     }
