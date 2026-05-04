@@ -656,19 +656,32 @@ function renderShippingOptions() {
     return false;
   };
 
-  const allInside  = items.every(i => supports(i, 'inside'));
-  const allOutside = items.every(i => supports(i, 'outside'));
   const allIntl    = items.every(i => supports(i, 'international'));
 
-  // السعر = أعلى سعر بين المنتجات المحدّدة
-  const priceInside  = Math.max(0, ...items.map(i => Number(i.ship_price_inside)  || 0));
-  const priceOutside = Math.max(0, ...items.map(i => Number(i.ship_price_outside) || 0));
-  const priceIntl    = Math.max(0, ...items.map(i => Number(i.ship_price_intl)    || 0));
+  // السعر الدولي
+  const priceIntl = Math.max(0, ...items.map(i => Number(i.ship_price_intl) || 0));
 
   const opts = [];
-  if (allInside)  opts.push({ type:'inside',        name:'داخل المحافظة', desc:'1–2 يوم عمل',  cost: priceInside });
-  if (allOutside) opts.push({ type:'outside',       name:'خارج المحافظة', desc:'2–4 أيام عمل', cost: priceOutside });
-  if (allIntl)    opts.push({ type:'international', name:'خارج سوريا',    desc:'7–14 يوم عمل', cost: priceIntl });
+
+  // خيار "إلى [محافظة المشتري]": يتوفر إذا وصل المنتج للمشتري (inside نفس المحافظة أو outside ضمن القائمة)
+  const reachBuyer = (item) => {
+    const insideOk = item.shipping_local && (!buyerGov || (item.seller_governorate && item.seller_governorate === buyerGov));
+    const outsideOk = item.shipping_national && (!buyerGov || !Array.isArray(item.outside_governorates) || item.outside_governorates.length === 0 || item.outside_governorates.includes(buyerGov));
+    return insideOk || outsideOk;
+  };
+  const allReachBuyer = items.every(i => reachBuyer(i));
+
+  if (allReachBuyer) {
+    // السعر: إذا البائع من نفس المحافظة → inside price، وإلا outside price
+    const priceToBuyer = Math.max(0, ...items.map(i => {
+      const sameGov = !buyerGov || (i.seller_governorate && i.seller_governorate === buyerGov);
+      return sameGov ? (Number(i.ship_price_inside) || 0) : (Number(i.ship_price_outside) || 0);
+    }));
+    const govLabel = buyerGov ? `إلى ${buyerGov}` : 'داخل سوريا';
+    opts.push({ type: 'to_buyer', name: govLabel, desc: '1–4 أيام عمل', cost: priceToBuyer });
+  }
+
+  if (allIntl) opts.push({ type: 'international', name: 'خارج سوريا', desc: '7–14 يوم عمل', cost: Math.max(0, ...items.map(i => Number(i.ship_price_intl) || 0)) });
 
   if (!opts.length) {
     const govMsg = buyerGov ? `لا يوجد شحن إلى محافظة <b>${buyerGov}</b> لهذه المنتجات` : 'لا توجد خيارات شحن مشتركة بين منتجات السلة';
