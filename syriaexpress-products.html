@@ -901,7 +901,7 @@ async function loadProducts() {
   try {
     const params = new URLSearchParams();
     if (state.shipping) params.set('shipping', state.shipping);
-    if (state.shipping === 'inside' && state.buyerGovernorate) params.set('governorate', state.buyerGovernorate);
+    if ((state.shipping === 'inside' || state.shipping === 'outside') && state.buyerGovernorate) params.set('governorate', state.buyerGovernorate);
     if (state.search) params.set('search', state.search);
     params.set('page', state.categoryId ? 1 : state.page);
     params.set('limit', state.categoryId ? 500 : state.limit);
@@ -1267,8 +1267,10 @@ async function fetchBuyerGovernorate() {
 
 function updateInsideBtn() {
   if (!state.buyerGovernorate) return;
-  const btn = document.querySelector('#shippingFilters .filter-chip[data-shipping="inside"]');
-  if (btn) btn.textContent = `داخل ${state.buyerGovernorate}`;
+  const insideBtn = document.querySelector('#shippingFilters .filter-chip[data-shipping="inside"]');
+  if (insideBtn) insideBtn.textContent = `داخل ${state.buyerGovernorate}`;
+  const outsideBtn = document.querySelector('#shippingFilters .filter-chip[data-shipping="outside"]');
+  if (outsideBtn) outsideBtn.textContent = `خارج ${state.buyerGovernorate}`;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
