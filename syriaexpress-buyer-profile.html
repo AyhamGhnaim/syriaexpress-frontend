@@ -633,6 +633,7 @@ async function saveProfile() {
     // نجاح فعلي — نحدّث localStorage
     userData = { ...userData, ...body, ...(data.user || data) };
     localStorage.setItem('user', JSON.stringify(userData));
+    if (data.token) localStorage.setItem('token', data.token);
 
     renderProfile();
     cancelEdit();
