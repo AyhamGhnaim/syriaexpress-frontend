@@ -823,7 +823,7 @@ function renderProduct() {
   const outsideGovs = Array.isArray(product.outside_governorates)
     ? product.outside_governorates.filter(g => typeof g === 'string' && g.trim())
     : [];
-  const insideLabel = sellerGov ? `🏙️ ${sellerGov}` : '🏙️ شحن محلي';
+  const insideLabel = sellerGov ? `📍 ${sellerGov}` : '📍 شحن محلي';
   const showOutside = shippingNational && outsideGovs.length > 0;
 
   const totalPrice = (quantity * (product.price || 0)).toLocaleString('ar-SY');
@@ -881,7 +881,7 @@ function renderProduct() {
       <div class="shipping-box">
         <div class="shipping-options">
           ${shippingLocal ? `<div class="ship-badge">${escapeHtml(insideLabel)}</div>` : ''}
-          ${showOutside ? `<div class="ship-badge">🗺️ ${escapeHtml(outsideGovs.join('، '))}</div>` : ''}
+          ${showOutside ? `<div class="ship-badge">🚛 ${escapeHtml(outsideGovs.join('، '))}</div>` : ''}
           ${shippingIntl ? '<div class="ship-badge">✈️ شحن دولي</div>' : ''}
         </div>
       </div>
