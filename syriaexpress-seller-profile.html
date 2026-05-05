@@ -828,20 +828,25 @@ async function saveProfile() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'خطأ');
 
-    // تحديث الإيميل والهاتف عبر auth
+    // تحديث الإيميل/الهاتف/المحافظة عبر auth دائماً لتجديد JWT
     const emailVal = document.getElementById('fieldEmail').value.trim();
     const phoneVal = document.getElementById('fieldPhone').value.trim();
-    if (emailVal || phoneVal) {
-      const authRes = await fetch(`${API_BASE}/api/auth/me`, {
-        method: 'PUT',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailVal, phone: phoneVal })
-      });
-      if (!authRes.ok) {
-        const authErr = await authRes.json().catch(() => ({}));
-        throw new Error(authErr.error || 'تم حفظ بيانات الشركة، لكن تعذّر تحديث الإيميل/الهاتف');
-      }
+    const govVal   = document.getElementById('fieldGov').value.trim();
+    const authBody = {};
+    if (emailVal) authBody.email = emailVal;
+    if (phoneVal) authBody.phone = phoneVal;
+    if (govVal)   authBody.governorate = govVal;
+    const authRes = await fetch(`${API_BASE}/api/auth/me`, {
+      method: 'PUT',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify(authBody)
+    });
+    if (!authRes.ok) {
+      const authErr = await authRes.json().catch(() => ({}));
+      throw new Error(authErr.error || 'تم حفظ بيانات الشركة، لكن تعذّر تحديث البيانات');
     }
+    const authData = await authRes.json();
+    if (authData.token) localStorage.setItem('token', authData.token);
 
     sellerData = { ...sellerData, ...body };
     renderProfile();
