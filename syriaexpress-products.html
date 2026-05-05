@@ -1278,7 +1278,18 @@ async function fetchBuyerGovernorate() {
 function updateInsideBtn() {
   if (!state.buyerGovernorate) return;
   const toBuyerBtn = document.querySelector('#shippingFilters .filter-chip[data-shipping="to_buyer"]');
-  if (toBuyerBtn) toBuyerBtn.textContent = `إلى ${state.buyerGovernorate}`;
+  if (!toBuyerBtn) return;
+  if (state.buyerGovernorate === 'خارج سوريا') {
+    toBuyerBtn.style.display = 'none';
+    if (state.shipping === 'to_buyer') {
+      state.shipping = '';
+      document.querySelector('#shippingFilters .filter-chip[data-shipping=""]')?.classList.add('active');
+      toBuyerBtn.classList.remove('active');
+    }
+  } else {
+    toBuyerBtn.style.display = '';
+    toBuyerBtn.textContent = `إلى ${state.buyerGovernorate}`;
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
