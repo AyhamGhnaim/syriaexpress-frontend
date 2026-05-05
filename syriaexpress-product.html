@@ -354,6 +354,12 @@ main {
 }
 
 /* ===== SHIPPING ===== */
+.shipping-box {
+  background: rgba(201,168,76,0.07);
+  border: 1.5px solid var(--gold);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
 .shipping-options {
   display: flex;
   gap: 10px;
@@ -369,11 +375,6 @@ main {
   align-items: center;
   gap: 5px;
   color: var(--text);
-}
-.ship-badge.active {
-  border-color: var(--gold);
-  background: rgba(201,168,76,0.1);
-  color: var(--gold);
 }
 
 /* ===== DESCRIPTION ===== */
@@ -877,10 +878,12 @@ function renderProduct() {
     <!-- SHIPPING -->
     <div class="section">
       <div class="section-title">🚚 خيارات الشحن</div>
-      <div class="shipping-options">
-        ${shippingLocal ? `<div class="ship-badge">${escapeHtml(insideLabel)}</div>` : ''}
-        ${showOutside ? `<div class="ship-badge">🗺️ ${escapeHtml(outsideGovs.join('، '))}</div>` : ''}
-        ${shippingIntl ? '<div class="ship-badge">✈️ شحن دولي</div>' : ''}
+      <div class="shipping-box">
+        <div class="shipping-options">
+          ${shippingLocal ? `<div class="ship-badge">${escapeHtml(insideLabel)}</div>` : ''}
+          ${showOutside ? `<div class="ship-badge">🗺️ ${escapeHtml(outsideGovs.join('، '))}</div>` : ''}
+          ${shippingIntl ? '<div class="ship-badge">✈️ شحن دولي</div>' : ''}
+        </div>
       </div>
     </div>
 
