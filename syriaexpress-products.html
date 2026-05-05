@@ -1250,17 +1250,7 @@ function initViewToggle() {
 // ═══════════════════ BUYER GOVERNORATE ═══════════════════
 async function fetchBuyerGovernorate() {
   try {
-    // أولاً: حاول من الـ token مباشرة
     const token = localStorage.getItem('token');
-    if (token) {
-      const payload = decodeJWT(token);
-      if (payload.governorate) {
-        state.buyerGovernorate = payload.governorate;
-        updateInsideBtn();
-        return;
-      }
-    }
-    // ثانياً: اجلب من الـ API
     if (!token) return;
     const res = await fetch(`${API_BASE}/api/auth/me`, {
       headers: { 'Authorization': `Bearer ${token}` }
