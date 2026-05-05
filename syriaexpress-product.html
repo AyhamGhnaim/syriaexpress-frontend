@@ -686,7 +686,6 @@ if (typeof LOGOS !== 'undefined' && LOGOS.main) {
 let product = null;
 let seller = null;
 let quantity = 1;
-let isSaved = false;
 let cartCount = 0;
 
 // ===== LOAD =====
@@ -759,9 +758,6 @@ async function loadProduct() {
 
     quantity = product.min_order;
 
-    // Check saved
-    const saved = JSON.parse(localStorage.getItem('savedProducts') || '[]');
-    isSaved = saved.includes(productId);
 
     renderProduct();
     return; // نجح
