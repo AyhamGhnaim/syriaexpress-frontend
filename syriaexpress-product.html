@@ -332,23 +332,6 @@ main {
 .btn-cart.added {
   background: var(--green);
 }
-.btn-save {
-  width: 50px;
-  height: 50px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  color: var(--text2);
-  font-size: 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s, border-color 0.2s;
-  flex-shrink: 0;
-}
-.btn-save.saved { color: #e74c3c; border-color: #e74c3c; }
-.btn-save:hover { color: var(--gold); border-color: var(--gold); }
 
 /* ===== SECTION ===== */
 .section {
@@ -889,9 +872,6 @@ function renderProduct() {
       <button class="btn-cart" id="cartBtn" onclick="addToCart()">
         🛒 أضف للسلة
       </button>
-      <button class="btn-save ${isSaved ? 'saved' : ''}" id="saveBtn" onclick="toggleSave()">
-        ${isSaved ? '❤️' : '🤍'}
-      </button>
     </div>
 
     <!-- SHIPPING -->
@@ -1021,25 +1001,6 @@ function addToCart() {
       btn.classList.remove('added');
       btn.innerHTML = '🛒 أضف للسلة';
     }, 2000);
-  }
-}
-
-// ===== SAVE =====
-function toggleSave() {
-  const saved = JSON.parse(localStorage.getItem('savedProducts') || '[]');
-  const idx = saved.indexOf(productId);
-  if (idx > -1) {
-    saved.splice(idx, 1);
-    isSaved = false;
-  } else {
-    saved.push(productId);
-    isSaved = true;
-  }
-  localStorage.setItem('savedProducts', JSON.stringify(saved));
-  const btn = document.getElementById('saveBtn');
-  if (btn) {
-    btn.className = `btn-save ${isSaved ? 'saved' : ''}`;
-    btn.innerHTML = isSaved ? '❤️' : '🤍';
   }
 }
 
