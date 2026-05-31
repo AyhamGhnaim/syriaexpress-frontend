@@ -705,6 +705,42 @@ function renderStars(rating) {
   for (let i = 1; i <= 5; i++) out += (i <= r) ? '\u2605' : '\u2606';
   return out;
 }
+function recoSectionHTML(title, list) {
+  return `
+  <div class="section">
+    <div class="section-title">${title}</div>
+    <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:6px">
+      ${list.map(rp => {
+        const nm  = rp.name_ar || rp.name_en || 'منتج';
+        const img = rp.image_url || '';
+        const pr  = rp.price != null ? Number(rp.price).toLocaleString('en-US') : '—';
+        return `<a href="syriaexpress-product.html?id=${rp.id}" style="flex:0 0 130px;text-decoration:none;color:inherit">
+          <div style="width:130px;height:110px;border-radius:10px;overflow:hidden;background:var(--bg2);display:flex;align-items:center;justify-content:center">${img ? `<img src="${img}" alt="${escapeHtml(nm)}" style="width:100%;height:100%;object-fit:cover" onerror="this.outerHTML='📦'">` : '📦'}</div>
+          <div style="font-size:13px;margin-top:6px;font-weight:600;line-height:1.3;max-height:34px;overflow:hidden">${escapeHtml(nm)}</div>
+          <div style="font-size:12px;color:var(--gold);margin-top:2px">${pr} ل.س</div>
+        </a>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+async function loadRecommendations() {
+  const cont = document.getElementById('recoContainer');
+  if (!cont || !product) return;
+  const sections = [];
+  if (product.category_id) {
+    try {
+      const r = await fetch(`${API_BASE}/api/products?category_id=${product.category_id}&limit=10`);
+      if (r.ok) { const d = await r.json(); const list = (d.products || []).filter(x => x.id !== product.id).slice(0, 6); if (list.length) sections.push(recoSectionHTML('منتجات مشابهة', list)); }
+    } catch (e) {}
+  }
+  if (seller && seller.id) {
+    try {
+      const r = await fetch(`${API_BASE}/api/products?seller_id=${seller.id}&limit=10`);
+      if (r.ok) { const d = await r.json(); const list = (d.products || []).filter(x => x.id !== product.id).slice(0, 6); if (list.length) sections.push(recoSectionHTML('من نفس المصنع', list)); }
+    } catch (e) {}
+  }
+  cont.innerHTML = sections.join('');
+}
 
 // Logo injection
 if (typeof LOGOS !== 'undefined' && LOGOS.main) {
@@ -816,6 +852,7 @@ async function loadProduct() {
 
     renderProduct();
     initSavedState();
+    loadRecommendations();
     return; // نجح
   } catch(e) {
     retries++;
@@ -1005,6 +1042,8 @@ function renderProduct() {
       </div>
     </div>
     ` : ''}
+
+    <div id="recoContainer"></div>
   `;
 }
 
