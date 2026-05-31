@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#C9A84C">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إشراف المنتجات — سوريا إكسبريس</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+  <script>
+  (function() {
+    var saved = localStorage.getItem('theme');
+    if (saved !== 'dark') document.documentElement.setAttribute('data-theme', 'light');
+  })();
+  </script>
+  <style>
+    :root {
+      --bg: #0F0E0C; --bg2: #1a1814; --bg3: #222018;
+      --gold: #C9A84C; --gold2: #e8c96a;
+      --text: #f0ece4; --text2: #a09880; --border: #2e2b24;
+      --success: #4CAF50; --warning: #FF9800; --danger: #e05555; --info: #2196F3;
+    }
+    [data-theme="light"] {
+      --bg: #F5F3EF; --bg2: #FFFFFF; --bg3: #E8E4DC;
+      --gold: #C9A84C; --gold2: #b8922d;
+      --text: #1a1814; --text2: #6b6456; --border: #d4cfc5;
+      --success: #2e7d32; --warning: #e65100; --danger: #c62828; --info: #1565c0;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'Cairo', sans-serif; min-height: 100vh; padding-bottom: 100px; }
+
+    .header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: var(--bg2); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+    .back-btn { color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 600; }
+    .back-btn:hover { color: var(--gold); }
+    .header-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .header-logo-text .ar { font-family: 'Amiri', serif; color: var(--gold); font-size: 16px; font-weight: 700; }
+    .header-logo-text .en { color: var(--text2); font-size: 9px; letter-spacing: 1px; }
+    .header-spacer { width: 48px; }
+
+    .container { max-width: 900px; margin: 0 auto; padding: 18px; }
+    .page-title { font-family: 'Amiri', serif; font-size: 24px; color: var(--gold); margin-bottom: 4px; }
+    .page-sub { color: var(--text2); font-size: 13px; margin-bottom: 18px; }
+
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+    .tab { background: var(--bg2); border: 1px solid var(--border); color: var(--text2); padding: 8px 14px; border-radius: 10px; font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: .15s; }
+    .tab:hover { border-color: var(--gold); }
+    .tab.active { background: var(--gold); border-color: var(--gold); color: #1a1814; }
+    .tab .cnt { font-size: 11px; opacity: .8; margin-right: 4px; }
+
+    .list { display: flex; flex-direction: column; gap: 10px; }
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 14px; display: flex; gap: 12px; align-items: flex-start; }
+    .thumb { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; background: var(--bg3); flex-shrink: 0; }
+    .thumb-ph { width: 60px; height: 60px; border-radius: 10px; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
+    .info { flex: 1; min-width: 0; }
+    .name { font-weight: 700; font-size: 15px; margin-bottom: 2px; }
+    .meta { font-size: 12px; color: var(--text2); margin-bottom: 2px; }
+    .price { font-size: 13px; color: var(--gold); font-weight: 700; }
+    .reason { font-size: 12px; color: var(--danger); margin-top: 6px; line-height: 1.5; background: rgba(224,85,85,.08); padding: 6px 10px; border-radius: 8px; }
+
+    .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; margin-bottom: 6px; }
+    .b-pending  { background: rgba(255,152,0,.15);  color: var(--warning); }
+    .b-approved { background: rgba(76,175,80,.15);   color: var(--success); }
+    .b-rejected { background: rgba(224,85,85,.15);   color: var(--danger); }
+    .b-suspended{ background: rgba(160,152,128,.18); color: var(--text2); }
+
+    .actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+    .act { border: none; border-radius: 8px; padding: 7px 12px; font-family: 'Cairo', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: .15s; }
+    .act:disabled { opacity: .4; cursor: not-allowed; }
+    .act-approve { background: rgba(76,175,80,.15); color: var(--success); border: 1px solid rgba(76,175,80,.3); }
+    .act-reject  { background: rgba(224,85,85,.15); color: var(--danger);  border: 1px solid rgba(224,85,85,.3); }
+    .act-suspend { background: rgba(255,152,0,.15); color: var(--warning); border: 1px solid rgba(255,152,0,.3); }
+    .act:hover:not(:disabled) { filter: brightness(1.1); }
+
+    .empty { text-align: center; padding: 50px 20px; color: var(--text2); }
+    .empty .icon { font-size: 40px; margin-bottom: 10px; }
+    .spinner { width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin .8s linear infinite; margin: 40px auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+    .overlay.show { display: flex; }
+    .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 20px; width: 100%; max-width: 380px; }
+    .modal h3 { font-size: 16px; margin-bottom: 12px; }
+    .modal textarea { width: 100%; min-height: 90px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px; color: var(--text); font-family: 'Cairo', sans-serif; font-size: 13px; resize: vertical; }
+    .modal-actions { display: flex; gap: 8px; margin-top: 14px; }
+    .modal-actions button { flex: 1; border: none; border-radius: 10px; padding: 10px; font-family: 'Cairo', sans-serif; font-weight: 700; cursor: pointer; }
+    .btn-confirm { background: var(--danger); color: #fff; }
+    .btn-cancel { background: var(--bg3); color: var(--text); }
+
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--gold); color: #1a1814; padding: 12px 22px; border-radius: 30px; font-weight: 700; font-size: 13px; opacity: 0; transition: .3s; z-index: 200; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a href="syriaexpress-admin.html" class="back-btn">← رجوع</a>
+  <a href="syriaexpress-landing.html" class="header-logo">
+    <div class="header-logo-text">
+      <div class="ar">SyriaExpress</div>
+      <div class="en">Made in Syria</div>
+    </div>
+  </a>
+  <div class="header-spacer"></div>
+</div>
+
+<div class="container">
+  <div class="page-title">إشراف المنتجات</div>
+  <div class="page-sub">اعتماد المنتجات قبل نشرها للمشترين، أو رفضها وتعليقها.</div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-filter="" onclick="setFilter('', this)">الكل</button>
+    <button class="tab" data-filter="pending" onclick="setFilter('pending', this)">🕓 قيد المراجعة <span class="cnt" id="c-pending"></span></button>
+    <button class="tab" data-filter="approved" onclick="setFilter('approved', this)">✅ معتمد <span class="cnt" id="c-approved"></span></button>
+    <button class="tab" data-filter="rejected" onclick="setFilter('rejected', this)">❌ مرفوض <span class="cnt" id="c-rejected"></span></button>
+    <button class="tab" data-filter="suspended" onclick="setFilter('suspended', this)">⏸ معلّق <span class="cnt" id="c-suspended"></span></button>
+  </div>
+
+  <div id="list" class="list"><div class="spinner"></div></div>
+</div>
+
+<!-- Reject modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3>سبب الرفض</h3>
+    <textarea id="reasonInput" placeholder="اكتب سبب رفض المنتج ليظهر للبائع..."></textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">إلغاء</button>
+      <button class="btn-confirm" onclick="submitReject()">تأكيد الرفض</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://syriaexpress-backend.onrender.com';
+function getToken() { return localStorage.getItem('token'); }
+let currentFilter = '';
+let rejectTargetId = null;
+
+const STATUS = {
+  pending:   { label: '🕓 قيد المراجعة', cls: 'b-pending' },
+  approved:  { label: '✅ معتمد',          cls: 'b-approved' },
+  rejected:  { label: '❌ مرفوض',          cls: 'b-rejected' },
+  suspended: { label: '⏸ معلّق',           cls: 'b-suspended' }
+};
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtPrice(p){ const n = parseFloat(p); return isNaN(n) ? '—' : n.toLocaleString('ar-SY') + ' ل.س'; }
+function fmtDate(d){ if(!d) return ''; return new Date(d).toLocaleDateString('ar-SY',{year:'numeric',month:'short',day:'numeric'}); }
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+function setFilter(f, el){
+  currentFilter = f;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  loadProducts();
+}
+
+async function loadProducts(){
+  const token = getToken();
+  if(!token){ window.location.href = 'login.html'; return; }
+  const list = document.getElementById('list');
+  list.innerHTML = '<div class="spinner"></div>';
+  try {
+    const qs = currentFilter ? ('?approval=' + encodeURIComponent(currentFilter)) : '';
+    const res = await fetch(`${API}/api/admin/products${qs}`, { headers: { 'Authorization': 'Bearer ' + token } });
+    if(res.status === 401 || res.status === 403){ window.location.href = 'login.html'; return; }
+    if(!res.ok) throw new Error('فشل التحميل');
+    const data = await res.json();
+    renderCounts(data.counts || []);
+    renderList(data.products || []);
+  } catch(e){
+    list.innerHTML = '<div class="empty"><div class="icon">⚠️</div>تعذّر تحميل المنتجات</div>';
+  }
+}
+
+function renderCounts(counts){
+  const map = {};
+  counts.forEach(r => map[r.approval_status] = r.count);
+  ['pending','approved','rejected','suspended'].forEach(k=>{
+    const el = document.getElementById('c-' + k);
+    if(el) el.textContent = map[k] ? '(' + map[k] + ')' : '';
+  });
+}
+
+function renderList(products){
+  const list = document.getElementById('list');
+  if(!products.length){
+    list.innerHTML = '<div class="empty"><div class="icon">📦</div>لا توجد منتجات في هذا التصنيف</div>';
+    return;
+  }
+  list.innerHTML = products.map(p => {
+    const st = STATUS[p.approval_status] || STATUS.approved;
+    const img = p.image_url
+      ? `<img class="thumb" src="${esc(p.image_url)}" alt="" onerror="this.outerHTML='<div class=\\'thumb-ph\\'>📦</div>'">`
+      : `<div class="thumb-ph">📦</div>`;
+    const reasonHtml = (p.approval_status === 'rejected' && p.rejection_reason)
+      ? `<div class="reason">السبب: ${esc(p.rejection_reason)}</div>` : '';
+    return `
+    <div class="card">
+      ${img}
+      <div class="info">
+        <span class="badge ${st.cls}">${st.label}</span>
+        <div class="name">${esc(p.name_ar)}</div>
+        <div class="meta">${esc(p.company_name_ar || '—')} · ${esc(p.category_name_ar || '')}</div>
+        <div class="price">${fmtPrice(p.price)}</div>
+        ${reasonHtml}
+      </div>
+      <div class="actions">
+        <button class="act act-approve" onclick="moderate('${p.id}','approve')" ${p.approval_status==='approved'?'disabled':''}>✅ اعتماد</button>
+        ${p.approval_status==='approved' ? `<button class="act act-suspend" onclick="moderate('${p.id}','suspend')">⏸ تعليق</button>` : ''}
+        <button class="act act-reject" onclick="askReject('${p.id}')" ${p.approval_status==='rejected'?'disabled':''}>❌ رفض</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function moderate(id, action, reason){
+  const token = getToken();
+  try {
+    const res = await fetch(`${API}/api/admin/products/${id}/approval`, {
+      method: 'PATCH',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, reason })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'فشل');
+    const msg = { approve:'تم اعتماد المنتج', reject:'تم رفض المنتج', suspend:'تم تعليق المنتج' }[action] || 'تم التحديث';
+    showToast(msg);
+    loadProducts();
+  } catch(e){
+    showToast(e.message || 'حدث خطأ');
+  }
+}
+
+function askReject(id){
+  rejectTargetId = id;
+  document.getElementById('reasonInput').value = '';
+  document.getElementById('overlay').classList.add('show');
+}
+function closeModal(){
+  document.getElementById('overlay').classList.remove('show');
+  rejectTargetId = null;
+}
+function submitReject(){
+  const reason = document.getElementById('reasonInput').value.trim();
+  if(!reason){ showToast('سبب الرفض مطلوب'); return; }
+  const id = rejectTargetId;
+  closeModal();
+  moderate(id, 'reject', reason);
+}
+document.getElementById('overlay').addEventListener('click', function(e){ if(e.target === this) closeModal(); });
+
+loadProducts();
+</script>
+</body>
+</html>

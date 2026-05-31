@@ -842,6 +842,23 @@ function getProductMOQ(p) {
   return p.min_order_quantity ?? p.min_order_qty ?? p.moq ?? p.min_order ?? '—';
 }
 
+function escapeAttr(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function approvalBadge(p){
+  const s = p.approval_status || 'approved';
+  const map = {
+    approved:  ['✅ منشور','badge-active'],
+    pending:   ['🕓 قيد المراجعة','badge-pending'],
+    rejected:  ['❌ مرفوض','badge-inactive'],
+    suspended: ['⏸ معلّق','badge-inactive']
+  };
+  const [label, cls] = map[s] || map.approved;
+  let html = `<span class="badge ${cls}">${label}</span>`;
+  if (s === 'rejected' && p.rejection_reason) {
+    html += `<div style="font-size:11px;color:var(--danger);margin-top:4px;line-height:1.4">السبب: ${escapeAttr(p.rejection_reason)}</div>`;
+  }
+  return html;
+}
+
 function renderGridCard(p) {
   const catName = CATEGORY_NAMES[p.category_id] || '';
   const price = parseFloat(p.price);
@@ -858,6 +875,7 @@ function renderGridCard(p) {
     ${imgHtml}${placeholderHtml}
     <div class="product-body">
       <div class="product-name" title="${name}">${name}</div>
+      <div class="product-approval">${approvalBadge(p)}</div>
       <div class="product-cat">${catName}</div>
       <div class="product-price">${priceStr}</div>
       <div class="product-min">الحد الأدنى: ${moq} ${p.unit || ''}</div>
@@ -886,6 +904,7 @@ function renderListCard(p) {
     <div class="product-body">
       <div class="product-info">
         <div class="product-name">${name}</div>
+        <div class="product-approval" style="margin-top:6px">${approvalBadge(p)}</div>
         <div class="product-cat">${catName}</div>
       </div>
       <div>
