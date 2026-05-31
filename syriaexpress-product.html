@@ -699,6 +699,12 @@ function escapeHtml(str) {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
+function renderStars(rating) {
+  const r = Math.round(Number(rating) || 0);
+  let out = '';
+  for (let i = 1; i <= 5; i++) out += (i <= r) ? '\u2605' : '\u2606';
+  return out;
+}
 
 // Logo injection
 if (typeof LOGOS !== 'undefined' && LOGOS.main) {
@@ -800,7 +806,9 @@ async function loadProduct() {
       is_verified: data.seller_verification_status === 'verified' || data.seller_verification_status === 'approved' || false,
       completed_orders: data.completed_orders ?? null,
       active_products: data.active_products ?? null,
-      rating: data.rating || null,
+      rating: parseFloat(data.seller_avg_rating) || null,
+      review_count: parseInt(data.seller_review_count) || 0,
+      reviews: Array.isArray(data.reviews) ? data.reviews : [],
     };
 
     quantity = product.min_order;
@@ -961,6 +969,7 @@ function renderProduct() {
           <div class="seller-card-info">
             <div class="seller-card-name">${seller.company_name || 'بائع'}</div>
             <div class="seller-card-city">${seller.city || ''}</div>
+            ${seller.rating ? `<div style="font-size:13px;margin-top:2px"><span style="color:var(--gold)">${renderStars(seller.rating)}</span> <span style="color:var(--text2)">${Number(seller.rating).toFixed(1)} (${seller.review_count})</span></div>` : ''}
           </div>
           ${isVerified ? verifiedBadgeHTML() : ''}
         </div>
@@ -976,6 +985,23 @@ function renderProduct() {
                <button class="btn-whatsapp" disabled style="opacity:.4;cursor:not-allowed">📱 واتساب</button>`
           }
         </div>
+      </div>
+    </div>
+    ` : ''}
+
+    <!-- SELLER REVIEWS -->
+    ${(seller && seller.reviews && seller.reviews.length) ? `
+    <div class="section">
+      <div class="section-title">⭐ تقييمات البائع</div>
+      <div class="reviews-box">
+        ${seller.reviews.map(r => `
+          <div style="padding:10px 0;border-bottom:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <strong style="font-size:13px">${escapeHtml(r.buyer_name || 'مشترٍ')}</strong>
+              <span style="color:var(--gold);font-size:13px">${renderStars(r.rating)}</span>
+            </div>
+            ${r.comment ? `<div style="font-size:13px;color:var(--text2);margin-top:4px">${escapeHtml(r.comment)}</div>` : ''}
+          </div>`).join('')}
       </div>
     </div>
     ` : ''}
