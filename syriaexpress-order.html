@@ -589,6 +589,7 @@ function decodeJWT(token) {
     <div class="section">
       <div class="section-title">📍 عنوان التسليم</div>
       <div class="form-group">
+        <select class="form-input" id="addressSelect" onchange="onAddressSelect()" style="display:none;margin-bottom:8px"></select>
         <input class="form-input" type="text" id="shippingAddress" placeholder="المحافظة، المنطقة، التفاصيل..." />
       </div>
     </div>
@@ -764,6 +765,41 @@ async function loadBuyerGov() {
   } catch(e) {}
 }
 
+async function loadAddresses() {
+  const sel = document.getElementById('addressSelect');
+  const inp = document.getElementById('shippingAddress');
+  if (!sel || !inp) return;
+  const token = localStorage.getItem('token');
+  if (!token) return;
+  try {
+    const r = await fetch(`${API}/api/addresses`, { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!r.ok) return;
+    const d = await r.json();
+    const list = d.addresses || [];
+    if (!list.length) return;
+    sel.innerHTML = '<option value="">\u2014 اختر عنواناً محفوظاً \u2014</option>' +
+      list.map(a => {
+        const full = [a.governorate, a.address].filter(Boolean).join('\u060C ');
+        const lbl  = [a.label, full].filter(Boolean).join(' \u2014 ') + (a.is_default ? ' (افتراضي)' : '');
+        const val  = full.replace(/"/g, '&quot;');
+        return `<option value="${val}">${lbl}</option>`;
+      }).join('');
+    sel.style.display = '';
+    const def = list.find(a => a.is_default) || list[0];
+    if (def && !inp.value) {
+      const full = [def.governorate, def.address].filter(Boolean).join('\u060C ');
+      inp.value = full;
+      sel.value = full;
+    }
+  } catch (e) {}
+}
+function onAddressSelect() {
+  const sel = document.getElementById('addressSelect');
+  const inp = document.getElementById('shippingAddress');
+  if (!sel || !inp || !sel.value) return;
+  inp.value = sel.value;
+}
+
 function getToken() {
   return localStorage.getItem('token');
 }
@@ -776,6 +812,7 @@ function formatPrice(p) {
 async function init() {
   // جلب محافظة المشتري أولاً
   await loadBuyerGov();
+  loadAddresses();
 
   // ── مفاتيح خاصة بالمستخدم ──
   let __uid = '';
