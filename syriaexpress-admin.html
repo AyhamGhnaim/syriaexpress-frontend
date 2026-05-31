@@ -462,8 +462,10 @@ async function loadStats() {
       if (el) el.classList.remove('loading-pulse');
     });
 
-    // عدد المستخدمين يُحدَّث فقط من loadUsers() لتجنب التعارض
-    // نعرض sub text فقط هنا
+    // العدّاد الرئيسي من total_users (عدّ دقيق لكل الأنواع من الخادم)
+    const usersElMain = document.getElementById('stat-users');
+    usersElMain.classList.remove('loading-pulse');
+    animateCount(usersElMain, s.total_users || 0);
     const buyers  = s.buyers  || 0;
     const sellers = (s.verified_sellers || 0) + (s.pending_sellers || 0);
     document.getElementById('stat-users-sub').textContent = `مشترٍ: ${buyers} | بائع: ${sellers}`;
@@ -558,12 +560,7 @@ async function loadUsers() {
     const users = Array.isArray(data) ? data : (data.users || []);
     const list = document.getElementById('usersList');
 
-    // دائماً حدّث العداد بالعدد الفعلي من users endpoint
-    if (users.length > 0) {
-      const usersEl = document.getElementById('stat-users');
-      usersEl.classList.remove('loading-pulse');
-      animateCount(usersEl, users.length);
-    }
+    // العدّاد الرئيسي يُضبط في loadStats من total_users — هنا قائمة العرض فقط
 
     if (!users.length) {
       list.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد مستخدمون بعد</div></div>`;
