@@ -525,6 +525,28 @@
     </div>
   </div>
 
+  <!-- Performance -->
+  <div class="section" style="margin-top:18px">
+    <div class="section-title">⏱️ سرعة الاستجابة (متوسطات)</div>
+    <div class="stats-row" id="perfRow">
+      <div class="stat-card">
+        <div class="stat-icon">⚡</div>
+        <div class="stat-value" id="perfResponse">—</div>
+        <div class="stat-label">زمن تأكيد الطلب</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-value" id="perfShipping">—</div>
+        <div class="stat-label">زمن الشحن</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🚚</div>
+        <div class="stat-value" id="perfDelivery">—</div>
+        <div class="stat-label">زمن التسليم</div>
+      </div>
+    </div>
+  </div>
+
   <!-- Two Column: Order Status + Top Products -->
   <div class="two-col">
 
@@ -600,6 +622,22 @@ const STATUS_CONFIG = {
 // ===== Load Data =====
 loadData();
 
+function fmtDuration(sec){
+  if (sec == null) return '—';
+  sec = Number(sec);
+  if (!isFinite(sec) || sec <= 0) return '—';
+  const h = sec / 3600;
+  if (h < 1)  return Math.max(1, Math.round(sec / 60)) + ' دقيقة';
+  if (h < 24) return (Math.round(h * 10) / 10) + ' ساعة';
+  return (Math.round(h / 24 * 10) / 10) + ' يوم';
+}
+function renderPerformance(pf){
+  pf = pf || {};
+  document.getElementById('perfResponse').textContent = fmtDuration(pf.avg_response_seconds);
+  document.getElementById('perfShipping').textContent = fmtDuration(pf.avg_shipping_seconds);
+  document.getElementById('perfDelivery').textContent = fmtDuration(pf.avg_delivery_seconds);
+}
+
 async function loadData() {
   try {
     // Fetch orders
@@ -619,6 +657,14 @@ async function loadData() {
       const pd = await prodRes.json();
       allProducts = pd.products || pd || [];
     }
+
+    // Fetch performance metrics
+    try {
+      const perfRes = await fetch(`${API_BASE}/api/sellers/me/performance`, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (perfRes.ok) renderPerformance(await perfRes.json());
+    } catch(e) {}
 
     document.getElementById('loadingState').style.display = 'none';
     document.getElementById('pageContent').style.display = 'block';

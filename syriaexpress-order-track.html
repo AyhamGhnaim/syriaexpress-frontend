@@ -507,6 +507,10 @@ function buildOrderCard(order) {
       ${canCancel ? `
         <button class="cancel-btn" onclick="cancelOrder('${order.id}')">إلغاء الطلب</button>
       ` : ''}
+
+      ${order.status === 'delivered' ? (order.reviewed
+        ? '<div style="text-align:center;color:var(--success);padding:10px 0;font-size:13px">✓ شكراً، تم تقييم هذا الطلب</div>'
+        : `<button class="cancel-btn" style="background:var(--gold);color:#0F0E0C;border:none" onclick="openReview('${order.id}')">⭐ قيّم البائع</button>`) : ''}
     </div>`;
 }
 
@@ -541,6 +545,43 @@ async function loadOrders() {
 
 
 let currentFilter = 'all';
+
+// ===== REVIEW =====
+let reviewOrderId = null, reviewRating = 0;
+function setStar(v){
+  reviewRating = v;
+  document.querySelectorAll('#starPick span').forEach((s, i) => {
+    const on = (i + 1) <= v;
+    s.textContent = on ? '\u2605' : '\u2606';
+    s.style.color = on ? '#C9A84C' : '';
+  });
+}
+function openReview(id){
+  reviewOrderId = id; setStar(0);
+  document.getElementById('reviewComment').value = '';
+  document.getElementById('reviewModal').style.display = 'flex';
+}
+function closeReview(){ document.getElementById('reviewModal').style.display = 'none'; }
+async function submitReview(){
+  if (!reviewRating){ alert('يرجى اختيار عدد النجوم'); return; }
+  const btn = document.getElementById('reviewSubmitBtn');
+  btn.disabled = true; btn.textContent = '...';
+  try {
+    const res = await fetch(`${API}/api/reviews`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+      body: JSON.stringify({ order_id: reviewOrderId, rating: reviewRating, comment: document.getElementById('reviewComment').value.trim() })
+    });
+    const d = await res.json();
+    if (!res.ok) throw new Error(d.error || 'فشل الإرسال');
+    closeReview();
+    const o = (window.allOrders || []).find(x => x.id === reviewOrderId);
+    if (o) o.reviewed = true;
+    renderFilteredOrders(currentFilter);
+  } catch(e){ alert(e.message); }
+  finally { btn.disabled = false; btn.textContent = 'إرسال'; }
+}
+
 
 function setFilter(status, btn) {
   currentFilter = status;
@@ -680,5 +721,25 @@ if (orderId) {
     }, { passive: true });
   })();
 </script>
+
+<!-- REVIEW MODAL -->
+<div id="reviewModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--bg2,#1a1814);border:1px solid var(--border,#2A2620);border-radius:16px;max-width:420px;width:100%;padding:24px">
+    <h3 style="margin-bottom:6px">قيّم تجربتك مع البائع</h3>
+    <p style="font-size:13px;color:var(--text2,#999);margin-bottom:14px">رأيك يساعد بقية المشترين</p>
+    <div id="starPick" style="display:flex;gap:8px;font-size:36px;justify-content:center;margin-bottom:16px">
+      <span onclick="setStar(1)" style="cursor:pointer">☆</span>
+      <span onclick="setStar(2)" style="cursor:pointer">☆</span>
+      <span onclick="setStar(3)" style="cursor:pointer">☆</span>
+      <span onclick="setStar(4)" style="cursor:pointer">☆</span>
+      <span onclick="setStar(5)" style="cursor:pointer">☆</span>
+    </div>
+    <textarea id="reviewComment" placeholder="اكتب تعليقك (اختياري)" style="width:100%;min-height:80px;background:var(--bg3,#0f0e0c);border:1px solid var(--border,#2A2620);border-radius:10px;padding:10px;color:inherit;font-family:inherit;resize:vertical"></textarea>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button onclick="closeReview()" style="flex:1;padding:11px;border-radius:10px;border:1px solid var(--border,#2A2620);background:transparent;color:inherit;cursor:pointer;font-family:inherit">إلغاء</button>
+      <button onclick="submitReview()" id="reviewSubmitBtn" style="flex:1;padding:11px;border-radius:10px;border:none;background:var(--gold,#C9A84C);color:#0F0E0C;font-weight:700;cursor:pointer;font-family:inherit">إرسال</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
