@@ -479,6 +479,26 @@
     <table class="data-table" id="summaryTable"></table>
   </div>
 
+  <!-- Seller performance + SLA -->
+  <div class="section">
+    <div class="section-title">⚡ أداء المنصّة (متوسطات)</div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-icon">⏱</div><div class="kpi-value" id="perfResponse">—</div><div class="kpi-label">متوسط زمن الردّ</div></div>
+      <div class="kpi-card"><div class="kpi-icon">🚚</div><div class="kpi-value" id="perfShipping">—</div><div class="kpi-label">متوسط زمن الشحن</div></div>
+      <div class="kpi-card"><div class="kpi-icon">📬</div><div class="kpi-value" id="perfDelivery">—</div><div class="kpi-label">متوسط زمن التسليم</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🏆 أكثر البائعين أداءً (الأسرع رداً)</div>
+    <table class="data-table" id="perfSellersTable"></table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">⚠️ طلبات تجاوزت SLA <span id="slaThresholds" style="font-size:12px;color:var(--text2);font-weight:400"></span></div>
+    <div id="slaBreaches"></div>
+  </div>
+
 </div>
 </div>
 
@@ -762,7 +782,69 @@ function showError(msg) {
   el.style.display = 'block';
 }
 
+function escAn(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function fmtDuration(sec){
+  if (sec === null || sec === undefined || isNaN(sec)) return '—';
+  sec = Number(sec);
+  if (sec < 60) return Math.max(1, Math.round(sec)) + ' ثانية';
+  const h = sec / 3600;
+  if (h < 1)  return Math.max(1, Math.round(sec / 60)) + ' دقيقة';
+  if (h < 24) return (Math.round(h * 10) / 10) + ' ساعة';
+  return (Math.round(h / 24 * 10) / 10) + ' يوم';
+}
+
+async function loadPerformance(){
+  const token = getToken();
+  if (!token) return;
+  try {
+    const res = await fetch(`${API}/api/admin/performance`, { headers: { 'Authorization': `Bearer ${token}` } });
+    if (!res.ok) return;
+    const d = await res.json();
+    const pf = d.platform || {};
+    document.getElementById('perfResponse').textContent = fmtDuration(pf.avg_response_seconds);
+    document.getElementById('perfShipping').textContent = fmtDuration(pf.avg_shipping_seconds);
+    document.getElementById('perfDelivery').textContent = fmtDuration(pf.avg_delivery_seconds);
+
+    const sellers = d.topSellers || [];
+    const st = document.getElementById('perfSellersTable');
+    if (!sellers.length) {
+      st.innerHTML = '<tr><td style="color:var(--text2)">لا توجد بيانات أداء بعد</td></tr>';
+    } else {
+      st.innerHTML = '<tr><th>البائع</th><th>الردّ</th><th>الشحن</th><th>التسليم</th><th>الطلبات</th></tr>' +
+        sellers.map(s => `<tr>
+          <td>${escAn(s.company_name_ar || '—')}</td>
+          <td>${fmtDuration(s.avg_response_seconds)}</td>
+          <td>${fmtDuration(s.avg_shipping_seconds)}</td>
+          <td>${fmtDuration(s.avg_delivery_seconds)}</td>
+          <td>${s.total_orders || 0}</td>
+        </tr>`).join('');
+    }
+
+    const th = d.thresholds || {};
+    document.getElementById('slaThresholds').textContent =
+      `(الردّ خلال ${th.response_hours} س · الشحن خلال ${th.shipping_hours} س)`;
+    const breaches = d.breaches || [];
+    const box = document.getElementById('slaBreaches');
+    if (!breaches.length) {
+      box.innerHTML = '<div style="color:var(--success);padding:12px 0">لا توجد طلبات متجاوزة ✅</div>';
+    } else {
+      box.innerHTML = breaches.map(b => {
+        const typeLabel = b.breach_type === 'response' ? '⏱ تأخّر ردّ' : '🚚 تأخّر شحن';
+        return `<div style="display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div>
+            <div style="font-weight:600">${escAn(b.name_ar || '—')}</div>
+            <div style="font-size:12px;color:var(--text2)">${escAn(b.company_name_ar || '')} · ${typeLabel}</div>
+          </div>
+          <div style="color:var(--danger);font-weight:700;white-space:nowrap">${fmtDuration(b.elapsed_seconds)}</div>
+        </div>`;
+      }).join('');
+    }
+  } catch(e) {}
+}
+
 loadData();
+loadPerformance();
 </script>
 <script>
   // ── Pull to Refresh (iOS PWA compatible) ──
