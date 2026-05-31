@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#C9A84C">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سجلّ التدقيق — سوريا إكسبريس</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+  <script>
+  (function() { var s = localStorage.getItem('theme'); if (s !== 'dark') document.documentElement.setAttribute('data-theme', 'light'); })();
+  </script>
+  <style>
+    :root { --bg:#0F0E0C; --bg2:#1a1814; --bg3:#222018; --gold:#C9A84C; --gold2:#e8c96a; --text:#f0ece4; --text2:#a09880; --border:#2e2b24; --success:#4CAF50; --warning:#FF9800; --danger:#e05555; --info:#2196F3; }
+    [data-theme="light"] { --bg:#F5F3EF; --bg2:#FFFFFF; --bg3:#E8E4DC; --gold:#C9A84C; --gold2:#b8922d; --text:#1a1814; --text2:#6b6456; --border:#d4cfc5; --success:#2e7d32; --warning:#e65100; --danger:#c62828; --info:#1565c0; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); color:var(--text); font-family:'Cairo',sans-serif; min-height:100vh; padding-bottom:100px; }
+    .header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:var(--bg2); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:50; }
+    .back-btn { color:var(--text2); text-decoration:none; font-size:14px; font-weight:600; }
+    .back-btn:hover { color:var(--gold); }
+    .header-logo { display:flex; align-items:center; gap:8px; text-decoration:none; }
+    .header-logo-text .ar { font-family:'Amiri',serif; color:var(--gold); font-size:16px; font-weight:700; }
+    .header-logo-text .en { color:var(--text2); font-size:9px; letter-spacing:1px; }
+    .header-spacer { width:48px; }
+    .container { max-width:760px; margin:0 auto; padding:18px; }
+    .page-title { font-family:'Amiri',serif; font-size:24px; color:var(--gold); margin-bottom:4px; }
+    .page-sub { color:var(--text2); font-size:13px; margin-bottom:18px; }
+    .tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+    .tab { background:var(--bg2); border:1px solid var(--border); color:var(--text2); padding:8px 14px; border-radius:10px; font-family:'Cairo',sans-serif; font-size:13px; font-weight:600; cursor:pointer; }
+    .tab:hover { border-color:var(--gold); }
+    .tab.active { background:var(--gold); border-color:var(--gold); color:#1a1814; }
+    .entry { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:13px 15px; margin-bottom:9px; display:flex; gap:12px; align-items:flex-start; }
+    .entry .ico { font-size:20px; flex-shrink:0; line-height:1.4; }
+    .entry .body { flex:1; min-width:0; }
+    .entry .act { font-weight:700; font-size:14px; }
+    .entry .det { font-size:12px; color:var(--text2); margin-top:3px; line-height:1.6; }
+    .entry .actor { color:var(--gold); font-weight:600; }
+    .entry .time { font-size:11px; color:var(--text2); white-space:nowrap; flex-shrink:0; }
+    .empty { text-align:center; padding:50px 20px; color:var(--text2); }
+    .empty .icon { font-size:40px; margin-bottom:10px; }
+    .spinner { width:30px; height:30px; border:3px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin .8s linear infinite; margin:40px auto; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a href="syriaexpress-admin.html" class="back-btn">← رجوع</a>
+  <a href="syriaexpress-landing.html" class="header-logo">
+    <div class="header-logo-text"><div class="ar">SyriaExpress</div><div class="en">Made in Syria</div></div>
+  </a>
+  <div class="header-spacer"></div>
+</div>
+
+<div class="container">
+  <div class="page-title">سجلّ التدقيق</div>
+  <div class="page-sub">أحدث الإجراءات الإدارية الحسّاسة: من فعل؟ ماذا؟ متى؟</div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-f="" onclick="setF('', this)">الكل</button>
+    <button class="tab" data-f="verification_approve" onclick="setF('verification_approve', this)">توثيق</button>
+    <button class="tab" data-f="user_suspend" onclick="setF('user_suspend', this)">توقيف حسابات</button>
+    <button class="tab" data-f="product_rejected" onclick="setF('product_rejected', this)">رفض منتجات</button>
+    <button class="tab" data-f="setting_update" onclick="setF('setting_update', this)">إعدادات</button>
+  </div>
+
+  <div id="list"><div class="spinner"></div></div>
+</div>
+
+<script>
+const API = 'https://syriaexpress-backend.onrender.com';
+function getToken() { return localStorage.getItem('token'); }
+let currentF = '';
+
+const ACTIONS = {
+  verification_approve: { ico:'✅', label:'قبول توثيق بائع' },
+  verification_reject:  { ico:'❌', label:'رفض توثيق بائع' },
+  verification_revision:{ ico:'📝', label:'طلب مراجعة وثائق' },
+  user_change_type:     { ico:'🔄', label:'تغيير نوع مستخدم' },
+  user_activate:        { ico:'🔓', label:'تفعيل حساب' },
+  user_suspend:         { ico:'🔒', label:'توقيف حساب' },
+  product_approved:     { ico:'✅', label:'اعتماد منتج' },
+  product_rejected:     { ico:'❌', label:'رفض منتج' },
+  product_suspended:    { ico:'⏸', label:'تعليق منتج' },
+  product_pending:      { ico:'🕓', label:'إعادة منتج للمراجعة' },
+  setting_update:       { ico:'⚙️', label:'تعديل إعداد المنصّة' }
+};
+
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function relTime(d){
+  if(!d) return '';
+  const t = new Date(d), now = new Date(), diff = (now - t) / 1000;
+  if (diff < 60) return 'الآن';
+  if (diff < 3600) return Math.floor(diff/60) + ' د';
+  if (diff < 86400) return Math.floor(diff/3600) + ' س';
+  if (diff < 604800) return Math.floor(diff/86400) + ' يوم';
+  return t.toLocaleDateString('ar-SY', { month:'short', day:'numeric' });
+}
+
+function metaText(e){
+  let m = e.meta;
+  if (!m) return '';
+  if (typeof m === 'string') { try { m = JSON.parse(m); } catch(_) { return esc(m); } }
+  if (e.action === 'product_rejected' && m.reason) return 'السبب: ' + esc(m.reason);
+  if (e.action === 'user_change_type' && m.user_type) return 'إلى: ' + esc(m.user_type);
+  if (e.action === 'setting_update') return 'المفتاح: ' + esc(e.target_id) + (m.value!=null ? ' = ' + esc(JSON.stringify(m.value)) : '');
+  if (e.action === 'verification_approve' && m.partner_tier) return 'الفئة: ' + esc(m.partner_tier);
+  return '';
+}
+
+function setF(f, el){
+  currentF = f;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  load();
+}
+
+async function load(){
+  const token = getToken();
+  if(!token){ window.location.href = 'login.html'; return; }
+  const list = document.getElementById('list');
+  list.innerHTML = '<div class="spinner"></div>';
+  try {
+    const qs = currentF ? ('?action=' + encodeURIComponent(currentF)) : '';
+    const res = await fetch(`${API}/api/admin/audit${qs}`, { headers: { 'Authorization':'Bearer '+token } });
+    if(res.status === 401 || res.status === 403){ window.location.href='login.html'; return; }
+    if(!res.ok) throw new Error();
+    const data = await res.json();
+    render(data.entries || []);
+  } catch(e){
+    list.innerHTML = '<div class="empty"><div class="icon">⚠️</div>تعذّر تحميل السجلّ</div>';
+  }
+}
+
+function render(entries){
+  const list = document.getElementById('list');
+  if(!entries.length){
+    list.innerHTML = '<div class="empty"><div class="icon">📜</div>لا توجد إجراءات مسجّلة بعد</div>';
+    return;
+  }
+  list.innerHTML = entries.map(e => {
+    const a = ACTIONS[e.action] || { ico:'•', label: e.action };
+    const mt = metaText(e);
+    return `
+    <div class="entry">
+      <div class="ico">${a.ico}</div>
+      <div class="body">
+        <div class="act">${esc(a.label)}</div>
+        <div class="det">
+          <span class="actor">${esc(e.actor_name || 'أدمن')}</span>
+          ${mt ? ' · ' + mt : ''}
+        </div>
+      </div>
+      <div class="time">${relTime(e.created_at)}</div>
+    </div>`;
+  }).join('');
+}
+
+load();
+</script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#C9A84C">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إعدادات المنصّة — سوريا إكسبريس</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+  <script>
+  (function() { var s = localStorage.getItem('theme'); if (s !== 'dark') document.documentElement.setAttribute('data-theme', 'light'); })();
+  </script>
+  <style>
+    :root { --bg:#0F0E0C; --bg2:#1a1814; --bg3:#222018; --gold:#C9A84C; --gold2:#e8c96a; --text:#f0ece4; --text2:#a09880; --border:#2e2b24; --success:#4CAF50; --warning:#FF9800; --danger:#e05555; --info:#2196F3; }
+    [data-theme="light"] { --bg:#F5F3EF; --bg2:#FFFFFF; --bg3:#E8E4DC; --gold:#C9A84C; --gold2:#b8922d; --text:#1a1814; --text2:#6b6456; --border:#d4cfc5; --success:#2e7d32; --warning:#e65100; --danger:#c62828; --info:#1565c0; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); color:var(--text); font-family:'Cairo',sans-serif; min-height:100vh; padding-bottom:100px; }
+    .header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:var(--bg2); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:50; }
+    .back-btn { color:var(--text2); text-decoration:none; font-size:14px; font-weight:600; }
+    .back-btn:hover { color:var(--gold); }
+    .header-logo { display:flex; align-items:center; gap:8px; text-decoration:none; }
+    .header-logo-text .ar { font-family:'Amiri',serif; color:var(--gold); font-size:16px; font-weight:700; }
+    .header-logo-text .en { color:var(--text2); font-size:9px; letter-spacing:1px; }
+    .header-spacer { width:48px; }
+    .container { max-width:620px; margin:0 auto; padding:18px; }
+    .page-title { font-family:'Amiri',serif; font-size:24px; color:var(--gold); margin-bottom:4px; }
+    .page-sub { color:var(--text2); font-size:13px; margin-bottom:18px; }
+    .card { background:var(--bg2); border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:14px; }
+    .card-title { font-weight:700; font-size:15px; margin-bottom:4px; }
+    .card-desc { font-size:12px; color:var(--text2); margin-bottom:12px; }
+    .field { display:flex; gap:10px; align-items:center; margin-bottom:10px; }
+    .field label { flex:1; font-size:13px; }
+    .field input { width:110px; background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:9px 11px; color:var(--text); font-family:'Cairo',sans-serif; font-size:14px; text-align:center; }
+    .field .unit { font-size:12px; color:var(--text2); }
+    .save-btn { background:var(--gold); color:#1a1814; border:none; border-radius:10px; padding:10px 16px; font-family:'Cairo',sans-serif; font-weight:700; font-size:13px; cursor:pointer; }
+    .save-btn:disabled { opacity:.5; cursor:not-allowed; }
+    .save-btn:hover:not(:disabled) { background:var(--gold2); }
+    .kv-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+    .kv-row .k { flex:0 0 38%; font-size:12px; color:var(--text2); word-break:break-all; }
+    .kv-row .v { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-family:'Cairo',sans-serif; font-size:13px; }
+    .kv-row button { background:var(--bg3); border:1px solid var(--border); color:var(--text); border-radius:8px; padding:8px 12px; font-family:'Cairo',sans-serif; font-weight:600; font-size:12px; cursor:pointer; }
+    .spinner { width:30px; height:30px; border:3px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin .8s linear infinite; margin:30px auto; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .empty { color:var(--text2); font-size:13px; padding:8px 0; }
+    .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--gold); color:#1a1814; padding:12px 22px; border-radius:30px; font-weight:700; font-size:13px; opacity:0; transition:.3s; z-index:200; }
+    .toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a href="syriaexpress-admin.html" class="back-btn">← رجوع</a>
+  <a href="syriaexpress-landing.html" class="header-logo">
+    <div class="header-logo-text"><div class="ar">SyriaExpress</div><div class="en">Made in Syria</div></div>
+  </a>
+  <div class="header-spacer"></div>
+</div>
+
+<div class="container">
+  <div class="page-title">إعدادات المنصّة</div>
+  <div class="page-sub">ضبط القيم العامة دون لمس الكود.</div>
+
+  <!-- SLA thresholds -->
+  <div class="card">
+    <div class="card-title">⏱ حدود SLA</div>
+    <div class="card-desc">الحدود القصوى المقبولة قبل اعتبار الطلب «متأخّراً» في لوحة الأدمن.</div>
+    <div class="field">
+      <label>أقصى زمن للردّ على الطلب</label>
+      <input type="number" id="slaResponse" min="1" value="6">
+      <span class="unit">ساعة</span>
+    </div>
+    <div class="field">
+      <label>أقصى زمن للشحن بعد التأكيد</label>
+      <input type="number" id="slaShipping" min="1" value="48">
+      <span class="unit">ساعة</span>
+    </div>
+    <button class="save-btn" id="slaSaveBtn" onclick="saveSla()">حفظ حدود SLA</button>
+  </div>
+
+  <!-- Other settings -->
+  <div class="card">
+    <div class="card-title">⚙️ إعدادات أخرى</div>
+    <div class="card-desc">قيم عامة مخزّنة في المنصّة (تعديل مباشر).</div>
+    <div id="otherSettings"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://syriaexpress-backend.onrender.com';
+function getToken() { return localStorage.getItem('token'); }
+const SLA_KEYS = ['sla_max_response_hours','sla_max_shipping_hours'];
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function parseVal(v){
+  if (v == null) return '';
+  if (typeof v === 'object') return JSON.stringify(v);
+  return String(v);
+}
+
+async function loadSettings(){
+  const token = getToken();
+  if(!token){ window.location.href='login.html'; return; }
+  try {
+    const res = await fetch(`${API}/api/admin/settings`, { headers: { 'Authorization':'Bearer '+token } });
+    if(res.status === 401 || res.status === 403){ window.location.href='login.html'; return; }
+    if(!res.ok) throw new Error();
+    const rows = await res.json();
+    const map = {};
+    rows.forEach(r => map[r.key] = r.value);
+
+    if (map.sla_max_response_hours != null) document.getElementById('slaResponse').value = parseInt(map.sla_max_response_hours) || 6;
+    if (map.sla_max_shipping_hours != null) document.getElementById('slaShipping').value = parseInt(map.sla_max_shipping_hours) || 48;
+
+    const others = rows.filter(r => !SLA_KEYS.includes(r.key));
+    const box = document.getElementById('otherSettings');
+    if (!others.length) {
+      box.innerHTML = '<div class="empty">لا توجد إعدادات أخرى.</div>';
+    } else {
+      box.innerHTML = others.map(r => `
+        <div class="kv-row">
+          <div class="k">${esc(r.key)}</div>
+          <input class="v" id="set_${esc(r.key)}" value="${esc(parseVal(r.value))}">
+          <button onclick="saveKey('${esc(r.key)}')">حفظ</button>
+        </div>`).join('');
+    }
+  } catch(e){
+    document.getElementById('otherSettings').innerHTML = '<div class="empty">تعذّر تحميل الإعدادات.</div>';
+  }
+}
+
+async function putSetting(key, value){
+  const token = getToken();
+  const res = await fetch(`${API}/api/admin/settings/${encodeURIComponent(key)}`, {
+    method: 'PUT',
+    headers: { 'Authorization':'Bearer '+token, 'Content-Type':'application/json' },
+    body: JSON.stringify({ value })
+  });
+  if(!res.ok){ const d = await res.json().catch(()=>({})); throw new Error(d.error || 'فشل الحفظ'); }
+}
+
+async function saveSla(){
+  const btn = document.getElementById('slaSaveBtn');
+  const resp = parseInt(document.getElementById('slaResponse').value);
+  const ship = parseInt(document.getElementById('slaShipping').value);
+  if (!(resp > 0) || !(ship > 0)) { showToast('أدخل قيماً صحيحة (> 0)'); return; }
+  btn.disabled = true;
+  try {
+    await putSetting('sla_max_response_hours', resp);
+    await putSetting('sla_max_shipping_hours', ship);
+    showToast('تم حفظ حدود SLA');
+  } catch(e){ showToast(e.message || 'حدث خطأ'); }
+  btn.disabled = false;
+}
+
+async function saveKey(key){
+  const el = document.getElementById('set_' + key);
+  let value = el.value;
+  // محاولة تفسير القيمة كـ JSON (رقم/منطقي/كائن)، وإلا تُحفظ كنص
+  try { value = JSON.parse(el.value); } catch(_) { /* نص كما هو */ }
+  try {
+    await putSetting(key, value);
+    showToast('تم حفظ ' + key);
+  } catch(e){ showToast(e.message || 'حدث خطأ'); }
+}
+
+loadSettings();
+</script>
+</body>
+</html>
