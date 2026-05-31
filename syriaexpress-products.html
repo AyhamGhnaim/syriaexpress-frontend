@@ -1035,6 +1035,7 @@ function pickFirst(obj, keys) {
 }
 
 function renderProduct(p, i) {
+  window.__pById = window.__pById || {}; window.__pById[p.id] = p;
   const price = p.price != null ? Number(p.price).toLocaleString('en-US') : '—';
   const unit = p.unit || 'قطعة';
 
@@ -1127,6 +1128,7 @@ function renderProduct(p, i) {
           ${price} <span class="unit">ل.س / ${escapeHtml(unit)}</span>
         </div>
         <div class="product-moq">الحد الأدنى: ${moq} ${escapeHtml(unit)}</div>
+        <button class="card-compare" data-pid="${p.id}" onclick="toggleCompare(event,'${p.id}',this)" style="margin-top:6px;width:100%;background:${compareMap.has(p.id)?'var(--gold)':'transparent'};border:1px solid var(--border,#888);color:${compareMap.has(p.id)?'#0F0E0C':'var(--text2,#999)'};border-radius:8px;padding:5px;font-size:12px;cursor:pointer">${compareMap.has(p.id)?'\u2713 للمقارنة':'قارن'}</button>
         ${shippingTags.length ? `<div class="product-footer">${shippingTags.join('')}</div>` : ''}
       </div>
     </a>`;
@@ -1322,12 +1324,90 @@ function updateInsideBtn() {
   }
 }
 
+// ═══════════════════ COMPARE ═══════════════════
+window.__pById = window.__pById || {};
+const compareMap = new Map();
+const COMPARE_MAX = 3;
+function initCompareUI() {
+  if (document.getElementById('compareBar')) return;
+  const bar = document.createElement('div');
+  bar.id = 'compareBar';
+  bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:50;background:var(--bg2,#1a1a1a);border-top:1px solid var(--border,rgba(150,150,150,.2));padding:10px 16px;display:none;align-items:center;justify-content:space-between;gap:10px';
+  bar.innerHTML = '<span id="compareCount" style="font-size:14px;font-weight:600"></span>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button onclick="clearCompare()" style="background:none;border:1px solid var(--border,#888);color:var(--text2,#999);border-radius:8px;padding:6px 14px;cursor:pointer">مسح</button>'
+    + '<button onclick="openCompare()" style="background:var(--gold);border:none;color:#0F0E0C;border-radius:8px;padding:6px 16px;font-weight:700;cursor:pointer">قارن</button>'
+    + '</div>';
+  document.body.appendChild(bar);
+  const modal = document.createElement('div');
+  modal.id = 'compareModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.6);display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:20px';
+  modal.innerHTML = '<div style="background:var(--bg,#111);border-radius:14px;max-width:760px;width:100%;padding:18px;margin-top:30px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><strong style="font-size:16px">مقارنة المنتجات</strong><button onclick="closeCompare()" style="background:none;border:none;color:var(--text2,#999);font-size:22px;cursor:pointer">×</button></div><div id="compareBody" style="overflow-x:auto"></div></div>';
+  modal.addEventListener('click', e => { if (e.target === modal) closeCompare(); });
+  document.body.appendChild(modal);
+}
+function updateCompareBar() {
+  const bar = document.getElementById('compareBar');
+  if (!bar) return;
+  const n = compareMap.size;
+  bar.style.display = n > 0 ? 'flex' : 'none';
+  const c = document.getElementById('compareCount');
+  if (c) c.textContent = `${n} منتج للمقارنة`;
+  document.querySelectorAll('.card-compare').forEach(b => {
+    const on = compareMap.has(b.dataset.pid);
+    b.style.background = on ? 'var(--gold)' : 'transparent';
+    b.style.color = on ? '#0F0E0C' : 'var(--text2,#999)';
+    b.textContent = on ? '\u2713 للمقارنة' : 'قارن';
+  });
+}
+function toggleCompare(ev, id, btn) {
+  ev.preventDefault(); ev.stopPropagation();
+  if (compareMap.has(id)) { compareMap.delete(id); }
+  else {
+    if (compareMap.size >= COMPARE_MAX) { alert('يمكن مقارنة 3 منتجات كحدّ أقصى'); return; }
+    const p = window.__pById[id];
+    if (p) compareMap.set(id, p);
+  }
+  updateCompareBar();
+}
+function clearCompare() { compareMap.clear(); updateCompareBar(); }
+function closeCompare() { const m = document.getElementById('compareModal'); if (m) m.style.display = 'none'; }
+async function openCompare() {
+  const modal = document.getElementById('compareModal');
+  const body  = document.getElementById('compareBody');
+  if (!modal || !body) return;
+  body.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2,#999)">جارٍ التحميل...</div>';
+  modal.style.display = 'flex';
+  const items = Array.from(compareMap.values());
+  const detailed = await Promise.all(items.map(async p => {
+    try { const r = await fetch(`${API_BASE}/api/products/${p.id}`); if (r.ok) { const d = await r.json(); return { ...p, rating: d.seller_avg_rating }; } } catch (e) {}
+    return p;
+  }));
+  const rows = [
+    ['المنتج',       d => `<a href="syriaexpress-product.html?id=${d.id}" style="color:var(--gold);text-decoration:none">${escapeHtml(d.name_ar || d.name_en || 'منتج')}</a>`],
+    ['السعر',        d => d.price != null ? `${Number(d.price).toLocaleString('en-US')} ل.س` : '—'],
+    ['الحد الأدنى',  d => `${d.min_order_quantity ?? d.moq ?? 1} ${escapeHtml(d.unit || 'قطعة')}`],
+    ['البائع',       d => escapeHtml(d.company_name_ar || d.company_name_en || 'بائع')],
+    ['التقييم',      d => d.rating ? `${'\u2605'.repeat(Math.round(Number(d.rating)))} ${Number(d.rating).toFixed(1)}` : '—'],
+    ['التوفّر',      d => ((d.in_stock === false) || (d.stock_qty != null && Number(d.stock_qty) <= 0)) ? 'نفد' : 'متوفر'],
+  ];
+  let html = '<table style="width:100%;border-collapse:collapse;font-size:13px">';
+  rows.forEach(([label, fn]) => {
+    html += `<tr><td style="padding:8px;border-bottom:1px solid var(--border,rgba(150,150,150,.15));color:var(--text2,#999);white-space:nowrap">${label}</td>`;
+    detailed.forEach(d => { html += `<td style="padding:8px;border-bottom:1px solid var(--border,rgba(150,150,150,.15));text-align:center">${fn(d)}</td>`; });
+    html += '</tr>';
+  });
+  html += '</table>';
+  body.innerHTML = html;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initLogo();
   initFilters();
   initViewToggle();
   IS_BUYER = detectBuyer();
   loadSavedIds();
+  initCompareUI();
   fetchBuyerGovernorate();
   loadCategoryInfo(); // يستدعي loadProducts() بالداخل بعد ما يجيب الـ slug
 });
