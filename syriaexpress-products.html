@@ -781,6 +781,42 @@ main {
 
 const API_BASE = 'https://syriaexpress-backend.onrender.com';
 
+// ===== المحفوظات على البطاقات =====
+let IS_BUYER = false;
+const savedIds = new Set();
+function detectBuyer() {
+  const t = localStorage.getItem('token');
+  if (!t) return false;
+  try { const p = decodeJWT(t); return (p.user_type || p.type || p.role) === 'buyer'; }
+  catch (e) { return false; }
+}
+async function loadSavedIds() {
+  if (!IS_BUYER) return;
+  try {
+    const t = localStorage.getItem('token');
+    const res = await fetch(`${API_BASE}/api/saved/ids`, { headers: { 'Authorization': 'Bearer ' + t } });
+    if (res.ok) { const d = await res.json(); (d.ids || []).forEach(id => savedIds.add(id)); refreshHeartStates(); }
+  } catch (e) {}
+}
+function refreshHeartStates() {
+  document.querySelectorAll('.card-save').forEach(b => {
+    const on = savedIds.has(b.dataset.pid);
+    b.textContent = on ? '\u2665' : '\u2661';
+    b.style.color = on ? 'var(--gold)' : '#fff';
+  });
+}
+async function toggleSaveCard(ev, id, btn) {
+  ev.preventDefault(); ev.stopPropagation();
+  const on = savedIds.has(id);
+  const method = on ? 'DELETE' : 'POST';
+  const url = on ? `${API_BASE}/api/saved/${id}` : `${API_BASE}/api/saved`;
+  const t = localStorage.getItem('token');
+  const opts = { method, headers: { 'Authorization': 'Bearer ' + t } };
+  if (!on) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify({ product_id: id }); }
+  try { const res = await fetch(url, opts); if (res.ok) { on ? savedIds.delete(id) : savedIds.add(id); refreshHeartStates(); } }
+  catch (e) {}
+}
+
 // خريطة أيقونات الفئات
 const CATEGORY_ICONS = {
   'غذائيات': '🌾',
@@ -1082,6 +1118,7 @@ function renderProduct(p, i) {
         ${imgHTML}
         ${tierBadge}
         ${stockBadge}
+        ${IS_BUYER ? `<button class="card-save" data-pid="${p.id}" onclick="toggleSaveCard(event, '${p.id}', this)" title="حفظ في المحفوظات" style="position:absolute;top:8px;left:8px;z-index:3;width:34px;height:34px;border:none;border-radius:50%;background:rgba(0,0,0,.45);color:${savedIds.has(p.id) ? 'var(--gold)' : '#fff'};font-size:18px;line-height:1;cursor:pointer">${savedIds.has(p.id) ? '\u2665' : '\u2661'}</button>` : ''}
       </div>
       <div class="product-body">
         <div class="product-name">${escapeHtml(productName)}</div>
@@ -1289,6 +1326,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initLogo();
   initFilters();
   initViewToggle();
+  IS_BUYER = detectBuyer();
+  loadSavedIds();
   fetchBuyerGovernorate();
   loadCategoryInfo(); // يستدعي loadProducts() بالداخل بعد ما يجيب الـ slug
 });
