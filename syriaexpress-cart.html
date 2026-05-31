@@ -419,6 +419,14 @@ let cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]')
   .map(i => ({ ...i, qty: Number(i.qty || i.quantity) || 1, price: Number(i.price) || 0 }));
 let shippingCost = 0;
 
+// سعر الوحدة الفعّال حسب شرائح التسعير
+function effPrice(item) {
+  const tiers = item.price_tiers || [];
+  let price = Number(item.price) || 0;
+  for (const t of tiers) { if (item.qty >= t.min_qty) price = Number(t.unit_price); }
+  return price;
+}
+
 // المنتجات المحدّدة للطلب الحالي
 const selectedIds = new Set();
 const explicitlyDeselected = new Set();
@@ -452,6 +460,12 @@ async function syncCartWithServer() {
         name_ar: p.name_ar || item.name_ar,
         name: p.name_ar || p.name_en || item.name,
         image_url: p.image_url || item.image_url,
+        // المخزون وشرائح التسعير (المصدر الموثوق)
+        stock_qty: (p.stock_qty === null || p.stock_qty === undefined) ? null : Number(p.stock_qty),
+        in_stock: p.in_stock !== false,
+        price_tiers: Array.isArray(p.price_tiers)
+          ? p.price_tiers.map(t => ({ min_qty: Number(t.min_qty), unit_price: Number(t.unit_price) })).sort((a,b)=>a.min_qty-b.min_qty)
+          : [],
       };
     } catch (e) { return item; }
   }));
@@ -547,7 +561,9 @@ function renderCart() {
     html += `<div class="seller-label">🏭 <span>${group.name}</span></div>`;
     group.items.forEach(item => {
       const isSelected = selectedIds.has(item.id);
-      const subtotal = (item.price * item.qty).toLocaleString('ar-SY');
+      const eu = effPrice(item);
+    const subtotal = (eu * item.qty).toLocaleString('ar-SY');
+    const outOfStock = (item.in_stock === false) || (item.stock_qty !== null && item.stock_qty !== undefined && item.stock_qty <= 0);
       html += `
         <div class="cart-item${isSelected ? '' : ' unselected'}">
           <input type="checkbox" class="item-check" ${isSelected ? 'checked' : ''} onchange="toggleItemSelected('${item.id}', this.checked)">
@@ -556,8 +572,9 @@ function renderCart() {
             <div class="item-name">${item.name_ar || item.name || 'منتج'}</div>
             <div class="item-company">${item.company_name_ar || ''}</div>
             <div>
-              <span class="item-price">${Number(item.price || 0).toLocaleString('ar-SY')}</span>
+              <span class="item-price">${eu.toLocaleString('ar-SY')}</span>
               <span class="item-unit">ل.س / ${item.unit || 'وحدة'}</span>
+              ${outOfStock ? '<span style="color:#e57373;font-size:12px;font-weight:700;margin-right:6px">نفد المخزون</span>' : (item.stock_qty !== null && item.stock_qty !== undefined ? `<span style="color:#3fb950;font-size:12px;margin-right:6px">متوفر: ${item.stock_qty}</span>` : '')}
             </div>
             <div class="item-qty">
               <button class="qty-btn" onclick="changeQty('${item.id}', -1)">−</button>
@@ -610,7 +627,7 @@ function getSelectedItems() {
 
 function updateSummary() {
   const selected = getSelectedItems();
-  const subtotal = selected.reduce((s, i) => s + (i.price * i.qty), 0);
+  const subtotal = selected.reduce((s, i) => s + (effPrice(i) * i.qty), 0);
   const total = subtotal + shippingCost;
   const totalQty = selected.reduce((s, i) => s + i.qty, 0);
 
@@ -640,7 +657,11 @@ function changeQty(id, delta) {
   const item = cart.find(i => i.id === id);
   if (!item) return;
   const minQty = item.min_order_quantity || 1;
-  item.qty = Math.max(minQty, item.qty + delta);
+  let q = Math.max(minQty, item.qty + delta);
+  if (item.stock_qty !== null && item.stock_qty !== undefined && item.stock_qty > 0 && q > item.stock_qty) {
+    q = item.stock_qty;
+  }
+  item.qty = q;
   saveCart();
   renderCart();
 }

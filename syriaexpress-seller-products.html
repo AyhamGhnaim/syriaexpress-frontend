@@ -628,6 +628,9 @@ main {
     </div>
   </div>
 
+  <!-- LOW STOCK ALERT -->
+  <div id="lowStockAlert"></div>
+
   <!-- PRODUCTS -->
   <div id="productsGrid" class="grid-view"></div>
   <div class="loading" id="loadingState">
@@ -695,6 +698,7 @@ async function loadProducts() {
     allProducts = Array.isArray(data) ? data : (data.products || []);
     populateCategoryFilter();
     updateStats();
+    renderLowStock();
     renderProducts();
   } catch (e) {
     showToast('تعذّر تحميل المنتجات', 'error');
@@ -747,6 +751,27 @@ function getFilteredProducts() {
   else if (sort === 'name') list.sort((a, b) => getProductName(a).localeCompare(getProductName(b), 'ar'));
 
   return list;
+}
+
+function renderLowStock() {
+  const box = document.getElementById('lowStockAlert');
+  if (!box) return;
+  const finite = allProducts.filter(p => p.stock_qty !== null && p.stock_qty !== undefined);
+  const out = finite.filter(p => Number(p.stock_qty) <= 0 || p.in_stock === false);
+  const low = finite.filter(p => Number(p.stock_qty) > 0
+      && p.low_stock_threshold != null && Number(p.stock_qty) <= Number(p.low_stock_threshold));
+  if (!out.length && !low.length) { box.innerHTML = ''; return; }
+
+  const line = (p, color) => `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px">
+      <span>${getProductName(p)}</span>
+      <span style="color:${color};font-weight:700">${Number(p.stock_qty) <= 0 ? 'نفد' : Number(p.stock_qty) + ' ' + (p.unit||'وحدة')}</span></div>`;
+
+  box.innerHTML = `
+    <div style="background:rgba(229,180,80,.10);border:1px solid rgba(229,180,80,.35);border-radius:12px;padding:14px 16px;margin-bottom:18px">
+      <div style="font-weight:800;margin-bottom:8px;color:var(--gold)">⚠️ منتجات تحتاج انتباهك (${out.length + low.length})</div>
+      ${out.map(p => line(p, '#e57373')).join('')}
+      ${low.map(p => line(p, '#e0a800')).join('')}
+    </div>`;
 }
 
 function renderProducts() {

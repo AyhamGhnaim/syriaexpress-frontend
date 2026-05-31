@@ -501,9 +501,23 @@ textarea { resize: vertical; min-height: 90px; }
         <input type="number" id="moq" min="1" value="1">
       </div>
       <div class="form-group" style="margin-bottom:0">
-        <label>الكمية المتاحة</label>
-        <input type="number" id="available" min="0" value="0">
+        <label>الكمية المتوفرة (فارغة = غير محدودة)</label>
+        <input type="number" id="available" min="0" placeholder="غير محدودة">
       </div>
+    </div>
+
+    <div class="form-row" style="margin-top:16px">
+      <div class="form-group" style="margin-bottom:0">
+        <label>حد التنبيه للمخزون المنخفض (اختياري)</label>
+        <input type="number" id="lowStock" min="0" placeholder="مثال: 10">
+      </div>
+      <div class="form-group" style="margin-bottom:0"></div>
+    </div>
+
+    <div style="margin-top:20px">
+      <label style="display:block;margin-bottom:8px">شرائح التسعير بالجملة (اختياري) — سعر الوحدة يقلّ كلما زادت الكمية</label>
+      <div id="tiersWrap"></div>
+      <button type="button" onclick="addTier()" style="margin-top:8px;background:transparent;border:1px dashed var(--gold);color:var(--gold);padding:8px 14px;border-radius:8px;cursor:pointer;font-family:inherit">+ إضافة شريحة</button>
     </div>
   </div>
 
@@ -678,6 +692,29 @@ function getSelectedGovernorates() {
   return [...document.querySelectorAll('.gov-cb:checked')].map(cb => cb.value);
 }
 
+function addTier(min_qty = '', unit_price = '') {
+  const wrap = document.getElementById('tiersWrap');
+  const row = document.createElement('div');
+  row.className = 'tier-row';
+  row.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:8px';
+  row.innerHTML =
+    '<input type="number" min="1" class="tier-minqty" placeholder="الكمية ≥" value="' + min_qty + '" style="flex:1">' +
+    '<input type="number" min="0" class="tier-price" placeholder="سعر الوحدة (ل.س)" value="' + unit_price + '" style="flex:1">' +
+    '<button type="button" onclick="this.parentElement.remove()" style="background:transparent;border:none;color:#e57373;font-size:20px;cursor:pointer">×</button>';
+  wrap.appendChild(row);
+}
+function collectTiers() {
+  const rows = document.querySelectorAll('#tiersWrap .tier-row');
+  const tiers = [];
+  rows.forEach(r => {
+    const mq = parseInt(r.querySelector('.tier-minqty').value);
+    const up = parseFloat(r.querySelector('.tier-price').value);
+    if (mq > 0 && up >= 0) tiers.push({ min_qty: mq, unit_price: up });
+  });
+  tiers.sort((a, b) => a.min_qty - b.min_qty);
+  return tiers;
+}
+
 async function submitProduct() {
   const token = localStorage.getItem('token');
   const nameAr = document.getElementById('nameAr').value.trim();
@@ -709,7 +746,9 @@ async function submitProduct() {
       price,
       unit,
       min_order_quantity: moq,
-      available_quantity: parseInt(document.getElementById('available').value) || 0,
+      stock_qty: document.getElementById('available').value === '' ? null : (parseInt(document.getElementById('available').value) || 0),
+      low_stock_threshold: document.getElementById('lowStock').value === '' ? null : parseInt(document.getElementById('lowStock').value),
+      price_tiers: collectTiers(),
       shipping_options: shipping,
       ship_inside: document.getElementById('shipLocal').checked,
       ship_outside: document.getElementById('shipNational').checked,

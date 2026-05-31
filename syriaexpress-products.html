@@ -1040,6 +1040,12 @@ function renderProduct(p, i) {
     ? `<img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(productName)}" loading="lazy" onerror="this.remove()">`
     : `<span class="placeholder">📦</span>`;
 
+  // حالة النفاد
+  const outOfStock = (p.in_stock === false) || (p.stock_qty !== null && p.stock_qty !== undefined && Number(p.stock_qty) <= 0);
+  const stockBadge = outOfStock
+    ? '<div style="position:absolute;top:8px;right:8px;background:rgba(229,115,115,.92);color:#fff;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:700;z-index:2">نفد</div>'
+    : '';
+
   // وسوم الشحن — مع أسماء المحافظات الفعلية
   const shippingTags = [];
 
@@ -1076,9 +1082,10 @@ function renderProduct(p, i) {
   return `
     <a class="product-card" href="syriaexpress-product.html?id=${encodeURIComponent(p.id)}"
        style="animation-delay:${i * 40}ms">
-      <div class="product-image">
+      <div class="product-image" style="${outOfStock ? 'opacity:.6' : ''}">
         ${imgHTML}
         ${tierBadge}
+        ${stockBadge}
       </div>
       <div class="product-body">
         <div class="product-name">${escapeHtml(productName)}</div>

@@ -741,6 +741,11 @@ async function loadProduct() {
       outside_governorates: Array.isArray(data.outside_governorates) ? data.outside_governorates : [],
       seller_governorate: data.seller_governorate || '',
       status: data.status,
+      stock_qty: (data.stock_qty === null || data.stock_qty === undefined) ? null : parseInt(data.stock_qty),
+      in_stock: data.in_stock !== false,
+      price_tiers: Array.isArray(data.price_tiers)
+        ? data.price_tiers.map(t => ({ min_qty: parseInt(t.min_qty), unit_price: parseFloat(t.unit_price) })).sort((a,b)=>a.min_qty-b.min_qty)
+        : [],
     };
 
     // Seller info is embedded in the product response
@@ -822,7 +827,7 @@ function renderProduct() {
   const insideLabel = sellerGov ? `📍 ${sellerGov}` : '📍 شحن محلي';
   const showOutside = shippingNational && outsideGovs.length > 0;
 
-  const totalPrice = (quantity * (product.price || 0)).toLocaleString('ar-SY');
+  const totalPrice = (quantity * effectiveUnitPrice(quantity)).toLocaleString('ar-SY');
 
   document.getElementById('mainContent').innerHTML = `
     <!-- IMAGE -->
@@ -851,6 +856,17 @@ function renderProduct() {
       <div class="min-order-row">
         الحدّ الأدنى للطلب: <strong>${product.min_order || 1} ${product.unit || 'وحدة'}</strong>
       </div>
+      ${ isOutOfStock()
+          ? '<div style="margin-top:10px;display:inline-block;background:rgba(229,115,115,.15);color:#e57373;padding:4px 12px;border-radius:8px;font-size:13px;font-weight:600">نفد المخزون</div>'
+          : (product.stock_qty !== null && product.stock_qty !== undefined
+              ? `<div style="margin-top:10px;display:inline-block;background:rgba(63,185,80,.15);color:#3fb950;padding:4px 12px;border-radius:8px;font-size:13px;font-weight:600">متوفر: ${product.stock_qty} ${product.unit||'وحدة'}</div>`
+              : '<div style="margin-top:10px;display:inline-block;background:rgba(63,185,80,.15);color:#3fb950;padding:4px 12px;border-radius:8px;font-size:13px;font-weight:600">متوفر</div>') }
+      ${ (product.price_tiers||[]).length ? `
+      <div style="margin-top:12px;border-top:1px solid rgba(255,255,255,.08);padding-top:10px">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:6px">أسعار الجملة:</div>
+        ${product.price_tiers.map(t => `<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0">
+          <span>${t.min_qty}+ ${product.unit||'وحدة'}</span><span style="color:var(--gold);font-weight:600">${t.unit_price.toLocaleString('ar-SY')} ل.س</span></div>`).join('')}
+      </div>` : '' }
     </div>
 
     <!-- QUANTITY -->
@@ -866,8 +882,8 @@ function renderProduct() {
 
     <!-- ACTIONS -->
     <div class="actions-row">
-      <button class="btn-cart" id="cartBtn" onclick="addToCart()">
-        🛒 أضف للسلة
+      <button class="btn-cart" id="cartBtn" onclick="addToCart()" ${ isOutOfStock() ? 'disabled style="opacity:.5;cursor:not-allowed"' : '' }>
+        ${ isOutOfStock() ? 'غير متوفر حالياً' : '🛒 أضف للسلة' }
       </button>
     </div>
 
@@ -923,22 +939,44 @@ function renderProduct() {
 }
 
 // ===== QUANTITY =====
-function changeQty(delta) {
+function effectiveUnitPrice(qty) {
+  const tiers = product?.price_tiers || [];
+  let price = product?.price || 0;
+  for (const t of tiers) { if (qty >= t.min_qty) price = t.unit_price; }
+  return price;
+}
+function isOutOfStock() {
+  if (!product) return false;
+  if (product.in_stock === false) return true;
+  if (product.stock_qty !== null && product.stock_qty !== undefined && product.stock_qty <= 0) return true;
+  return false;
+}
+function clampQty(q) {
   const min = product?.min_order || 1;
-  quantity = Math.max(min, quantity + delta);
+  q = Math.max(min, q || min);
+  if (product?.stock_qty !== null && product?.stock_qty !== undefined && product.stock_qty > 0)
+    q = Math.min(q, product.stock_qty);
+  return q;
+}
+function changeQty(delta) {
+  quantity = clampQty(quantity + delta);
   document.getElementById('qtyInput').value = quantity;
   updateTotal();
 }
 function setQtyFromInput(val) {
-  const min = product?.min_order || 1;
-  quantity = Math.max(min, parseInt(val) || min);
+  quantity = clampQty(parseInt(val));
   document.getElementById('qtyInput').value = quantity;
   updateTotal();
 }
 function updateTotal() {
-  const total = (quantity * (product?.price || 0)).toLocaleString('ar-SY');
+  const unit = effectiveUnitPrice(quantity);
+  const total = (quantity * unit).toLocaleString('ar-SY');
   const el = document.getElementById('qtyTotal');
-  if (el) el.innerHTML = `الإجمالي: <strong>${total} ل.س</strong>`;
+  if (el) {
+    const note = ((product?.price_tiers||[]).length && unit !== (product?.price||0))
+      ? ` <span style="color:var(--gold);font-size:12px">(${unit.toLocaleString('ar-SY')} ل.س/${product.unit||'وحدة'})</span>` : '';
+    el.innerHTML = `الإجمالي: <strong>${total} ل.س</strong>${note}`;
+  }
 }
 
 // ===== CART =====
@@ -962,6 +1000,7 @@ function addToCart() {
     alert('السلة متاحة للمشترين فقط');
     return;
   }
+  if (isOutOfStock()) { alert('هذا المنتج غير متوفر حالياً'); return; }
   const cart = JSON.parse(localStorage.getItem(key) || '[]');
   const existing = cart.find(i => i.id === productId);
   if (existing) {
@@ -980,6 +1019,8 @@ function addToCart() {
       seller_name: seller?.company_name || '',
       min_order_quantity: product.min_order || 1,
       min_order: product.min_order || 1,
+      stock_qty: product.stock_qty,
+      price_tiers: product.price_tiers || [],
       ship_price_inside: product.ship_price_inside || 0,
       ship_price_outside: product.ship_price_outside || 0,
       ship_price_intl: product.ship_price_intl || 0,

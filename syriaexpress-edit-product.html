@@ -631,9 +631,23 @@ main {
         <input type="number" id="moq" class="form-input" placeholder="1" min="1">
       </div>
       <div class="form-group" style="margin-bottom:0">
-        <label class="form-label">الكمية المتاحة</label>
-        <input type="number" id="stock" class="form-input" placeholder="0" min="0">
+        <label class="form-label">الكمية المتوفرة (فارغة = غير محدودة)</label>
+        <input type="number" id="stock" class="form-input" placeholder="غير محدودة" min="0">
       </div>
+    </div>
+
+    <div class="form-row" style="margin-top:16px">
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">حد التنبيه للمخزون المنخفض (اختياري)</label>
+        <input type="number" id="lowStock" class="form-input" placeholder="مثال: 10" min="0">
+      </div>
+      <div class="form-group" style="margin-bottom:0"></div>
+    </div>
+
+    <div style="margin-top:20px">
+      <label class="form-label" style="display:block;margin-bottom:8px">شرائح التسعير بالجملة (اختياري) — سعر الوحدة يقلّ كلما زادت الكمية</label>
+      <div id="tiersWrap"></div>
+      <button type="button" onclick="addTier()" style="margin-top:8px;background:transparent;border:1px dashed var(--gold);color:var(--gold);padding:8px 14px;border-radius:8px;cursor:pointer;font-family:inherit">+ إضافة شريحة</button>
     </div>
   </div>
 
@@ -843,7 +857,9 @@ function fillForm(p) {
   setValue('price', p.price || '');
   setValue('unit', p.unit || '');
   setValue('moq', p.min_order_quantity || p.moq || '');
-  setValue('stock', p.stock_quantity ?? p.stock ?? '');
+  setValue('stock', p.stock_qty ?? '');
+  setValue('lowStock', p.low_stock_threshold ?? '');
+  (p.price_tiers || []).forEach(t => addTier(t.min_qty, t.unit_price));
 
   // Char counters
   ['nameAr','nameEn','description'].forEach(id => {
@@ -949,6 +965,28 @@ function removeImage() {
 }
 
 // ─── Save ───
+function addTier(min_qty = '', unit_price = '') {
+  const wrap = document.getElementById('tiersWrap');
+  const row = document.createElement('div');
+  row.className = 'tier-row';
+  row.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:8px';
+  row.innerHTML =
+    '<input type="number" min="1" class="tier-minqty form-input" placeholder="الكمية \u2265" value="' + min_qty + '" style="flex:1">' +
+    '<input type="number" min="0" class="tier-price form-input" placeholder="سعر الوحدة (ل.س)" value="' + unit_price + '" style="flex:1">' +
+    '<button type="button" onclick="this.parentElement.remove()" style="background:transparent;border:none;color:#e57373;font-size:20px;cursor:pointer">\u00d7</button>';
+  wrap.appendChild(row);
+}
+function collectTiers() {
+  const tiers = [];
+  document.querySelectorAll('#tiersWrap .tier-row').forEach(r => {
+    const mq = parseInt(r.querySelector('.tier-minqty').value);
+    const up = parseFloat(r.querySelector('.tier-price').value);
+    if (mq > 0 && up >= 0) tiers.push({ min_qty: mq, unit_price: up });
+  });
+  tiers.sort((a, b) => a.min_qty - b.min_qty);
+  return tiers;
+}
+
 async function saveProduct() {
   const nameAr = document.getElementById('nameAr').value.trim();
   const categoryId = document.getElementById('categoryId').value;
@@ -975,6 +1013,9 @@ async function saveProduct() {
       price: parseFloat(price),
       unit,
       min_order_quantity: parseInt(moq),
+      stock_qty: document.getElementById('stock').value === '' ? null : (parseInt(document.getElementById('stock').value) || 0),
+      low_stock_threshold: document.getElementById('lowStock').value === '' ? null : parseInt(document.getElementById('lowStock').value),
+      price_tiers: collectTiers(),
       is_active: selectedStatus === 'active',
       status: selectedStatus === 'active' ? 'active' : 'inactive',
       ship_inside: shippingState.local,
