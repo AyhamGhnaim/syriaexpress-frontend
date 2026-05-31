@@ -405,7 +405,7 @@ async function loadOrders() {
     }
 
     list.innerHTML = activeOrders.map((o, i) => {
-      const name    = o.product_name_ar || o.product_name || 'منتج';
+      const name    = o.name_ar || o.name_en || o.product_name_ar || 'منتج';
       const company = o.seller_company  || o.company_name_ar || 'بائع';
       const date    = o.created_at ? new Date(o.created_at).toLocaleDateString('ar-SY') : '';
       const st      = o.status || 'pending';

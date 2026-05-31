@@ -481,10 +481,15 @@ async function loadProfile() {
     const spent = orders
       .filter(o => o.status !== 'cancelled')
       .reduce((sum, o) => {
+        // الإجمالي المخصوم الصحيح من الخادم (يحترم سعر الشريحة والخصم)
+        const amount = parseFloat(o.total_amount);
+        if (!isNaN(amount)) return sum + amount;
+        // احتياط: حساب يدوي إن غاب total_amount
         const qty      = parseFloat(o.quantity)      || 0;
-        const price    = parseFloat(o.price)         || 0;
+        const price    = parseFloat(o.unit_price ?? o.price) || 0;
         const shipping = parseFloat(o.shipping_price)|| 0;
-        return sum + (qty * price) + shipping;
+        const discount = parseFloat(o.discount)      || 0;
+        return sum + (qty * price) + shipping - discount;
       }, 0);
 
     document.getElementById('statTotal').textContent     = total;

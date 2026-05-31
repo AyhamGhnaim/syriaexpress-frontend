@@ -814,6 +814,7 @@ let state = {
   categoryName: '',
   shipping: '',
   search: '',
+  sort: '',
   page: 1,
   limit: 12,
   total: 0,
@@ -915,8 +916,10 @@ async function loadProducts() {
     if (state.shipping) params.set('shipping', state.shipping);
     if (state.shipping === 'to_buyer' && state.buyerGovernorate) params.set('governorate', state.buyerGovernorate);
     if (state.search) params.set('search', state.search);
-    params.set('page', state.categoryId ? 1 : state.page);
-    params.set('limit', state.categoryId ? 500 : state.limit);
+    if (state.categoryId) params.set('category_id', state.categoryId);
+    if (state.sort) params.set('sort', state.sort);
+    params.set('page', state.page);
+    params.set('limit', state.limit);
 
     // timeout يتزايد مع كل محاولة (Render قد يحتاج 50 ثانية للاستيقاظ)
     const timeoutMs = retries === 0 ? 15000 : 60000;
@@ -932,18 +935,9 @@ async function loadProducts() {
 
     let products = data.products || data.items || (Array.isArray(data) ? data : []);
 
-    // فلترة على الفرونت إند بالـ category_id (لأن الـ backend يفشل مع slug)
-    if (state.categoryId) {
-      products = products.filter(p => p.category_id === state.categoryId);
-      state.total = products.length;
-      state.pages = Math.max(1, Math.ceil(state.total / state.limit));
-      // pagination يدوي
-      const start = (state.page - 1) * state.limit;
-      products = products.slice(start, start + state.limit);
-    } else {
-      state.total = data.total ?? products.length;
-      state.pages = data.pages ?? Math.max(1, Math.ceil(state.total / state.limit));
-    }
+    // الفلترة والترقيم يتمّان على الخادم عبر category_id
+    state.total = data.total ?? products.length;
+    state.pages = data.pages ?? Math.max(1, Math.ceil(state.total / state.limit));
 
     document.getElementById('totalCount').textContent = state.total;
     document.getElementById('resultsText').innerHTML =
@@ -1173,11 +1167,11 @@ async function loadSellers() {
   grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2)">جارٍ التحميل...</div>';
   try {
     const params = new URLSearchParams();
-    params.set('limit', state.categoryId ? 500 : 200);
+    params.set('limit', 500);
+    if (state.categoryId) params.set('category_id', state.categoryId);
     const res = await fetch(`${API_BASE}/api/products?${params}`);
     const data = await res.json();
     let products = data.products || data.items || (Array.isArray(data) ? data : []);
-    if (state.categoryId) products = products.filter(p => p.category_id === state.categoryId);
 
     // فلترة البحث على الموردين
     let sellers = [];
