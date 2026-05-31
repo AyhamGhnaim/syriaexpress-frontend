@@ -1095,6 +1095,8 @@ async function submitOrder() {
   hideError();
 
   const notes = document.getElementById('orderNotes').value.trim() || null;
+  let orderCoupons = {};
+  try { orderCoupons = JSON.parse(localStorage.getItem('orderCoupons') || '{}'); } catch(e) { orderCoupons = {}; }
   const successfulIds = [];
   const failures = [];
   let lastOrderId = null;
@@ -1118,7 +1120,8 @@ async function submitOrder() {
           shipping_type: shippingTypeForProduct,
           payment_method: selectedPayment,
           shipping_address: address,
-          notes: notes
+          notes: notes,
+          coupon_code: orderCoupons[sellerKey] || null
         })
       });
 
@@ -1149,6 +1152,7 @@ async function submitOrder() {
   // امسح فقط مفاتيح المؤقتة المستخدمة لتمرير البيانات بين الصفحات
   localStorage.removeItem('orderCart');
   localStorage.removeItem('sellerShipping');
+  localStorage.removeItem('orderCoupons');
   try {
     const __t2 = localStorage.getItem('token');
     if (__t2) {

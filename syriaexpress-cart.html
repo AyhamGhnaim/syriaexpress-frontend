@@ -359,6 +359,10 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
       <span class="summary-label">الشحن</span>
       <span class="summary-val" id="sumShipping">مجاناً</span>
     </div>
+    <div class="summary-row" id="discountRow" style="display:none">
+      <span class="summary-label">خصم الكوبون</span>
+      <span class="summary-val" id="sumDiscount" style="color:#3fb950">−0 ل.س</span>
+    </div>
     <div class="summary-row total">
       <span>الإجمالي</span>
       <span id="sumTotal">0 ل.س</span>
@@ -425,6 +429,54 @@ function effPrice(item) {
   let price = Number(item.price) || 0;
   for (const t of tiers) { if (item.qty >= t.min_qty) price = Number(t.unit_price); }
   return price;
+}
+
+// ── الكوبونات (مفتاح = بائع) ──
+let appliedCoupons = {};
+try { appliedCoupons = JSON.parse(localStorage.getItem('appliedCoupons') || '{}'); } catch(e) { appliedCoupons = {}; }
+function groupKeyOf(item){ return item.seller_id || item.seller_name || 'unknown'; }
+function couponDiscountForItem(item){
+  const c = appliedCoupons[groupKeyOf(item)];
+  if (!c) return 0;
+  const goods = effPrice(item) * item.qty;
+  if (goods < (Number(c.min_total) || 0)) return 0;
+  if (c.discount_type === 'percent') return Math.round(goods * Number(c.value) / 100);
+  return Math.min(Number(c.value), goods);
+}
+function couponRowHtml(key){
+  const c = appliedCoupons[key];
+  if (c) {
+    return `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(63,185,80,.10);border-radius:8px;margin:6px 0">
+      <span style="color:#3fb950;font-size:13px;font-weight:700">✓ كوبون ${c.code} مُطبّق</span>
+      <button onclick="removeCoupon('${key}')" style="margin-right:auto;background:transparent;border:none;color:#e57373;cursor:pointer;font-size:13px">إزالة</button>
+    </div>`;
+  }
+  return `<div style="display:flex;gap:8px;margin:6px 0">
+      <input id="coupon_${key}" placeholder="كود خصم من هذا البائع" style="flex:1;background:var(--bg3,#0f0e0c);border:1px solid var(--border,#2A2620);border-radius:8px;padding:8px;color:inherit;font-family:inherit;font-size:13px">
+      <button onclick="applyCoupon('${key}')" style="background:var(--gold);color:#0F0E0C;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-family:inherit;font-weight:700">تطبيق</button>
+    </div>`;
+}
+async function applyCoupon(key){
+  const inp = document.getElementById('coupon_' + key);
+  const code = (inp?.value || '').trim();
+  if (!code) return;
+  try {
+    const res = await fetch(API_BASE + '/api/coupons/validate', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + (localStorage.getItem('token')||'') },
+      body: JSON.stringify({ code, seller_id: key })
+    });
+    const d = await res.json();
+    if (!res.ok || !d.valid) { alert(d.error || 'كوبون غير صالح'); return; }
+    appliedCoupons[key] = { code: d.code, discount_type: d.discount_type, value: d.value, min_total: d.min_total };
+    localStorage.setItem('appliedCoupons', JSON.stringify(appliedCoupons));
+    renderCart();
+  } catch(e){ alert('تعذّر التحقق من الكوبون'); }
+}
+function removeCoupon(key){
+  delete appliedCoupons[key];
+  localStorage.setItem('appliedCoupons', JSON.stringify(appliedCoupons));
+  renderCart();
 }
 
 // المنتجات المحدّدة للطلب الحالي
@@ -587,6 +639,7 @@ function renderCart() {
         </div>
       `;
     });
+    html += couponRowHtml(group.key);
     // حاوية خيارات الشحن لهذا البائع — تُملأ من renderShippingOptions
     html += `<div class="seller-shipping" id="shipFor_${group.key}" style="display:none">
       <div class="seller-shipping-title">خيار الشحن من هذا البائع</div>
@@ -628,12 +681,16 @@ function getSelectedItems() {
 function updateSummary() {
   const selected = getSelectedItems();
   const subtotal = selected.reduce((s, i) => s + (effPrice(i) * i.qty), 0);
-  const total = subtotal + shippingCost;
+  const discount = selected.reduce((s, i) => s + couponDiscountForItem(i), 0);
+  const total = Math.max(0, subtotal - discount) + shippingCost;
   const totalQty = selected.reduce((s, i) => s + i.qty, 0);
 
   document.getElementById('sumItems').textContent = totalQty + ' منتج';
   document.getElementById('sumSubtotal').textContent = subtotal.toLocaleString('ar-SY') + ' ل.س';
   document.getElementById('sumShipping').textContent = shippingCost > 0 ? shippingCost.toLocaleString('ar-SY') + ' ل.س' : 'مجاناً';
+  const dRow = document.getElementById('discountRow');
+  if (discount > 0) { dRow.style.display = ''; document.getElementById('sumDiscount').textContent = '−' + discount.toLocaleString('ar-SY') + ' ل.س'; }
+  else { dRow.style.display = 'none'; }
   document.getElementById('sumTotal').textContent = total.toLocaleString('ar-SY') + ' ل.س';
 
   // عطّل زر "متابعة الطلب" إذا لا يوجد شيء محدّد
@@ -894,6 +951,11 @@ function proceedToOrder() {
   // فلتر sellerShipping ليحتوي فقط البائعين المختارين
   const filteredShipping = {};
   sellerKeys.forEach(k => { if (sellerShipping[k]) filteredShipping[k] = sellerShipping[k]; });
+
+  // كوبونات البائعين المختارين فقط (مفتاح بائع → الكود)
+  const couponMap = {};
+  sellerKeys.forEach(k => { if (appliedCoupons[k]) couponMap[k] = appliedCoupons[k].code; });
+  localStorage.setItem('orderCoupons', JSON.stringify(couponMap));
 
   localStorage.setItem('orderCart_' + (CURRENT_USER_ID || 'anon'), JSON.stringify(selected));
   localStorage.setItem('orderCart', JSON.stringify(selected)); // توافق مع الإصدارات القديمة

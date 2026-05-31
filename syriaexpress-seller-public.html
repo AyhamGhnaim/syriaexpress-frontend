@@ -770,6 +770,7 @@ function verifiedBadgeHTML() { return '<span class="verified-badge"><img class="
       document.getElementById('content').innerHTML = `
         <!-- Seller Card -->
         <div class="seller-card">
+          ${seller.banner_url ? `<img src="${seller.banner_url}" alt="" style="width:100%;height:140px;object-fit:cover;border-radius:12px;margin-bottom:12px;display:block">` : ''}
           <div class="seller-top">
             <div class="seller-avatar">${avatarContent}</div>
             <div class="seller-top-info">
