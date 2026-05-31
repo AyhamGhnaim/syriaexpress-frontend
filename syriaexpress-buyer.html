@@ -273,6 +273,14 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
     </div>
   </div>
 
+  <!-- SAVED / WISHLIST -->
+  <div class="box" id="savedBox" style="display:none">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot"></span> محفوظاتي</div>
+    </div>
+    <div class="orders-list" id="savedList"></div>
+  </div>
+
   <!-- QUICK BROWSE -->
   <div class="box">
     <div class="box-header">
@@ -338,6 +346,50 @@ if (!token) location.href = 'login.html';
 
 loadOrders();
 loadCategories();
+loadSaved();
+
+// ── المحفوظات ──
+async function loadSaved() {
+  try {
+    const res = await fetch(`${API_BASE}/api/saved`, { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!res.ok) return;
+    const data  = await res.json();
+    const items = data.products || [];
+    const box   = document.getElementById('savedBox');
+    const list  = document.getElementById('savedList');
+    if (!box || !list) return;
+    if (!items.length) { box.style.display = 'none'; return; }
+    box.style.display = '';
+    list.innerHTML = items.map(p => {
+      const name    = p.name_ar || p.name_en || 'منتج';
+      const company = p.company_name_ar || 'بائع';
+      const img     = p.product_image || p.image_url || p.seller_logo_url || '';
+      const price   = (Number(p.price) || 0).toLocaleString('ar-SY');
+      return `
+        <div class="order-row">
+          <div class="order-img">${img ? `<img src="${img}" alt="${name}" onerror="this.parentElement.textContent='📦'">` : '📦'}</div>
+          <div class="order-info">
+            <div class="order-name"><a href="syriaexpress-product.html?id=${p.id}" style="color:inherit;text-decoration:none">${name}</a></div>
+            <div class="order-company">${company} — ${price} ل.س</div>
+          </div>
+          <button onclick="removeSaved('${p.id}', this)" title="إزالة من المحفوظات" style="background:none;border:none;color:var(--gold);font-size:20px;cursor:pointer;line-height:1">\u2665</button>
+        </div>`;
+    }).join('');
+  } catch (e) {}
+}
+async function removeSaved(productId, btn) {
+  try {
+    const res = await fetch(`${API_BASE}/api/saved/${productId}`, {
+      method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+      const row = btn.closest('.order-row');
+      if (row) row.remove();
+      const list = document.getElementById('savedList');
+      if (list && !list.children.length) document.getElementById('savedBox').style.display = 'none';
+    }
+  } catch (e) {}
+}
 
 // ── طلبات المشتري ──
 async function loadOrders() {

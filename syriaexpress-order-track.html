@@ -370,6 +370,40 @@ if (typeof LOGOS !== 'undefined' && LOGOS.main) {
 const API = 'https://syriaexpress-backend.onrender.com';
 
 function getToken() { return localStorage.getItem('token'); }
+function decodeJWT(token) {
+  try {
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
+    const json = decodeURIComponent(atob(padded).split('').map(c =>
+      '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+    ).join(''));
+    return JSON.parse(json);
+  } catch (e) { return {}; }
+}
+function reorder(orderId) {
+  const o = (window.allOrders || []).find(x => x.id === orderId);
+  if (!o) return;
+  const qty = Number(o.quantity) || 1;
+  const item = {
+    id: o.product_id, product_id: o.product_id,
+    qty: qty, quantity: qty,
+    seller_id: o.seller_id || '',
+    seller_name: o.company_name_ar || '',
+    company_name_ar: o.company_name_ar || '',
+    name: o.name_ar || o.name_en || 'منتج',
+    name_ar: o.name_ar || '',
+    price: Number(o.price) || 0,
+    unit: o.unit || '',
+    image_url: o.product_image || ''
+  };
+  let uid = '';
+  const t = getToken();
+  if (t) { const p = decodeJWT(t); uid = p.user_id || p.id || p.sub || ''; }
+  const payload = JSON.stringify([item]);
+  if (uid) localStorage.setItem('orderCart_' + uid, payload);
+  localStorage.setItem('orderCart', payload);
+  window.location.href = 'syriaexpress-order.html';
+}
 
 function formatPrice(p) {
   const n = parseFloat(p);
@@ -513,6 +547,10 @@ function buildOrderCard(order) {
       ${order.status === 'delivered' ? (order.reviewed
         ? '<div style="text-align:center;color:var(--success);padding:10px 0;font-size:13px">✓ شكراً، تم تقييم هذا الطلب</div>'
         : `<button class="cancel-btn" style="background:var(--gold);color:#0F0E0C;border:none" onclick="openReview('${order.id}')">⭐ قيّم البائع</button>`) : ''}
+
+      ${(order.status === 'delivered' || order.status === 'cancelled') ? `
+        <button class="cancel-btn" style="background:transparent;color:var(--gold);border:1px solid var(--gold)" onclick="reorder('${order.id}')">🔁 أعد الطلب</button>
+      ` : ''}
     </div>`;
 }
 

@@ -652,6 +652,46 @@ const API_BASE = 'https://syriaexpress-backend.onrender.com';
 const params = new URLSearchParams(location.search);
 const productId = params.get('id');
 
+// ===== المحفوظات (Wishlist) =====
+function savedToken() { return localStorage.getItem('token'); }
+function isBuyerUser() {
+  const t = savedToken(); if (!t) return false;
+  try { const p = JSON.parse(atob(t.split('.')[1])); return (p.user_type || p.type || p.role) === 'buyer'; }
+  catch (e) { return false; }
+}
+let isSaved = false;
+function paintSaveBtn() {
+  const btn = document.getElementById('saveBtn');
+  if (!btn) return;
+  btn.textContent = isSaved ? '\u2665' : '\u2661';
+  btn.style.color = isSaved ? 'var(--gold)' : 'var(--text2)';
+  btn.title = isSaved ? 'إزالة من المحفوظات' : 'حفظ في المحفوظات';
+}
+async function initSavedState() {
+  const btn = document.getElementById('saveBtn');
+  if (!btn || !isBuyerUser() || !productId) return;
+  btn.style.display = '';
+  try {
+    const res = await fetch(`${API_BASE}/api/saved/ids`, { headers: { 'Authorization': 'Bearer ' + savedToken() } });
+    if (res.ok) {
+      const data = await res.json();
+      isSaved = Array.isArray(data.ids) && data.ids.includes(productId);
+      paintSaveBtn();
+    }
+  } catch (e) {}
+}
+async function toggleSaved() {
+  if (!isBuyerUser()) { window.location.href = 'login.html'; return; }
+  const method = isSaved ? 'DELETE' : 'POST';
+  const url = isSaved ? `${API_BASE}/api/saved/${productId}` : `${API_BASE}/api/saved`;
+  const opts = { method, headers: { 'Authorization': 'Bearer ' + savedToken() } };
+  if (!isSaved) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify({ product_id: productId }); }
+  try {
+    const res = await fetch(url, opts);
+    if (res.ok) { isSaved = !isSaved; paintSaveBtn(); }
+  } catch (e) {}
+}
+
 // HTML escape helper
 function escapeHtml(str) {
   if (str == null) return '';
@@ -767,6 +807,7 @@ async function loadProduct() {
 
 
     renderProduct();
+    initSavedState();
     return; // نجح
   } catch(e) {
     retries++;
@@ -803,7 +844,7 @@ function renderProduct() {
   const catEl = document.getElementById('breadCat');
   catEl.textContent = product.category_name || 'الفئة';
   if (product.category_id) {
-    catEl.href = `syriaexpress-products.html?category=${product.category_id}`;
+    catEl.href = `syriaexpress-products.html?cat=${product.category_id}`;
   }
   document.getElementById('breadProduct').className = 'bc-current';
   document.getElementById('breadProduct').textContent = product.name || '';
@@ -887,6 +928,7 @@ function renderProduct() {
       <button class="btn-cart" id="cartBtn" onclick="addToCart()" ${ isOutOfStock() ? 'disabled style="opacity:.5;cursor:not-allowed"' : '' }>
         ${ isOutOfStock() ? 'غير متوفر حالياً' : '🛒 أضف للسلة' }
       </button>
+      <button class="btn-save" id="saveBtn" onclick="toggleSaved()" style="display:none;flex:0 0 54px;border:1px solid var(--border);background:var(--bg2);border-radius:12px;font-size:24px;cursor:pointer;line-height:1;color:var(--text2)">\u2661</button>
     </div>
 
     <!-- SHIPPING -->
