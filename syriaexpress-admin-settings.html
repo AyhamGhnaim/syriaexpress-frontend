@@ -165,9 +165,13 @@ async function saveSla(){
 
 async function saveKey(key){
   const el = document.getElementById('set_' + key);
-  let value = el.value;
-  // محاولة تفسير القيمة كـ JSON (رقم/منطقي/كائن)، وإلا تُحفظ كنص
-  try { value = JSON.parse(el.value); } catch(_) { /* نص كما هو */ }
+  let value;
+  // تفسير القيمة كـ JSON (رقم/منطقي/كائن/سلسلة JSON)، وإلا تُعامل كنص عادي
+  try { value = JSON.parse(el.value); } catch(_) { value = el.value; }
+  // ضمان قيمة jsonb صالحة: النص العادي يُغلَّف كسلسلة JSON
+  if (typeof value === 'string') {
+    try { JSON.parse(value); } catch(_) { value = JSON.stringify(value); }
+  }
   try {
     await putSetting(key, value);
     showToast('تم حفظ ' + key);
