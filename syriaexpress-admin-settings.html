@@ -93,6 +93,30 @@
 <script>
 const API = 'https://syriaexpress-backend.onrender.com';
 function getToken() { return localStorage.getItem('token'); }
+
+// نداء API مع تنشيط الخادم (Render قد ينام/يُوقَف فيحتاج وقتاً للاستيقاظ)
+async function apiFetch(path, opts = {}, onWake) {
+  const maxRetries = 4;
+  let attempt = 0;
+  while (true) {
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), attempt === 0 ? 15000 : 60000);
+    try {
+      const res = await fetch(`${API}${path}`, Object.assign({}, opts, { signal: ac.signal }));
+      clearTimeout(t);
+      if (res.status === 401 || res.status === 403) { window.location.href = 'login.html'; return null; }
+      if (!res.ok) throw new Error('server ' + res.status);
+      return await res.json();
+    } catch (e) {
+      clearTimeout(t);
+      attempt++;
+      if (attempt > maxRetries) throw e;
+      if (typeof onWake === 'function') onWake(attempt, maxRetries);
+      await new Promise(r => setTimeout(r, [3000, 5000, 8000, 12000][attempt - 1] || 12000));
+    }
+  }
+}
+
 const SLA_KEYS = ['sla_max_response_hours','sla_max_shipping_hours'];
 
 function showToast(msg){
@@ -112,10 +136,10 @@ async function loadSettings(){
   const token = getToken();
   if(!token){ window.location.href='login.html'; return; }
   try {
-    const res = await fetch(`${API}/api/admin/settings`, { headers: { 'Authorization':'Bearer '+token } });
-    if(res.status === 401 || res.status === 403){ window.location.href='login.html'; return; }
-    if(!res.ok) throw new Error();
-    const rows = await res.json();
+    const rows = await apiFetch('/api/admin/settings',
+      { headers: { 'Authorization':'Bearer '+token } },
+      (a, m) => { document.getElementById('otherSettings').innerHTML = `<div class="empty">⏳ جارٍ تنشيط الخادم... (المحاولة ${a} من ${m})</div>`; });
+    if (!rows) return;
     const map = {};
     rows.forEach(r => map[r.key] = r.value);
 
@@ -135,7 +159,7 @@ async function loadSettings(){
         </div>`).join('');
     }
   } catch(e){
-    document.getElementById('otherSettings').innerHTML = '<div class="empty">تعذّر تحميل الإعدادات.</div>';
+    document.getElementById('otherSettings').innerHTML = '<div class="empty">تعذّر تحميل الإعدادات. <button onclick="loadSettings()" style="color:var(--gold);background:none;border:1px solid var(--gold);padding:5px 12px;border-radius:8px;cursor:pointer;font-family:inherit">إعادة المحاولة</button></div>';
   }
 }
 
