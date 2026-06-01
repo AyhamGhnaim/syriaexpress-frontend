@@ -111,6 +111,11 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 .notif-left-bar.green{background:var(--green)}
 .notif-left-bar.blue{background:var(--blue)}
 .notif-icon-box{width:38px;height:38px;min-width:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;background:var(--bg4);border:1px solid var(--border);}
+/* ── NOTIF DROPDOWN (added) ── */
+.notif-wrap{position:relative;display:inline-flex}
+.notif-panel{display:none;position:absolute;top:46px;left:0;width:300px;max-width:86vw;max-height:380px;overflow-y:auto;background:var(--bg2);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,0.35);z-index:1000;}
+.notif-panel-head{padding:12px 16px;font-weight:700;font-size:14px;color:var(--text);border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg2);}
+
 .notif-text{font-size:13px;font-weight:600;margin-bottom:2px}
 .notif-time{font-size:11px;color:var(--text-dim)}
 
@@ -214,6 +219,12 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
   </div>
   <button class="header-title" onclick="location.href='syriaexpress-buyer-profile.html'" style="background:transparent;border:none;color:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;">لوحة المشتري ⚙️</button>
   <div class="header-right">
+  <div id="notifWrap" class="notif-wrap">
+    <button id="notifBell" onclick="toggleNotif()" aria-label="الإشعارات" style="position:relative;background:var(--bg3);border:1px solid var(--border);width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;">🔔</button>
+    <span id="notifBadge" style="display:none;position:absolute;top:-4px;left:-4px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;width:18px;height:18px;border-radius:50%;align-items:center;justify-content:center;z-index:2;">0</span>
+    <div id="notifPanel" class="notif-panel"><div class="notif-panel-head">الإشعارات</div><div id="notifList" class="notif-list"></div></div>
+  </div>
+
     <button onclick="location.href='syriaexpress-cart.html'" style="position:relative;background:var(--bg3);border:1px solid var(--border);width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;">
       🛒
       <span id="cartBadge" style="display:none;position:absolute;top:-4px;left:-4px;background:var(--gold);color:#0F0E0C;font-size:10px;font-weight:900;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;">0</span>
@@ -526,6 +537,54 @@ async function loadCategories() {
     }).join('');
   } catch(e) {}
 }
+
+
+/* ===== NOTIFICATIONS (added) ===== */
+function notifLink(n){if(n.ref_type==='order')return'syriaexpress-order-track.html';return null;}
+function notifEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
+function notifIcon(t){return ({new_order:'🛒',new_review:'⭐',verification_update:'✅',product_moderation:'📦',order_status:'🚚',order_cancelled:'❌'})[t]||'🔔';}
+function notifTime(ts){if(!ts)return'';var dt=new Date(ts),s=Math.floor((Date.now()-dt.getTime())/1000);if(s<60)return'الآن';if(s<3600)return'منذ '+Math.floor(s/60)+' دقيقة';if(s<86400)return'منذ '+Math.floor(s/3600)+' ساعة';if(s<604800)return'منذ '+Math.floor(s/86400)+' يوم';return dt.toLocaleDateString('ar-SY');}
+async function loadNotifications(){
+  try{
+    var r=await fetch(API_BASE+'/api/notifications',{headers:{'Authorization':'Bearer '+token}});
+    if(!r.ok)return;
+    var d=await r.json();
+    renderNotifications(d.notifications||[],d.unread||0);
+  }catch(e){}
+}
+function renderNotifications(list,unread){
+  var badge=document.getElementById('notifBadge');
+  if(badge){if(unread>0){badge.textContent=unread>9?'9+':String(unread);badge.style.display='flex';}else{badge.style.display='none';}}
+  var box=document.getElementById('notifList');
+  if(!box)return;
+  if(!list.length){box.innerHTML='<div style="padding:24px 16px;text-align:center;color:var(--text-dim);font-size:13px;">لا توجد إشعارات</div>';return;}
+  box.innerHTML=list.map(function(n){
+    var link=notifLink(n)||'';
+    var op=n.is_read?'0.55':'1';
+    return '<div class="notif-item" data-link="'+link+'" style="opacity:'+op+';cursor:'+(link?'pointer':'default')+';">'
+      +'<div class="notif-icon-box">'+notifIcon(n.type)+'</div>'
+      +'<div style="flex:1;min-width:0;">'
+      +'<div class="notif-text"><strong>'+notifEsc(n.title_ar)+'</strong></div>'
+      +'<div style="font-size:12px;color:var(--text-dim);white-space:normal;line-height:1.4;">'+notifEsc(n.body_ar)+'</div>'
+      +'<div class="notif-time">'+notifTime(n.created_at)+'</div>'
+      +'</div></div>';
+  }).join('');
+  box.onclick=function(e){var it=e.target.closest('.notif-item');if(it&&it.getAttribute('data-link'))location.href=it.getAttribute('data-link');};
+}
+async function toggleNotif(){
+  var p=document.getElementById('notifPanel');if(!p)return;
+  var open=p.style.display==='block';
+  p.style.display=open?'none':'block';
+  if(!open){
+    try{await fetch(API_BASE+'/api/notifications/read-all',{method:'PATCH',headers:{'Authorization':'Bearer '+token}});}catch(e){}
+    var badge=document.getElementById('notifBadge');if(badge)badge.style.display='none';
+  }
+}
+document.addEventListener('click',function(e){
+  var p=document.getElementById('notifPanel'),w=document.getElementById('notifWrap');
+  if(p&&p.style.display==='block'&&w&&!w.contains(e.target))p.style.display='none';
+});
+loadNotifications();
 
 function logout() {
   localStorage.removeItem('token');
