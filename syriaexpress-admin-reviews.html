@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#C9A84C">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إشراف التقييمات — سوريا إكسبريس</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+  <script>
+  (function() {
+    var saved = localStorage.getItem('theme');
+    if (saved !== 'dark') document.documentElement.setAttribute('data-theme', 'light');
+  })();
+  </script>
+  <style>
+    :root {
+      --bg: #0F0E0C; --bg2: #1a1814; --bg3: #222018;
+      --gold: #C9A84C; --gold2: #e8c96a;
+      --text: #f0ece4; --text2: #a09880; --border: #2e2b24;
+      --success: #4CAF50; --warning: #FF9800; --danger: #e05555; --info: #2196F3;
+    }
+    [data-theme="light"] {
+      --bg: #F5F3EF; --bg2: #FFFFFF; --bg3: #E8E4DC;
+      --gold: #C9A84C; --gold2: #b8922d;
+      --text: #1a1814; --text2: #6b6456; --border: #d4cfc5;
+      --success: #2e7d32; --warning: #e65100; --danger: #c62828; --info: #1565c0;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'Cairo', sans-serif; min-height: 100vh; padding-bottom: 100px; }
+    .header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: var(--bg2); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+    .back-btn { color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 600; }
+    .back-btn:hover { color: var(--gold); }
+    .header-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .header-logo-text .ar { font-family: 'Amiri', serif; color: var(--gold); font-size: 16px; font-weight: 700; }
+    .header-logo-text .en { color: var(--text2); font-size: 9px; letter-spacing: 1px; }
+    .header-spacer { width: 48px; }
+    .container { max-width: 900px; margin: 0 auto; padding: 18px; }
+    .page-title { font-family: 'Amiri', serif; font-size: 24px; color: var(--gold); margin-bottom: 4px; }
+    .page-sub { color: var(--text2); font-size: 13px; margin-bottom: 18px; line-height: 1.6; }
+    .list { display: flex; flex-direction: column; gap: 10px; }
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 14px; display: flex; gap: 12px; align-items: flex-start; }
+    .info { flex: 1; min-width: 0; }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .name { font-weight: 700; font-size: 14px; }
+    .stars { color: var(--gold); font-size: 14px; white-space: nowrap; }
+    .meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
+    .comment { font-size: 13px; margin-top: 6px; line-height: 1.6; }
+    .reply { margin-top: 8px; padding: 8px 10px; background: rgba(201,168,76,.08); border-right: 3px solid var(--gold); border-radius: 8px; font-size: 12px; line-height: 1.6; }
+    .reply strong { color: var(--gold); }
+    .actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+    .act { border: none; border-radius: 8px; padding: 7px 12px; font-family: 'Cairo', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: .15s; }
+    .act-delete { background: rgba(224,85,85,.15); color: var(--danger); border: 1px solid rgba(224,85,85,.3); }
+    .act:hover { filter: brightness(1.1); }
+    .empty { text-align: center; padding: 50px 20px; color: var(--text2); }
+    .empty .icon { font-size: 40px; margin-bottom: 10px; }
+    .spinner { width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin .8s linear infinite; margin: 40px auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--gold); color: #1a1814; padding: 12px 22px; border-radius: 30px; font-weight: 700; font-size: 13px; opacity: 0; transition: .3s; z-index: 200; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a href="syriaexpress-admin.html" class="back-btn">← رجوع</a>
+  <a href="syriaexpress-landing.html" class="header-logo">
+    <div class="header-logo-text">
+      <div class="ar">SyriaExpress</div>
+      <div class="en">Made in Syria</div>
+    </div>
+  </a>
+  <div class="header-spacer"></div>
+</div>
+
+<div class="container">
+  <div class="page-title">إشراف التقييمات</div>
+  <div class="page-sub">احذف التقييمات المسيئة أو الكاذبة فقط. البائع لا يستطيع حذف تقييمات المشترين — يستطيع الردّ عليها فقط.</div>
+  <div id="list" class="list"><div class="spinner"></div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://syriaexpress-backend.onrender.com';
+function getToken() { return localStorage.getItem('token'); }
+
+async function apiFetch(path, opts = {}, onWake) {
+  const maxRetries = 4;
+  let attempt = 0;
+  while (true) {
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), attempt === 0 ? 15000 : 60000);
+    try {
+      const res = await fetch(`${API}${path}`, Object.assign({}, opts, { signal: ac.signal }));
+      clearTimeout(t);
+      if (res.status === 401 || res.status === 403) { window.location.href = 'login.html'; return null; }
+      if (!res.ok) throw new Error('server ' + res.status);
+      return await res.json();
+    } catch (e) {
+      clearTimeout(t);
+      attempt++;
+      if (attempt > maxRetries) throw e;
+      if (typeof onWake === 'function') onWake(attempt, maxRetries);
+      await new Promise(r => setTimeout(r, [3000, 5000, 8000, 12000][attempt - 1] || 12000));
+    }
+  }
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(d){ if(!d) return ''; return new Date(d).toLocaleDateString('ar-SY',{year:'numeric',month:'short',day:'numeric'}); }
+function stars(n){ n = parseInt(n)||0; return '★'.repeat(n) + '☆'.repeat(5-n); }
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+async function loadReviews(){
+  const token = getToken();
+  if(!token){ window.location.href = 'login.html'; return; }
+  const list = document.getElementById('list');
+  list.innerHTML = '<div class="spinner"></div>';
+  try {
+    const data = await apiFetch('/api/admin/reviews',
+      { headers: { 'Authorization': 'Bearer ' + token } },
+      (a, m) => { list.innerHTML = `<div class="empty"><div class="icon">⏳</div>جارٍ تنشيط الخادم...<div style="font-size:12px;margin-top:6px;color:var(--text2)">المحاولة ${a} من ${m} — قد يستغرق حتى دقيقة</div></div>`; });
+    if (!data) return;
+    renderList(data.reviews || []);
+  } catch(e){
+    list.innerHTML = '<div class="empty"><div class="icon">⚠️</div>تعذّر تحميل التقييمات<div style="margin-top:10px"><button onclick="loadReviews()" style="color:var(--gold);background:none;border:1px solid var(--gold);padding:6px 16px;border-radius:8px;cursor:pointer;font-family:inherit">إعادة المحاولة</button></div></div>';
+  }
+}
+
+function renderList(reviews){
+  const list = document.getElementById('list');
+  if(!reviews.length){
+    list.innerHTML = '<div class="empty"><div class="icon">⭐</div>لا توجد تقييمات بعد</div>';
+    return;
+  }
+  list.innerHTML = reviews.map(r => `
+    <div class="card">
+      <div class="info">
+        <div class="top">
+          <div class="name">${esc(r.buyer_name || 'مشترٍ')}</div>
+          <div class="stars">${stars(r.rating)}</div>
+        </div>
+        <div class="meta">${esc(r.seller_name || '—')}${r.product_name ? ' · ' + esc(r.product_name) : ''} · ${fmtDate(r.created_at)}</div>
+        ${r.comment ? `<div class="comment">${esc(r.comment)}</div>` : ''}
+        ${r.seller_reply ? `<div class="reply"><strong>ردّ البائع:</strong> ${esc(r.seller_reply)}</div>` : ''}
+      </div>
+      <div class="actions">
+        <button class="act act-delete" onclick="del('${r.id}')">🗑 حذف</button>
+      </div>
+    </div>`).join('');
+}
+
+async function del(id){
+  if(!confirm('حذف هذا التقييم نهائياً؟ سيُعاد حساب متوسط تقييم البائع.')) return;
+  const token = getToken();
+  try {
+    const res = await fetch(`${API}/api/admin/reviews/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'فشل');
+    showToast('تم حذف التقييم');
+    loadReviews();
+  } catch(e){
+    showToast(e.message || 'حدث خطأ');
+  }
+}
+
+loadReviews();
+</script>
+</body>
+</html>

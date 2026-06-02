@@ -838,6 +838,8 @@ function verifiedBadgeHTML() { return '<span class="verified-badge"><img class="
                   <span style="color:var(--gold);font-size:14px">${renderStars(r.rating)}</span>
                 </div>
                 ${r.comment ? `<div style="font-size:13px;color:var(--text2,#9a9a9a);margin-top:4px">${escHtml(r.comment)}</div>` : ''}
+                ${r.seller_reply ? `<div style="margin-top:8px;padding:8px 10px;background:rgba(201,168,76,.08);border-right:3px solid var(--gold);border-radius:8px;font-size:12px;line-height:1.6"><strong style="color:var(--gold)">ردّ البائع:</strong> ${escHtml(r.seller_reply)}</div>` : ''}
+                ${isOwner ? `<button onclick="replyToReview('${r.id}', this)" data-reply="${escHtml(r.seller_reply || '')}" style="margin-top:8px;background:none;border:1px solid var(--gold);color:var(--gold);padding:4px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit">${r.seller_reply ? '✏️ تعديل الردّ' : '↩️ ردّ'}</button>` : ''}
               </div>`).join('')}
           </div>
         </div>
@@ -855,6 +857,28 @@ function verifiedBadgeHTML() { return '<span class="verified-badge"><img class="
           applyFilter(btn.dataset.filter);
         });
       });
+    }
+
+    async function replyToReview(reviewId, btn) {
+      const existing = btn.getAttribute('data-reply') || '';
+      const reply = prompt('اكتب ردّك على هذا التقييم (اتركه فارغاً لحذف الردّ):', existing);
+      if (reply === null) return;
+      const token = localStorage.getItem('token');
+      if (!token) { window.location.href = 'login.html'; return; }
+      btn.disabled = true;
+      try {
+        const res = await fetch(`${API_BASE}/api/reviews/${reviewId}/reply`, {
+          method: 'PATCH',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reply: reply.trim() })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'فشل');
+        location.reload();
+      } catch (e) {
+        btn.disabled = false;
+        alert(e.message || 'تعذّر حفظ الردّ');
+      }
     }
 
     function applyFilter(filter) {
