@@ -41,6 +41,16 @@
     .container { max-width: 900px; margin: 0 auto; padding: 18px; }
     .page-title { font-family: 'Amiri', serif; font-size: 24px; color: var(--gold); margin-bottom: 4px; }
     .page-sub { color: var(--text2); font-size: 13px; margin-bottom: 18px; line-height: 1.6; }
+    .filters { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+    .filter-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .search-box { flex: 1; min-width: 200px; background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 10px; font-family: 'Cairo', sans-serif; font-size: 13px; }
+    .search-box:focus { outline: none; border-color: var(--gold); }
+    .sel { background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 9px 12px; border-radius: 10px; font-family: 'Cairo', sans-serif; font-size: 13px; cursor: pointer; }
+    .sel:focus { outline: none; border-color: var(--gold); }
+    .chip { background: var(--bg2); border: 1px solid var(--border); color: var(--text2); padding: 7px 13px; border-radius: 20px; font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: .15s; white-space: nowrap; }
+    .chip:hover { border-color: var(--gold); }
+    .chip.active { background: var(--gold); border-color: var(--gold); color: #1a1814; }
+    .filter-label { font-size: 12px; color: var(--text2); font-weight: 700; margin-left: 2px; }
     .list { display: flex; flex-direction: column; gap: 10px; }
     .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 14px; display: flex; gap: 12px; align-items: flex-start; }
     .info { flex: 1; min-width: 0; }
@@ -79,6 +89,34 @@
 <div class="container">
   <div class="page-title">إشراف التقييمات</div>
   <div class="page-sub">احذف التقييمات المسيئة أو الكاذبة فقط. البائع لا يستطيع حذف تقييمات المشترين — يستطيع الردّ عليها فقط.</div>
+
+  <div class="filters">
+    <div class="filter-row">
+      <input type="text" id="search" class="search-box" placeholder="🔍 بحث باسم البائع أو المشتري أو التعليق أو المنتج...">
+      <select id="sort" class="sel" onchange="applyAndLoad()">
+        <option value="newest">الأحدث أولاً</option>
+        <option value="oldest">الأقدم أولاً</option>
+        <option value="rating_high">الأعلى تقييماً</option>
+        <option value="rating_low">الأدنى تقييماً</option>
+      </select>
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">النجوم:</span>
+      <button class="chip active" data-rating="" onclick="setRating('', this)">الكل</button>
+      <button class="chip" data-rating="5" onclick="setRating('5', this)">5 ★</button>
+      <button class="chip" data-rating="4" onclick="setRating('4', this)">4 ★</button>
+      <button class="chip" data-rating="3" onclick="setRating('3', this)">3 ★</button>
+      <button class="chip" data-rating="2" onclick="setRating('2', this)">2 ★</button>
+      <button class="chip" data-rating="1" onclick="setRating('1', this)">1 ★</button>
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">الردّ:</span>
+      <button class="chip active" data-replied="" onclick="setReplied('', this)">الكل</button>
+      <button class="chip" data-replied="yes" onclick="setReplied('yes', this)">عليها ردّ</button>
+      <button class="chip" data-replied="no" onclick="setReplied('no', this)">بدون ردّ</button>
+    </div>
+  </div>
+
   <div id="list" class="list"><div class="spinner"></div></div>
 </div>
 
@@ -120,13 +158,49 @@ function showToast(msg){
   setTimeout(()=>t.classList.remove('show'), 2200);
 }
 
+let F = { rating: '', replied: '', sort: 'newest', q: '' };
+
+function setRating(v, el){
+  F.rating = v;
+  document.querySelectorAll('[data-rating]').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  loadReviews();
+}
+function setReplied(v, el){
+  F.replied = v;
+  document.querySelectorAll('[data-replied]').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  loadReviews();
+}
+function applyAndLoad(){
+  F.sort = document.getElementById('sort').value;
+  loadReviews();
+}
+
+// بحث نصّي مع تأخير (debounce) حتى لا نُرسل طلباً مع كل حرف
+let searchTimer = null;
+document.getElementById('search').addEventListener('input', function(){
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { F.q = this.value.trim(); loadReviews(); }, 400);
+});
+
+function buildQuery(){
+  const p = new URLSearchParams();
+  if (F.rating)  p.set('rating', F.rating);
+  if (F.replied) p.set('replied', F.replied);
+  if (F.sort)    p.set('sort', F.sort);
+  if (F.q)       p.set('q', F.q);
+  const s = p.toString();
+  return s ? ('?' + s) : '';
+}
+
 async function loadReviews(){
   const token = getToken();
   if(!token){ window.location.href = 'login.html'; return; }
   const list = document.getElementById('list');
   list.innerHTML = '<div class="spinner"></div>';
   try {
-    const data = await apiFetch('/api/admin/reviews',
+    const data = await apiFetch('/api/admin/reviews' + buildQuery(),
       { headers: { 'Authorization': 'Bearer ' + token } },
       (a, m) => { list.innerHTML = `<div class="empty"><div class="icon">⏳</div>جارٍ تنشيط الخادم...<div style="font-size:12px;margin-top:6px;color:var(--text2)">المحاولة ${a} من ${m} — قد يستغرق حتى دقيقة</div></div>`; });
     if (!data) return;
@@ -139,7 +213,10 @@ async function loadReviews(){
 function renderList(reviews){
   const list = document.getElementById('list');
   if(!reviews.length){
-    list.innerHTML = '<div class="empty"><div class="icon">⭐</div>لا توجد تقييمات بعد</div>';
+    const filtered = F.rating || F.replied || F.q;
+    list.innerHTML = filtered
+      ? '<div class="empty"><div class="icon">🔍</div>لا توجد تقييمات مطابقة للفلاتر</div>'
+      : '<div class="empty"><div class="icon">⭐</div>لا توجد تقييمات بعد</div>';
     return;
   }
   list.innerHTML = reviews.map(r => `
