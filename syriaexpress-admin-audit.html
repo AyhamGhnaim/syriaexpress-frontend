@@ -51,6 +51,7 @@
   <a href="syriaexpress-admin.html" class="back-btn">← رجوع</a>
   <a href="syriaexpress-landing.html" class="header-logo">
     <div class="header-logo-text"><div class="ar">SyriaExpress</div><div class="en">Made in Syria</div></div>
+    <img id="headerLogo" src="" alt="logo" style="height:38px;display:none" onerror="this.style.display='none'">
   </a>
   <div class="header-spacer"></div>
 </div>
@@ -185,6 +186,10 @@ function render(entries){
 }
 
 load();
+</script>
+<script src="logos.js"></script>
+<script>
+(function(){function t(){if(typeof LOGOS!=="undefined"&&LOGOS.main){var el=document.getElementById("headerLogo");if(el){el.src=LOGOS.main;el.style.display="inline-block";}}else{setTimeout(t,100);}}t();})();
 </script>
 </body>
 </html>
