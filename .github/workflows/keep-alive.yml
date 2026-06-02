@@ -1,0 +1,54 @@
+name: Supabase Keep-Alive
+on:
+  schedule:
+    - cron: '17 6 * * 2,5'   # ثلاثاء + جمعة 06:17 UTC — أقصى فجوة 4 أيام < 7
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: keep-alive
+  cancel-in-progress: false
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ping backend DB endpoint (reset Supabase 7-day pause timer)
+        run: |
+          set -euo pipefail
+          URL="https://syriaexpress-backend.onrender.com/api/categories"
+          HTTP="000"
+          for i in 1 2 3; do
+            echo "Attempt $i — GET $URL"
+            HTTP=$(curl -sS -o /tmp/resp.txt -w "%{http_code}" --max-time 120 "$URL") || HTTP="000"
+            echo "HTTP status: $HTTP"
+            [ "$HTTP" = "200" ] && break
+            echo "Not 200 yet (Render cold start?) — waiting 20s before retry..."
+            sleep 20
+          done
+          echo "Response body (first 300 chars): $(head -c 300 /tmp/resp.txt 2>/dev/null || true)"
+          [ "$HTTP" = "200" ] || { echo "::error::keep-alive ping failed after retries (HTTP $HTTP)"; exit 1; }
+          echo "✅ Backend executed DB query (SELECT FROM categories) — Supabase 7-day timer reset + Render awake."
+
+      - name: Keep GitHub Actions schedule alive (reset 60-day timer)
+        run: |
+          set -euo pipefail
+          LAST=$(git log -1 --format=%ct)
+          NOW=$(date +%s)
+          DAYS=$(( (NOW - LAST) / 86400 ))
+          echo "Days since last commit: $DAYS"
+          if [ "$DAYS" -ge 45 ]; then
+            mkdir -p .github
+            date -u +"%Y-%m-%dT%H:%M:%SZ" > .github/keepalive-marker
+            git config user.name "AyhamGhnaim"
+            git config user.email "drayhamghnaim@gmail.com"
+            git add .github/keepalive-marker
+            git commit -m "chore: keep-alive marker [skip ci]"
+            git push
+            echo "✅ Marker commit pushed."
+          else
+            echo "Recent commit exists — no marker needed."
+          fi
