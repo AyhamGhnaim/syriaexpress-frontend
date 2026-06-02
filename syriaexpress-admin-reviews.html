@@ -151,7 +151,7 @@ function renderList(reviews){
         </div>
         <div class="meta">${esc(r.seller_name || '—')}${r.product_name ? ' · ' + esc(r.product_name) : ''} · ${fmtDate(r.created_at)}</div>
         ${r.comment ? `<div class="comment">${esc(r.comment)}</div>` : ''}
-        ${r.seller_reply ? `<div class="reply"><strong>ردّ البائع:</strong> ${esc(r.seller_reply)}</div>` : ''}
+        ${r.seller_reply ? `<div class="reply"><strong>ردّ ${esc(r.seller_name || 'البائع')}:</strong> ${esc(r.seller_reply)}</div>` : ''}
       </div>
       <div class="actions">
         <button class="act act-delete" onclick="del('${r.id}')">🗑 حذف</button>
