@@ -94,6 +94,9 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 .order-status.shipped{background:rgba(167,139,250,0.15);color:var(--purple);border:1px solid rgba(167,139,250,0.3)}
 .order-status.confirmed{background:rgba(96,165,250,0.15);color:var(--blue);border:1px solid rgba(96,165,250,0.3)}
 .order-status.pending{background:rgba(251,146,60,0.15);color:var(--orange);border:1px solid rgba(251,146,60,0.3)}
+.reorder-btn{flex-shrink:0;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;background:var(--gold);border:1px solid var(--gold);color:#0F0E0C;text-decoration:none;transition:opacity .2s;}
+.reorder-btn:hover{opacity:0.9;}
+.reorder-btn.disabled{background:transparent;border:1px solid var(--border);color:var(--text-dim);cursor:default;pointer-events:none;}
 .order-status.delivered{background:rgba(74,222,128,0.15);color:var(--green);border:1px solid rgba(74,222,128,0.3)}
 .order-date{font-size:11px;color:var(--text-dim);min-width:40px;text-align:left;flex-shrink:0;}
 
@@ -329,6 +332,14 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
     </div>
   </div>
 
+  <!-- REORDER SUGGESTIONS -->
+  <div class="box" id="reorderBox" style="display:none">
+    <div class="box-header">
+      <div class="box-title"><span class="box-dot green"></span> 🔄 جاهز لإعادة الطلب</div>
+    </div>
+    <div class="orders-list" id="reorderList"></div>
+  </div>
+
   <!-- SUGGESTED -->
   <div class="box">
     <div class="box-header">
@@ -368,6 +379,7 @@ if (!token) location.href = 'login.html';
 loadOrders();
 loadCategories();
 loadSaved();
+loadReorder();
 
 // ── المحفوظات ──
 async function loadSaved() {
@@ -410,6 +422,80 @@ async function removeSaved(productId, btn) {
       if (list && !list.children.length) document.getElementById('savedBox').style.display = 'none';
     }
   } catch (e) {}
+}
+
+// ── اقتراحات إعادة الطلب التنبؤية ──
+function reorderReasonBadge(reason) {
+  const map = {
+    out_of_stock:       { t: 'نفد المخزون', cls: 'pending' },
+    saved_out_of_stock: { t: 'نفد المخزون', cls: 'pending' },
+    low_stock:          { t: 'قارب النفاد', cls: 'confirmed' },
+    saved_low_stock:    { t: 'قارب النفاد', cls: 'confirmed' },
+    due_reorder:        { t: 'حان وقت إعادة الطلب', cls: 'shipped' }
+  };
+  return map[reason] || { t: '', cls: 'pending' };
+}
+
+async function loadReorder() {
+  try {
+    const res = await fetch(`${API_BASE}/api/orders/reorder-suggestions`, { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!res.ok) return;
+    const data  = await res.json();
+    const items = data.suggestions || [];
+    const box   = document.getElementById('reorderBox');
+    const list  = document.getElementById('reorderList');
+    if (!box || !list) return;
+    if (!items.length) { box.style.display = 'none'; return; }
+    box.style.display = '';
+    list.innerHTML = items.map((p, i) => {
+      const name    = escapeHtml(p.name_ar || p.name_en || 'منتج');
+      const company = escapeHtml(p.company_name_ar || 'بائع');
+      const img     = p.product_image || '';
+      const price   = (Number(p.price) || 0).toLocaleString('ar-SY');
+      const badge   = reorderReasonBadge(p.reason);
+      const out     = p.stock_state === 'out_of_stock';
+      const meta    = p.last_quantity
+        ? `${company} — آخر كمية: ${p.last_quantity} ${escapeHtml(p.unit || '')}`
+        : `${company} — ${price} ل.س`;
+      return `
+        <div class="order-row">
+          <div class="order-img">${img ? `<img src="${escapeHtml(img)}" alt="${name}" onerror="this.parentElement.textContent='📦'">` : '📦'}</div>
+          <div class="order-info">
+            <div class="order-name"><a href="syriaexpress-product.html?id=${encodeURIComponent(p.product_id)}" style="color:inherit;text-decoration:none">${name}</a></div>
+            <div class="order-company">${meta}</div>
+            <div class="order-status ${badge.cls}" style="display:inline-block;margin-top:4px">${badge.t}</div>
+          </div>
+          ${out
+            ? `<a href="syriaexpress-product.html?id=${encodeURIComponent(p.product_id)}" class="reorder-btn disabled" title="غير متوفر حالياً">نفد</a>`
+            : `<button class="reorder-btn" data-idx="${i}" onclick="reorderProduct(${i})">أعد الطلب</button>`}
+        </div>`;
+    }).join('');
+    window.__reorderItems = items;
+  } catch (e) {}
+}
+
+function reorderProduct(idx) {
+  const p = (window.__reorderItems || [])[idx];
+  if (!p) return;
+  const qty = Number(p.last_quantity) || 1;
+  const item = {
+    id: p.product_id, product_id: p.product_id,
+    qty: qty, quantity: qty,
+    seller_id: p.seller_id || '',
+    seller_name: p.company_name_ar || '',
+    company_name_ar: p.company_name_ar || '',
+    name: p.name_ar || p.name_en || 'منتج',
+    name_ar: p.name_ar || '',
+    price: Number(p.price) || 0,
+    unit: p.unit || '',
+    image_url: p.product_image || ''
+  };
+  let uid = '';
+  try { const d = decodeJWT(token); uid = d.user_id || d.id || d.sub || ''; } catch (e) {}
+  const payload = JSON.stringify([item]);
+  if (uid) localStorage.setItem('orderCart_' + uid, payload);
+  localStorage.setItem('orderCart', payload);
+  window.location.href = 'syriaexpress-order.html';
 }
 
 // ── طلبات المشتري ──
