@@ -493,7 +493,7 @@ loadRecentOrders();
 
 async function loadDashboard() {
   try {
-    const res = await fetch(`${API_BASE}/api/orders/seller`, {
+    const res = await fetch(`${API_BASE}/api/orders/seller?limit=1000`, {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!res.ok) return;
@@ -508,6 +508,25 @@ async function loadDashboard() {
     if (nums[0]) nums[0].textContent = completed;
     if (nums[1]) nums[1].textContent = newOrders;
     if (nums[2]) nums[2].textContent = buyers;
+
+    // ── خط الاتجاه الأسبوعي (آخر 7 أيام) ──
+    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const inWeek = ts => !!ts && new Date(ts).getTime() >= weekAgo;
+
+    const deliveredWeek = orders.filter(o => o.status === 'delivered' && inWeek(o.delivered_at)).length;
+    const createdWeek = orders.filter(o => inWeek(o.created_at)).length;
+
+    const firstOrderAt = {};
+    orders.forEach(o => {
+      const t = new Date(o.created_at).getTime();
+      if (!firstOrderAt[o.buyer_id] || t < firstOrderAt[o.buyer_id]) firstOrderAt[o.buyer_id] = t;
+    });
+    const newBuyersWeek = Object.values(firstOrderAt).filter(t => t >= weekAgo).length;
+
+    const trends = document.querySelectorAll('.stat-trend');
+    setTrend(trends[0], completed > 0, deliveredWeek);
+    setTrend(trends[1], orders.length > 0, createdWeek);
+    setTrend(trends[2], buyers > 0, newBuyersWeek);
 
     // ── م14: إحصائيات هذا الشهر ──
     const now = new Date();
@@ -556,6 +575,16 @@ async function loadDashboard() {
     if (anTop) anTop.textContent = topProduct ? topProduct[0] : '—';
 
   } catch(e) {}
+}
+
+// تحديث سطر الاتجاه أسفل بطاقة إحصائية (قيم رقمية فقط — لا مدخلات مستخدم)
+function setTrend(el, hasAny, weekCount) {
+  if (!el) return;
+  if (weekCount > 0) {
+    el.innerHTML = '<span>+' + Number(weekCount) + '</span> هذا الأسبوع';
+  } else {
+    el.textContent = hasAny ? 'لا جديد هذا الأسبوع' : 'لا يوجد بعد';
+  }
 }
 
 async function loadRecentOrders() {
@@ -637,6 +666,12 @@ async function loadMyProducts() {
     const activeCount = products.filter(p => p.status === 'active' || !p.status).length;
     const nums = document.querySelectorAll('.stat-num');
     if (nums[3]) nums[3].textContent = activeCount;
+
+    const weekAgoP = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const activeWeek = products.filter(p =>
+      (p.status === 'active' || !p.status) && p.created_at && new Date(p.created_at).getTime() >= weekAgoP
+    ).length;
+    setTrend(document.querySelectorAll('.stat-trend')[3], activeCount > 0, activeWeek);
 
   } catch(e) {
     list.innerHTML = `<div class="empty-state">
