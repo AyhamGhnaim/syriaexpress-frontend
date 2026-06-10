@@ -552,7 +552,7 @@ async function loadCategories() {
 /* ===== NOTIFICATIONS (added) ===== */
 function notifLink(n){if(n.ref_type==='order')return'syriaexpress-order-track.html';return null;}
 function notifEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
-function notifIcon(t){return ({new_order:'🛒',new_review:'⭐',verification_update:'✅',product_moderation:'📦',order_status:'🚚',order_cancelled:'❌'})[t]||'🔔';}
+function notifIcon(t){return ({new_order:'🛒',new_review:'⭐',verification_update:'✅',product_moderation:'📦',order_status:'🚚',order_cancelled:'❌',review_reply:'💬'})[t]||'🔔';}
 function notifTime(ts){if(!ts)return'';var dt=new Date(ts),s=Math.floor((Date.now()-dt.getTime())/1000);if(s<60)return'الآن';if(s<3600)return'منذ '+Math.floor(s/60)+' دقيقة';if(s<86400)return'منذ '+Math.floor(s/3600)+' ساعة';if(s<604800)return'منذ '+Math.floor(s/86400)+' يوم';return dt.toLocaleDateString('ar-SY');}
 async function loadNotifications(){
   try{
