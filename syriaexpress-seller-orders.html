@@ -617,7 +617,7 @@ function buildOrderCard(order) {
       <div class="buyer-info">
         <div class="buyer-field"><span class="lbl">المشتري:</span><span class="val">${escapeHtml(order.buyer_name || '—')}</span></div>
         <div class="buyer-field"><span class="lbl">الهاتف:</span><span class="val">${escapeHtml(order.buyer_phone || '—')}</span></div>
-        <div class="buyer-field"><span class="lbl">العنوان:</span><span class="val">${order.shipping_address || '—'}</span></div>
+        <div class="buyer-field"><span class="lbl">العنوان:</span><span class="val">${escapeHtml(order.shipping_address || '—')}</span></div>
         ${order.preferred_delivery_date ? `
         <div class="buyer-field"><span class="lbl">📅 موعد التوصيل المفضّل:</span><span class="val pref-delivery">${formatPrefDelivery(order.preferred_delivery_date, order.preferred_delivery_slot)}</span></div>` : ''}
       </div>

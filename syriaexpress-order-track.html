@@ -540,7 +540,7 @@ function buildOrderCard(order) {
       <div class="order-details">
         <div class="detail-row">
           <span class="detail-label">عنوان التسليم</span>
-          <span class="detail-value">${order.shipping_address || '—'}</span>
+          <span class="detail-value">${escapeHtml(order.shipping_address || '—')}</span>
         </div>
         ${order.preferred_delivery_date ? `
         <div class="detail-row">
