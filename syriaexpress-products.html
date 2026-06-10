@@ -244,6 +244,46 @@ main {
   color: #0F0E0C;
 }
 
+.sort-price-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.spb-group { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.spb-label { font-size: 0.85rem; font-weight: 600; color: var(--text2); white-space: nowrap; }
+.spb-select, .spb-input {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.75rem;
+  transition: border-color .2s;
+}
+.spb-select { cursor: pointer; }
+.spb-input { width: 90px; }
+.spb-input::-webkit-outer-spin-button, .spb-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.spb-input { -moz-appearance: textfield; }
+.spb-select:focus, .spb-input:focus { outline: none; border-color: var(--gold); }
+.spb-dash { color: var(--text2); }
+.spb-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.spb-btn.apply { background: var(--gold); border: 1px solid var(--gold); color: #0F0E0C; }
+.spb-btn.apply:hover { opacity: 0.9; }
+.spb-btn.clear { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+.spb-btn.clear:hover { border-color: var(--gold-dim); color: var(--text); }
+
 .results-bar {
   display: flex;
   align-items: center;
@@ -723,6 +763,26 @@ main {
     <button class="filter-chip" data-shipping="international">شحن دولي</button>
   </div>
 
+  <!-- الفرز والسعر -->
+  <div class="sort-price-bar" id="sortPriceBar">
+    <div class="spb-group">
+      <label class="spb-label" for="sortSelect">ترتيب:</label>
+      <select id="sortSelect" class="spb-select">
+        <option value="">الأحدث</option>
+        <option value="price_asc">السعر: الأقل أولاً</option>
+        <option value="price_desc">السعر: الأعلى أولاً</option>
+      </select>
+    </div>
+    <div class="spb-group spb-price">
+      <label class="spb-label">السعر:</label>
+      <input type="number" id="minPrice" class="spb-input" placeholder="من" min="0" inputmode="numeric">
+      <span class="spb-dash">—</span>
+      <input type="number" id="maxPrice" class="spb-input" placeholder="إلى" min="0" inputmode="numeric">
+      <button class="spb-btn apply" id="applyPrice">تطبيق</button>
+      <button class="spb-btn clear" id="clearPrice">مسح</button>
+    </div>
+  </div>
+
   <!-- شريط النتائج + زر تبديل طريقة العرض -->
   <div class="results-bar" id="resultsBar">
     <span id="resultsText">تم العثور على <b>0</b> منتج</span>
@@ -851,6 +911,8 @@ let state = {
   shipping: '',
   search: '',
   sort: '',
+  minPrice: '',
+  maxPrice: '',
   page: 1,
   limit: 12,
   total: 0,
@@ -954,6 +1016,8 @@ async function loadProducts() {
     if (state.search) params.set('search', state.search);
     if (state.categoryId) params.set('category_id', state.categoryId);
     if (state.sort) params.set('sort', state.sort);
+    if (state.minPrice) params.set('min_price', state.minPrice);
+    if (state.maxPrice) params.set('max_price', state.maxPrice);
     params.set('page', state.page);
     params.set('limit', state.limit);
 
@@ -1184,6 +1248,43 @@ function initFilters() {
       else loadProducts();
     }, 400);
   });
+
+  // الفرز
+  const sortEl = document.getElementById('sortSelect');
+  if (sortEl) sortEl.addEventListener('change', () => {
+    state.sort = sortEl.value;
+    state.page = 1;
+    loadProducts();
+  });
+
+  // فلتر السعر
+  const minEl = document.getElementById('minPrice');
+  const maxEl = document.getElementById('maxPrice');
+  function applyPriceFilter() {
+    let lo = parseFloat(minEl.value);
+    let hi = parseFloat(maxEl.value);
+    lo = (!isNaN(lo) && lo >= 0) ? lo : null;
+    hi = (!isNaN(hi) && hi >= 0) ? hi : null;
+    if (lo !== null && hi !== null && lo > hi) { const t = lo; lo = hi; hi = t; } // تبادل عند العكس
+    minEl.value = lo !== null ? lo : '';
+    maxEl.value = hi !== null ? hi : '';
+    state.minPrice = lo !== null ? lo : '';
+    state.maxPrice = hi !== null ? hi : '';
+    state.page = 1;
+    loadProducts();
+  }
+  const applyBtn = document.getElementById('applyPrice');
+  const clearBtn = document.getElementById('clearPrice');
+  if (applyBtn) applyBtn.addEventListener('click', applyPriceFilter);
+  if (clearBtn) clearBtn.addEventListener('click', () => {
+    minEl.value = ''; maxEl.value = '';
+    if (!state.minPrice && !state.maxPrice) return; // لا تحميل بلا تغيير
+    state.minPrice = ''; state.maxPrice = '';
+    state.page = 1;
+    loadProducts();
+  });
+  // Enter داخل حقول السعر يطبّق
+  [minEl, maxEl].forEach(el => { if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') applyPriceFilter(); }); });
 }
 
 // ═══════════════════ CONTENT MODE (منتجات / موردين) ═══════════════════
@@ -1196,6 +1297,8 @@ function switchMode(mode) {
   document.getElementById('productsGrid').style.display = mode === 'products' ? '' : 'none';
   document.getElementById('sellersGrid').style.display = mode === 'sellers' ? '' : 'none';
   document.getElementById('pagination').style.display = mode === 'products' ? '' : 'none';
+  const spb = document.getElementById('sortPriceBar');
+  if (spb) spb.style.display = mode === 'products' ? '' : 'none';
   document.getElementById('searchInput').placeholder = mode === 'sellers' ? 'ابحث عن مورد...' : 'ابحث في المنتجات...';
   if (mode === 'sellers') loadSellers();
   else document.getElementById('resultsText').innerHTML = `تم العثور على <b>${state.total}</b> منتج`;
