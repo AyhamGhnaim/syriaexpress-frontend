@@ -22,6 +22,12 @@ function decodeJWT(token) {
   } catch(e) { return {}; }
 }
 
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 (function() {
   var saved = localStorage.getItem('theme');
   if (saved !== 'dark') document.documentElement.setAttribute('data-theme', 'light');
@@ -612,7 +618,7 @@ function renderCart() {
 
   Object.values(bySeller).forEach(group => {
     html += `<div class="seller-group" data-seller-key="${group.key}">`;
-    html += `<div class="seller-label">🏭 <span>${group.name}</span></div>`;
+    html += `<div class="seller-label">🏭 <span>${escapeHtml(group.name)}</span></div>`;
     group.items.forEach(item => {
       const isSelected = selectedIds.has(item.id);
       const eu = effPrice(item);
@@ -621,10 +627,10 @@ function renderCart() {
       html += `
         <div class="cart-item${isSelected ? '' : ' unselected'}">
           <input type="checkbox" class="item-check" ${isSelected ? 'checked' : ''} onchange="toggleItemSelected('${item.id}', this.checked)">
-          <div class="item-img">${item.image_url ? `<img src="${item.image_url}" alt="">` : (item.emoji || '📦')}</div>
+          <div class="item-img">${item.image_url ? `<img src="${escapeHtml(item.image_url)}" alt="">` : (item.emoji || '📦')}</div>
           <div class="item-info">
-            <div class="item-name">${item.name_ar || item.name || 'منتج'}</div>
-            <div class="item-company">${item.company_name_ar || ''}</div>
+            <div class="item-name">${escapeHtml(item.name_ar || item.name || 'منتج')}</div>
+            <div class="item-company">${escapeHtml(item.company_name_ar || '')}</div>
             <div>
               <span class="item-price">${eu.toLocaleString('ar-SY')}</span>
               <span class="item-unit">ل.س / ${item.unit || 'وحدة'}</span>
@@ -867,7 +873,7 @@ function renderShippingOptions() {
         <label class="ship-opt${isSel ? ' selected' : ''}" onclick="selectSellerShipping('${group.key}','${o.type}',${o.cost},'${o.name.replace(/'/g, "\\'")}')">
           <input type="radio" name="ship_${group.key}" value="${o.type}"${isSel ? ' checked' : ''}>
           <div class="ship-opt-info">
-            <div class="ship-opt-name">${o.name}</div>
+            <div class="ship-opt-name">${escapeHtml(o.name)}</div>
             <div class="ship-opt-desc">${o.desc}</div>
           </div>
           <div class="ship-opt-price">${priceLabel}</div>

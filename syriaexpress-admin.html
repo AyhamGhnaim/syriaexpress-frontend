@@ -11,6 +11,12 @@
 <title>لوحة الإدارة — SyriaExpress</title>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 <script>
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 (function() {
   var saved = localStorage.getItem('theme');
   if (saved !== 'dark') document.documentElement.setAttribute('data-theme', 'light');
@@ -629,8 +635,8 @@ async function loadVerifications() {
       <div class="verif-row">
         <div class="verif-icon">🏭</div>
         <div class="verif-info">
-          <div class="verif-name">${v.company_name_ar || v.company_name || '—'}</div>
-          <div class="verif-type">${v.activity_type || ''}</div>
+          <div class="verif-name">${escapeHtml(v.company_name_ar || v.company_name || '—')}</div>
+          <div class="verif-type">${escapeHtml(v.activity_type || '')}</div>
         </div>
         <div class="verif-actions">
           <button class="btn-approve" onclick="approveVerif('${v.id}')">قبول</button>

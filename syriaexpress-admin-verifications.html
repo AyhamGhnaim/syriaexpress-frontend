@@ -11,6 +11,12 @@
 <title>طلبات التوثيق — سوريا إكسبريس</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 <script>
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 (function() {
   var saved = localStorage.getItem('theme');
   if (saved !== 'dark') document.documentElement.setAttribute('data-theme', 'light');
@@ -570,8 +576,8 @@ function buildCard(v) {
     <div class="ver-card" id="ver-${vid}">
       <div class="ver-header">
         <div>
-          <div class="ver-company">${v.company_name_ar || '—'}</div>
-          <div class="ver-company-en">${v.company_name_en || ''}</div>
+          <div class="ver-company">${escapeHtml(v.company_name_ar || '—')}</div>
+          <div class="ver-company-en">${escapeHtml(v.company_name_en || '')}</div>
           <div class="ver-date">تاريخ الطلب: ${formatDate(v.created_at)}</div>
         </div>
         <div class="status-badge ${st.cls}">${st.icon} ${st.label}</div>
@@ -584,23 +590,23 @@ function buildCard(v) {
         </div>
         <div class="info-field">
           <div class="info-label">المحافظة</div>
-          <div class="info-value">${v.governorate || '—'}</div>
+          <div class="info-value">${escapeHtml(v.governorate || '—')}</div>
         </div>
         <div class="info-field">
           <div class="info-label">صاحب الحساب</div>
-          <div class="info-value">${v.user_name || v.owner_name || '—'}</div>
+          <div class="info-value">${escapeHtml(v.user_name || v.owner_name || '—')}</div>
         </div>
         <div class="info-field">
           <div class="info-label">الهاتف</div>
-          <div class="info-value">${v.owner_phone || v.phone || v.user_phone || '—'}</div>
+          <div class="info-value">${escapeHtml(v.owner_phone || v.phone || v.user_phone || '—')}</div>
         </div>
         <div class="info-field">
           <div class="info-label">البريد</div>
-          <div class="info-value" style="font-size:11px">${v.owner_email || v.email || v.user_email || '—'}</div>
+          <div class="info-value" style="font-size:11px">${escapeHtml(v.owner_email || v.email || v.user_email || '—')}</div>
         </div>
         <div class="info-field">
           <div class="info-label">تاريخ التأسيس</div>
-          <div class="info-value">${v.established_year || '—'}</div>
+          <div class="info-value">${escapeHtml(v.established_year || '—')}</div>
         </div>
       </div>
 
@@ -614,13 +620,13 @@ function buildCard(v) {
       ${v.notes ? `
       <div class="notes-section">
         <div class="notes-label">ملاحظات البائع:</div>
-        <div class="notes-text">${v.notes}</div>
+        <div class="notes-text">${escapeHtml(v.notes)}</div>
       </div>` : ''}
 
       ${v.rejection_reason ? `
       <div class="notes-section">
         <div class="notes-label" style="color:var(--danger)">سبب الرفض:</div>
-        <div class="notes-text">${v.rejection_reason}</div>
+        <div class="notes-text">${escapeHtml(v.rejection_reason)}</div>
       </div>` : ''}
 
       ${isPending ? `

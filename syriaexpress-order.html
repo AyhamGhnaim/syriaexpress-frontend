@@ -22,6 +22,12 @@ function decodeJWT(token) {
   } catch(e) { return {}; }
 }
 
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 (function() {
   var saved = localStorage.getItem('theme');
   if (saved !== 'dark') document.documentElement.setAttribute('data-theme', 'light');
@@ -782,7 +788,7 @@ async function loadAddresses() {
         const full = [a.governorate, a.address].filter(Boolean).join('\u060C ');
         const lbl  = [a.label, full].filter(Boolean).join(' \u2014 ') + (a.is_default ? ' (افتراضي)' : '');
         const val  = full.replace(/"/g, '&quot;');
-        return `<option value="${val}">${lbl}</option>`;
+        return `<option value="${val}">${escapeHtml(lbl)}</option>`;
       }).join('');
     sel.style.display = '';
     const def = list.find(a => a.is_default) || list[0];
@@ -934,8 +940,8 @@ function renderProduct() {
             ? `<img class="product-img" src="${p.image_url}" onerror="this.style.display='none'" />`
             : `<div class="product-img-placeholder">📦</div>`}
           <div class="product-info">
-            <div class="product-name">${productName}</div>
-            <div class="product-company">${sellerName}</div>
+            <div class="product-name">${escapeHtml(productName)}</div>
+            <div class="product-company">${escapeHtml(sellerName)}</div>
             <div class="product-price">${formatPrice(p.price)} / ${p.unit || 'وحدة'}</div>
           </div>
         </div>
@@ -1012,7 +1018,7 @@ function renderShipping() {
     return `
       <div class="shipping-option selected" style="cursor:default;flex-direction:row;align-items:center;justify-content:space-between;padding:12px 14px;text-align:right">
         <div style="flex:1;min-width:0">
-          <div style="font-size:12px;color:var(--text2);margin-bottom:2px">من: <b style="color:var(--gold)">${g.name}</b></div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:2px">من: <b style="color:var(--gold)">${escapeHtml(g.name)}</b></div>
           <div style="font-size:13px;font-weight:700;color:var(--text)">${sh.label}</div>
         </div>
         <div style="font-size:13px;font-weight:700;color:var(--gold);white-space:nowrap;margin-right:12px">${priceLabel}</div>

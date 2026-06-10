@@ -583,6 +583,12 @@
 <script src="logos.js"></script>
 <script>
 // ===== تطبيق الثيم تلقائياً =====
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 (function() {
   const saved = localStorage.getItem('theme');
   if (saved !== 'dark') {
@@ -897,14 +903,14 @@ function renderTopProducts(orders) {
   container.innerHTML = top5.map((p, i) => {
     const rankClass = i < 3 ? ` r${i + 1}` : '';
     const imgHTML = p.image_url
-      ? `<img src="${p.image_url}" alt="${p.name}">`
+      ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}">`
       : '📦';
     return `
       <div class="top-product">
         <div class="top-product-rank${rankClass}">${i + 1}</div>
         <div class="top-product-img">${imgHTML}</div>
         <div class="top-product-info">
-          <div class="top-product-name">${p.name}</div>
+          <div class="top-product-name">${escapeHtml(p.name)}</div>
           <div class="top-product-orders">${p.orders} وحدة مباعة</div>
         </div>
         <div class="top-product-revenue">${p.revenue > 0 ? Number(p.revenue).toLocaleString() + ' ل.س' : ''}</div>

@@ -11,6 +11,12 @@
 <title>تتبع الطلب — سوريا إكسبريس</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 <script>
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 (function() {
   var saved = localStorage.getItem('theme');
   if (saved !== 'dark') document.documentElement.setAttribute('data-theme', 'light');
@@ -509,8 +515,8 @@ function buildOrderCard(order) {
           ? `<img class="product-img" src="${order.product_image}" onerror="this.outerHTML='<div class=\\'product-placeholder\\'>📦</div>'" />`
           : `<div class="product-placeholder">📦</div>`}
         <div class="product-info">
-          <div class="product-name">${order.name_ar || order.name_en || 'منتج'}</div>
-          <div class="product-company">${order.company_name_ar || ''}</div>
+          <div class="product-name">${escapeHtml(order.name_ar || order.name_en || 'منتج')}</div>
+          <div class="product-company">${escapeHtml(order.company_name_ar || '')}</div>
           <div class="product-meta">
             الكمية: <span>${order.quantity} ${order.unit || ''}</span> &nbsp;|&nbsp;
             الشحن: <span>${getShippingLabel(order.shipping_type, order.seller_governorate)}</span>
@@ -532,7 +538,7 @@ function buildOrderCard(order) {
         ${order.notes ? `
         <div class="detail-row">
           <span class="detail-label">ملاحظات</span>
-          <span class="detail-value">${order.notes}</span>
+          <span class="detail-value">${escapeHtml(order.notes)}</span>
         </div>` : ''}
         <div class="detail-row">
           <span class="detail-label">الإجمالي</span>

@@ -502,6 +502,12 @@
 <script src="logos.js"></script>
 <script>
 // ===== تطبيق الثيم تلقائياً من localStorage =====
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 (function() {
   var saved = localStorage.getItem('theme');
   if (saved !== 'dark') {
@@ -588,20 +594,20 @@ function buildOrderCard(order) {
           ? `<img class="product-img" src="${order.product_image}" onerror="this.style.display='none'" />`
           : `<div class="product-placeholder">📦</div>`}
         <div class="product-info">
-          <div class="product-name">${order.name_ar || order.name_en || 'منتج'}</div>
+          <div class="product-name">${escapeHtml(order.name_ar || order.name_en || 'منتج')}</div>
           <div class="product-qty">الكمية: <span>${order.quantity} ${order.unit || ''}</span> &nbsp;|&nbsp; ${getShippingLabel(order.shipping_type, order.buyer_gov)}</div>
           <div class="product-total">${formatPrice(total)}</div>
         </div>
       </div>
 
       <div class="buyer-info">
-        <div class="buyer-field"><span class="lbl">المشتري:</span><span class="val">${order.buyer_name || '—'}</span></div>
-        <div class="buyer-field"><span class="lbl">الهاتف:</span><span class="val">${order.buyer_phone || '—'}</span></div>
+        <div class="buyer-field"><span class="lbl">المشتري:</span><span class="val">${escapeHtml(order.buyer_name || '—')}</span></div>
+        <div class="buyer-field"><span class="lbl">الهاتف:</span><span class="val">${escapeHtml(order.buyer_phone || '—')}</span></div>
         <div class="buyer-field"><span class="lbl">العنوان:</span><span class="val">${order.shipping_address || '—'}</span></div>
       </div>
 
       ${order.notes ? `
-      <div class="order-notes">ملاحظة: <span>${order.notes}</span></div>
+      <div class="order-notes">ملاحظة: <span>${escapeHtml(order.notes)}</span></div>
       ` : ''}
 
       ${actions.length ? `

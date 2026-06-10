@@ -553,6 +553,12 @@ main {
 
 <!-- Theme Init -->
 <script>
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 (function() {
   var saved = localStorage.getItem('theme');
   if (saved !== 'dark') document.documentElement.setAttribute('data-theme', 'light');
@@ -736,8 +742,8 @@ function buildCard(cat) {
   return `
     <div class="category-card status-${cat.status}" id="card-${cat.id}" data-id="${cat.id}" data-status="${cat.status}">
       <span class="card-icon" id="icon-${cat.id}">${icon}</span>
-      <div class="card-name" id="name-display-${cat.id}">${displayName}</div>
-      <input type="text" class="card-name-input" id="name-input-${cat.id}" value="${displayName}">
+      <div class="card-name" id="name-display-${cat.id}">${escapeHtml(displayName)}</div>
+      <input type="text" class="card-name-input" id="name-input-${cat.id}" value="${escapeHtml(displayName)}">
       <div class="card-slug">${cat.id.substring(0,8)}…</div>
       <div class="status-badge ${s.cls}" id="badge-${cat.id}">${s.dot} ${s.label}</div>
       <select class="status-select" id="status-select-${cat.id}">

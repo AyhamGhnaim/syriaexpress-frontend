@@ -11,6 +11,16 @@
 <title>لوحة المشتري — SyriaExpress</title>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 <script>
+function decodeJWT(token) {
+  try {
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
+    const json = decodeURIComponent(atob(padded).split('').map(c =>
+      '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+    ).join(''));
+    return JSON.parse(json);
+  } catch(e) { return {}; }
+}
 (function() {
   var saved = localStorage.getItem('theme');
   if (saved !== 'dark') document.documentElement.setAttribute('data-theme', 'light');
@@ -344,7 +354,7 @@ const user = JSON.parse(localStorage.getItem('user') || '{}');
 // cart badge — مفتاح خاص بالمستخدم
 let __cartBadgeKey = 'cart';
 try {
-  const __p = JSON.parse(atob(token.split('.')[1]));
+  const __p = decodeJWT(token);
   const __uid = __p.user_id || __p.id || __p.sub || '';
   if (__uid) __cartBadgeKey = 'cart_' + __uid;
 } catch(e) {}

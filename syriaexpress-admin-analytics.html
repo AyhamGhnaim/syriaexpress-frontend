@@ -696,7 +696,7 @@ function renderTopSellers(orders, analytics) {
     <div class="rank-item">
       <div class="rank-num ${gClasses[i]}">${i+1}</div>
       <div class="rank-info">
-        <div class="rank-name">${s.name}</div>
+        <div class="rank-name">${escAn(s.name)}</div>
         <div class="rank-sub">${s.orders} طلب</div>
         <div class="progress-bg">
           <div class="progress-fill" style="width:${(s.revenue/maxRev*100).toFixed(0)}%;background:var(--gold)"></div>

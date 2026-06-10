@@ -11,6 +11,16 @@
 <title>معلومات المشتري — سوريا إكسبريس</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 <script>
+function decodeJWT(token) {
+  try {
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
+    const json = decodeURIComponent(atob(padded).split('').map(c =>
+      '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+    ).join(''));
+    return JSON.parse(json);
+  } catch(e) { return {}; }
+}
 (function() {
   var saved = localStorage.getItem('theme');
   if (saved !== 'dark') document.documentElement.setAttribute('data-theme', 'light');
@@ -520,7 +530,7 @@ async function loadProfile() {
     // بيانات المستخدم من API
     const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
     let payload = {};
-    try { payload = JSON.parse(atob(token.split('.')[1])); } catch(e) {}
+    try { payload = decodeJWT(token); } catch(e) {}
     try {
       const meRes = await fetch(`${API}/api/auth/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -542,7 +552,7 @@ async function loadProfile() {
   } catch (err) {
     const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
     let payload = {};
-    try { payload = JSON.parse(atob(getToken().split('.')[1])); } catch(e) {}
+    try { payload = decodeJWT(getToken()); } catch(e) {}
     userData = { ...payload, ...storedUser };
     document.getElementById('loadingState').style.display = 'none';
     document.getElementById('pageContent').style.display  = 'block';
