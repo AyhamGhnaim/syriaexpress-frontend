@@ -634,24 +634,24 @@ main {
   <div class="se-tools" style="display:grid;gap:14px;grid-template-columns:1fr;margin-bottom:18px">
 
     <!-- COUPONS -->
-    <div style="background:var(--card,#1a1814);border:1px solid var(--border,#2A2620);border-radius:14px;padding:16px">
+    <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:16px">
       <div style="font-weight:800;margin-bottom:12px">🎟️ كوبونات الخصم</div>
       <div style="display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));margin-bottom:10px">
-        <input id="cpCode" placeholder="الرمز (مثل SARY10)" style="background:var(--bg3,#0f0e0c);border:1px solid var(--border,#2A2620);border-radius:8px;padding:9px;color:inherit;font-family:inherit">
-        <select id="cpType" style="background:var(--bg3,#0f0e0c);border:1px solid var(--border,#2A2620);border-radius:8px;padding:9px;color:inherit;font-family:inherit">
+        <input id="cpCode" placeholder="الرمز (مثل SARY10)" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px;color:inherit;font-family:inherit">
+        <select id="cpType" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px;color:inherit;font-family:inherit">
           <option value="percent">نسبة %</option>
           <option value="fixed">مبلغ ثابت (ل.س)</option>
         </select>
-        <input id="cpValue" type="number" min="1" placeholder="القيمة" style="background:var(--bg3,#0f0e0c);border:1px solid var(--border,#2A2620);border-radius:8px;padding:9px;color:inherit;font-family:inherit">
-        <input id="cpMin" type="number" min="0" placeholder="حد أدنى للطلب (اختياري)" style="background:var(--bg3,#0f0e0c);border:1px solid var(--border,#2A2620);border-radius:8px;padding:9px;color:inherit;font-family:inherit">
-        <input id="cpExp" type="date" style="background:var(--bg3,#0f0e0c);border:1px solid var(--border,#2A2620);border-radius:8px;padding:9px;color:inherit;font-family:inherit">
+        <input id="cpValue" type="number" min="1" placeholder="القيمة" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px;color:inherit;font-family:inherit">
+        <input id="cpMin" type="number" min="0" placeholder="حد أدنى للطلب (اختياري)" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px;color:inherit;font-family:inherit">
+        <input id="cpExp" type="date" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px;color:inherit;font-family:inherit">
         <button onclick="createCoupon()" style="background:var(--gold,#C9A84C);color:#0F0E0C;border:none;border-radius:8px;padding:9px 14px;cursor:pointer;font-family:inherit;font-weight:700">إنشاء</button>
       </div>
       <div id="couponsList" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
 
     <!-- CSV BULK -->
-    <div style="background:var(--card,#1a1814);border:1px solid var(--border,#2A2620);border-radius:14px;padding:16px">
+    <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:16px">
       <div style="font-weight:800;margin-bottom:6px">📑 رفع منتجات بالجملة (CSV)</div>
       <div style="font-size:12px;color:var(--text2,#999);margin-bottom:10px">الأعمدة: name_ar, category, price, min_order_quantity, unit, stock_qty, description — (category = اسم الفئة بالعربية)</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -1014,12 +1014,12 @@ function renderCoupons(list){
     const val = c.discount_type === 'percent' ? (c.value + '%') : (Number(c.value).toLocaleString('ar-SY') + ' ل.س');
     const exp = c.expires_at ? ('ينتهي ' + new Date(c.expires_at).toLocaleDateString('ar-SY')) : 'بدون انتهاء';
     const min = Number(c.min_total) > 0 ? (' • حد أدنى ' + Number(c.min_total).toLocaleString('ar-SY')) : '';
-    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3,#0f0e0c);border-radius:8px">
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border-radius:8px">
       <span style="font-weight:700;color:var(--gold)">${c.code}</span>
       <span style="font-size:13px">${val}${min}</span>
       <span style="font-size:12px;color:var(--text2,#999)">${exp}</span>
       <span style="margin-right:auto;font-size:12px;color:${c.active?'#3fb950':'#e57373'}">${c.active?'مفعّل':'موقوف'}</span>
-      <button onclick="toggleCoupon('${c.id}', ${c.active})" style="background:transparent;border:1px solid var(--border,#2A2620);color:inherit;border-radius:7px;padding:5px 10px;cursor:pointer;font-family:inherit;font-size:12px">${c.active?'إيقاف':'تفعيل'}</button>
+      <button onclick="toggleCoupon('${c.id}', ${c.active})" style="background:transparent;border:1px solid var(--border);color:inherit;border-radius:7px;padding:5px 10px;cursor:pointer;font-family:inherit;font-size:12px">${c.active?'إيقاف':'تفعيل'}</button>
       <button onclick="deleteCoupon('${c.id}')" style="background:transparent;border:none;color:#e57373;cursor:pointer;font-size:16px">🗑</button>
     </div>`;
   }).join('');
