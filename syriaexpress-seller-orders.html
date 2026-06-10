@@ -257,6 +257,9 @@
   }
   .order-notes span { color: var(--text); }
 
+  /* Preferred delivery */
+  .buyer-field .val.pref-delivery { color: var(--gold); font-weight: 800; }
+
   /* Loading / Empty */
   .loading-state { text-align: center; padding: 60px 20px; color: var(--text2); }
   .spinner {
@@ -539,6 +542,17 @@ function formatDate(d) {
   return new Date(d).toLocaleDateString('ar-SY', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
+function formatPrefDelivery(d, slot) {
+  const raw = String(d || '').split('T')[0];
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return '';
+  const p = raw.split('-');
+  const dt = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2]));
+  let out = isNaN(dt.getTime()) ? raw
+    : dt.toLocaleDateString('ar-SY', { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' });
+  const s = { morning: 'صباحاً', afternoon: 'بعد الظهر', evening: 'مساءً' }[slot];
+  return s ? out + ' — ' + s : out;
+}
+
 function getStatusInfo(s) {
   const map = {
     pending:   { label: 'انتظار',      icon: '⏳', cls: 'status-pending' },
@@ -604,6 +618,8 @@ function buildOrderCard(order) {
         <div class="buyer-field"><span class="lbl">المشتري:</span><span class="val">${escapeHtml(order.buyer_name || '—')}</span></div>
         <div class="buyer-field"><span class="lbl">الهاتف:</span><span class="val">${escapeHtml(order.buyer_phone || '—')}</span></div>
         <div class="buyer-field"><span class="lbl">العنوان:</span><span class="val">${order.shipping_address || '—'}</span></div>
+        ${order.preferred_delivery_date ? `
+        <div class="buyer-field"><span class="lbl">📅 موعد التوصيل المفضّل:</span><span class="val pref-delivery">${formatPrefDelivery(order.preferred_delivery_date, order.preferred_delivery_slot)}</span></div>` : ''}
       </div>
 
       ${order.notes ? `

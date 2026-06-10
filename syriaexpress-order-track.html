@@ -425,6 +425,17 @@ function formatDate(d) {
   });
 }
 
+function formatPrefDelivery(d, slot) {
+  const raw = String(d || '').split('T')[0];
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return '';
+  const p = raw.split('-');
+  const dt = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2]));
+  let out = isNaN(dt.getTime()) ? raw
+    : dt.toLocaleDateString('ar-SY', { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' });
+  const s = { morning: 'صباحاً', afternoon: 'بعد الظهر', evening: 'مساءً' }[slot];
+  return s ? out + ' — ' + s : out;
+}
+
 function getStatusInfo(status) {
   const map = {
     pending:   { label:'بانتظار التأكيد', icon:'⏳', cls:'status-pending'   },
@@ -531,6 +542,11 @@ function buildOrderCard(order) {
           <span class="detail-label">عنوان التسليم</span>
           <span class="detail-value">${order.shipping_address || '—'}</span>
         </div>
+        ${order.preferred_delivery_date ? `
+        <div class="detail-row">
+          <span class="detail-label">📅 موعد التوصيل المفضّل</span>
+          <span class="detail-value gold">${formatPrefDelivery(order.preferred_delivery_date, order.preferred_delivery_slot)}</span>
+        </div>` : ''}
         <div class="detail-row">
           <span class="detail-label">سعر الشحن</span>
           <span class="detail-value">${shipping > 0 ? formatPrice(shipping) : 'مجاني'}</span>
