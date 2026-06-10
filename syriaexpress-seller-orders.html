@@ -246,6 +246,7 @@
   .btn-ship     { background: rgba(156,39,176,0.15); color: #CE93D8; border: 1px solid rgba(156,39,176,0.4); }
   .btn-deliver  { background: rgba(76,175,80,0.15); color: var(--success); border: 1px solid rgba(76,175,80,0.4); }
   .btn-cancel   { background: rgba(224,85,85,0.1); color: var(--danger); border: 1px solid rgba(224,85,85,0.3); }
+  .btn-invoice  { background: rgba(201,168,76,0.12); color: var(--gold); border: 1px solid rgba(201,168,76,0.4); }
   .action-btn:hover { opacity: 0.8; transform: translateY(-1px); }
 
   /* Notes */
@@ -553,6 +554,10 @@ function formatPrefDelivery(d, slot) {
   return s ? out + ' — ' + s : out;
 }
 
+function openInvoice(id) {
+  window.open('syriaexpress-invoice.html?order=' + encodeURIComponent(id), '_blank');
+}
+
 function getStatusInfo(s) {
   const map = {
     pending:   { label: 'انتظار',      icon: '⏳', cls: 'status-pending' },
@@ -626,15 +631,14 @@ function buildOrderCard(order) {
       <div class="order-notes">ملاحظة: <span>${escapeHtml(order.notes)}</span></div>
       ` : ''}
 
-      ${actions.length ? `
       <div class="order-actions">
         ${actions.map(a => `
           <button class="action-btn ${a.cls}" onclick="updateStatus('${order.id}', '${a.status}')">
             ${a.label}
           </button>
         `).join('')}
+        <button class="action-btn btn-invoice" onclick="openInvoice('${order.id}')">🧾 فاتورة</button>
       </div>
-      ` : ''}
     </div>
   `;
 }

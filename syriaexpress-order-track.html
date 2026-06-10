@@ -436,6 +436,10 @@ function formatPrefDelivery(d, slot) {
   return s ? out + ' — ' + s : out;
 }
 
+function openInvoice(id) {
+  window.open('syriaexpress-invoice.html?order=' + encodeURIComponent(id), '_blank');
+}
+
 function getStatusInfo(status) {
   const map = {
     pending:   { label:'بانتظار التأكيد', icon:'⏳', cls:'status-pending'   },
@@ -573,6 +577,8 @@ function buildOrderCard(order) {
       ${(order.status === 'delivered' || order.status === 'cancelled') ? `
         <button class="cancel-btn" style="background:transparent;color:var(--gold);border:1px solid var(--gold)" onclick="reorder('${order.id}')">🔁 أعد الطلب</button>
       ` : ''}
+
+      <button class="cancel-btn" style="background:transparent;color:var(--text2);border:1px solid var(--border)" onclick="openInvoice('${order.id}')">🧾 عرض الفاتورة</button>
     </div>`;
 }
 
