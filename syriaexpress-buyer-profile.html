@@ -638,13 +638,13 @@ async function saveProfile() {
   };
 
   // تحقق محلي قبل الإرسال
-  if (!body.name || !body.email || !body.phone) {
-    showError('يرجى تعبئة جميع الحقول الأساسية');
+  if (!body.name || !body.phone) {
+    showError('يرجى تعبئة الحقول الأساسية');
     btn.disabled = false;
     btn.textContent = 'حفظ التغييرات';
     return;
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
+  if (body.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
     showError('يرجى إدخال بريد إلكتروني صحيح');
     btn.disabled = false;
     btn.textContent = 'حفظ التغييرات';
