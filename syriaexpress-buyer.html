@@ -381,6 +381,13 @@ loadCategories();
 loadSaved();
 loadReorder();
 
+// ── helper: تهريب HTML (كان مستخدَماً بلا تعريف → كان يعطّل قسم إعادة الطلب بصمت) ──
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+  });
+}
+
 // ── المحفوظات ──
 async function loadSaved() {
   try {
@@ -602,10 +609,6 @@ async function loadCategories() {
     const cats = data.categories || data || [];
     if (!cats.length) return;
 
-    const ACTIVE_IDS = [
-      'd91a982a-4943-41d2-a10d-190bdcc46dbf',
-      'dbc84456-4a45-41bb-81b1-6c55866a84ae'
-    ];
     const iconMap = {
       'd91a982a-4943-41d2-a10d-190bdcc46dbf': '🌾',
       'dbc84456-4a45-41bb-81b1-6c55866a84ae': '🧴',
@@ -618,9 +621,9 @@ async function loadCategories() {
 
     const grid = document.querySelector('.cats-grid-small');
     grid.innerHTML = cats.map(c => {
-      const icon   = iconMap[c.id] || '📦';
-      const name   = c.name_ar || c.name || '';
-      const active = ACTIVE_IDS.includes(c.id);
+      const icon   = c.icon || iconMap[c.id] || '📦';
+      const name   = escapeHtml(c.name_ar || c.name || '');
+      const active = (c.status || 'available') === 'available';
       if (active) {
         return `<a href="syriaexpress-products.html?cat=${c.id}" class="cat-btn active">
           <div class="icon">${icon}</div><div class="name">${name}</div>
