@@ -41,6 +41,7 @@
     .kv-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
     .kv-row .k { flex:0 0 38%; font-size:12px; color:var(--text2); word-break:break-all; }
     .kv-row .v { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-family:'Cairo',sans-serif; font-size:13px; }
+    .kv-row select.v { cursor:pointer; }
     .kv-row button { background:var(--bg3); border:1px solid var(--border); color:var(--text); border-radius:8px; padding:8px 12px; font-family:'Cairo',sans-serif; font-weight:600; font-size:12px; cursor:pointer; }
     .spinner { width:30px; height:30px; border:3px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin .8s linear infinite; margin:30px auto; }
     @keyframes spin { to { transform:rotate(360deg); } }
@@ -184,12 +185,22 @@ async function loadSettings(){
     if (!others.length) {
       box.innerHTML = '<div class="empty">لا توجد إعدادات أخرى.</div>';
     } else {
-      box.innerHTML = others.map(r => `
+      box.innerHTML = others.map(r => {
+        const valStr = parseVal(r.value);
+        const isBool = valStr === 'true' || valStr === 'false';
+        const control = isBool
+          ? `<select class="v" id="set_${esc(r.key)}">
+               <option value="true"${valStr === 'true' ? ' selected' : ''}>true</option>
+               <option value="false"${valStr === 'false' ? ' selected' : ''}>false</option>
+             </select>`
+          : `<input class="v" id="set_${esc(r.key)}" value="${esc(valStr)}">`;
+        return `
         <div class="kv-row">
           <div class="k">${esc(r.key)}</div>
-          <input class="v" id="set_${esc(r.key)}" value="${esc(parseVal(r.value))}">
+          ${control}
           <button onclick="saveKey('${esc(r.key)}')">حفظ</button>
-        </div>`).join('');
+        </div>`;
+      }).join('');
     }
   } catch(e){
     document.getElementById('otherSettings').innerHTML = '<div class="empty">تعذّر تحميل الإعدادات. <button onclick="loadSettings()" style="color:var(--gold);background:none;border:1px solid var(--gold);padding:5px 12px;border-radius:8px;cursor:pointer;font-family:inherit">إعادة المحاولة</button></div>';
