@@ -317,6 +317,18 @@ function submitReject(){
 }
 document.getElementById('overlay').addEventListener('click', function(e){ if(e.target === this) closeModal(); });
 
+// إن جاء من إشعار «قيد المراجعة» (?filter=pending) — فعّل التبويب المطابق قبل التحميل
+(function(){
+  try{
+    var f=new URLSearchParams(location.search).get('filter');
+    if(f && ['pending','approved','rejected','suspended'].indexOf(f)!==-1){
+      currentFilter=f;
+      document.querySelectorAll('.tab').forEach(function(t){
+        t.classList.toggle('active', t.getAttribute('data-filter')===f);
+      });
+    }
+  }catch(e){}
+})();
 loadProducts();
 </script>
 <script src="logos.js"></script>
