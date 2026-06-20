@@ -149,8 +149,9 @@ main{padding:16px;max-width:1100px;margin:0 auto;display:flex;flex-direction:col
 .quick-btn{
   background:var(--bg4);border:1px solid var(--border);
   border-radius:10px;padding:14px;text-align:center;cursor:pointer;
-  transition:border-color 0.2s;
+  transition:border-color 0.2s;position:relative;
 }
+.qa-badge{position:absolute;top:8px;left:8px;min-width:20px;height:20px;padding:0 6px;background:#ef4444;color:#fff;font-size:11px;font-weight:800;border-radius:10px;display:none;align-items:center;justify-content:center;line-height:1;box-shadow:0 2px 6px rgba(0,0,0,.3);}
 .quick-btn:hover{border-color:var(--border-gold)}
 .quick-btn .icon{font-size:24px;margin-bottom:6px}
 .quick-btn .label{font-size:12px;color:var(--text-dim)}
@@ -370,6 +371,7 @@ body{transition:background .3s,color .3s;}
     </div>
     <div class="quick-actions">
       <div class="quick-btn" onclick="location.href='syriaexpress-admin-verifications.html'">
+        <span id="qaVerif" class="qa-badge">0</span>
         <div class="icon">✅</div>
         <div class="label">مراجعة التوثيق</div>
       </div>
@@ -386,6 +388,7 @@ body{transition:background .3s,color .3s;}
         <div class="label">إدارة الفئات</div>
       </div>
       <div class="quick-btn" onclick="location.href='syriaexpress-admin-products.html'">
+        <span id="qaProducts" class="qa-badge">0</span>
         <div class="icon">🛡️</div>
         <div class="label">إشراف المنتجات</div>
       </div>
@@ -479,6 +482,12 @@ function formatPrice(p) {
   return Number(p).toLocaleString('ar-SY') + ' ل.س';
 }
 
+function setQaBadge(id, n){
+  var el=document.getElementById(id); if(!el) return;
+  n=parseInt(n)||0;
+  if(n>0){ el.textContent = n>99?'99+':String(n); el.style.display='flex'; }
+  else { el.style.display='none'; }
+}
 async function loadStats() {
   try {
     const res = await fetch(`${API_BASE}/api/admin/overview`, {
@@ -518,6 +527,10 @@ async function loadStats() {
 
     // قسم التحليلات — يُحمَّل من endpoint منفصل
     loadAnalytics(s.total_orders || 0);
+
+    // badges الإجراءات السريعة (تظهر العدد بلا فتح الصفحة)
+    setQaBadge('qaProducts', s.pending_products || 0);
+    setQaBadge('qaVerif', s.pending_verif || 0);
 
   } catch(e) {
     ['stat-users','stat-sellers','stat-pending','stat-orders'].forEach(id => {
@@ -686,9 +699,13 @@ loadVerifications();
 
 
 /* ===== NOTIFICATIONS (added) ===== */
-function notifLink(n){return null;}
+function notifLink(n){
+  if(n.ref_type==='admin_products')return'syriaexpress-admin-products.html';
+  if(n.ref_type==='admin_verifications')return'syriaexpress-admin-verifications.html';
+  return null;
+}
 function notifEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
-function notifIcon(t){return ({new_order:'🛒',new_review:'⭐',verification_update:'✅',product_moderation:'📦',order_status:'🚚',order_cancelled:'❌'})[t]||'🔔';}
+function notifIcon(t){return ({new_order:'🛒',new_review:'⭐',verification_update:'✅',product_moderation:'📦',order_status:'🚚',order_cancelled:'❌',product_pending:'🆕',verification_pending:'📋'})[t]||'🔔';}
 function notifTime(ts){if(!ts)return'';var dt=new Date(ts),s=Math.floor((Date.now()-dt.getTime())/1000);if(s<60)return'الآن';if(s<3600)return'منذ '+Math.floor(s/60)+' دقيقة';if(s<86400)return'منذ '+Math.floor(s/3600)+' ساعة';if(s<604800)return'منذ '+Math.floor(s/86400)+' يوم';return dt.toLocaleDateString('ar-SY');}
 async function loadNotifications(){
   try{
@@ -731,7 +748,10 @@ document.addEventListener('click',function(e){
   if(p&&p.style.display==='block'&&w&&!w.contains(e.target))p.style.display='none';
 });
 loadNotifications();
-
+// تحديث العدّادات والإشعارات عند الرجوع للتبويب (بدل polling — أرخص ولا يوقظ الخادم بلا داعي)
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState==='visible'){ try{loadStats();}catch(e){} try{loadNotifications();}catch(e){} }
+});
 function logout() {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
