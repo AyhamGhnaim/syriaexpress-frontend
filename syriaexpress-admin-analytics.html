@@ -490,6 +490,16 @@
   </div>
 
   <div class="section">
+    <div class="section-title">💰 عمولة المنصّة (تقديرية)</div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-icon">٪</div><div class="kpi-value" id="commRate">—</div><div class="kpi-label">النسبة</div></div>
+      <div class="kpi-card"><div class="kpi-icon">📦</div><div class="kpi-value" id="commGmv">—</div><div class="kpi-label">مبيعات مسلّمة</div></div>
+      <div class="kpi-card"><div class="kpi-icon">💰</div><div class="kpi-value" id="commEst">—</div><div class="kpi-label">عمولة تقديرية</div></div>
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-top:8px">تقدير على إجمالي الطلبات المسلّمة × النسبة — للعرض فقط، لا يُحتسب مالياً.</div>
+  </div>
+
+  <div class="section">
     <div class="section-title">🏆 أكثر البائعين أداءً (الأسرع رداً)</div>
     <table class="data-table" id="perfSellersTable"></table>
   </div>
@@ -607,6 +617,19 @@ function renderAll(overview, analytics) {
   renderTopSellers(orders, analytics);
   renderCategoryBreakdown(orders, analytics);
   renderSummaryTable(orders);
+  renderCommission(analytics);
+}
+
+function renderCommission(analytics) {
+  const c = (analytics && analytics.commission) || {};
+  const rate = Number(c.rate) || 0;
+  const rateEl = document.getElementById('commRate');
+  const gmvEl  = document.getElementById('commGmv');
+  const estEl  = document.getElementById('commEst');
+  if (!rateEl) return;
+  rateEl.textContent = rate ? rate + '%' : '—';
+  gmvEl.textContent  = formatPrice(c.delivered_gmv || 0);
+  estEl.textContent  = formatPrice(c.estimated || 0);
 }
 
 function renderKPIs(orders, overview, analytics) {
