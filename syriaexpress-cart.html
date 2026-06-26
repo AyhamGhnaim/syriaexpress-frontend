@@ -500,10 +500,14 @@ async function syncCartWithServer() {
     if (!item.id) return item;
     try {
       const r = await fetch(API_BASE + '/api/products/' + item.id);
-      if (!r.ok) return item;
+      if (!r.ok) {
+        // 404 = المنتج لم يعد متاحاً للمشتري (فئة معطّلة / محذوف / غير معتمد)
+        return { ...item, unavailable: true };
+      }
       const p = await r.json();
       return {
         ...item,
+        unavailable: false,
         // حدّث حقول الشحن من السيرفر (المصدر الموثوق)
         shipping_local:         p.ship_inside !== false,
         shipping_national:      p.ship_outside === true,
@@ -580,8 +584,9 @@ function renderCart() {
   if (clearBtn) clearBtn.style.display = '';
   summaryBox.style.display = '';
 
-  // ── حالة الاختيار: اجعل أي منتج جديد مختاراً افتراضياً ──
+  // ── حالة الاختيار: اجعل أي منتج جديد مختاراً افتراضياً (عدا غير المتوفر) ──
   cart.forEach(item => {
+    if (item.unavailable) { selectedIds.delete(item.id); return; }  // غير متوفر = لا يُختار ولا يُحتسب
     if (!selectedIds.has(item.id) && !explicitlyDeselected.has(item.id)) {
       selectedIds.add(item.id);
     }
@@ -620,13 +625,14 @@ function renderCart() {
     html += `<div class="seller-group" data-seller-key="${group.key}">`;
     html += `<div class="seller-label">🏭 <span>${escapeHtml(group.name)}</span></div>`;
     group.items.forEach(item => {
-      const isSelected = selectedIds.has(item.id);
+      const unavailable = item.unavailable === true;
+      const isSelected = !unavailable && selectedIds.has(item.id);
       const eu = effPrice(item);
     const subtotal = (eu * item.qty).toLocaleString('ar-SY');
     const outOfStock = (item.in_stock === false) || (item.stock_qty !== null && item.stock_qty !== undefined && item.stock_qty <= 0);
       html += `
-        <div class="cart-item${isSelected ? '' : ' unselected'}">
-          <input type="checkbox" class="item-check" ${isSelected ? 'checked' : ''} onchange="toggleItemSelected('${item.id}', this.checked)">
+        <div class="cart-item${isSelected ? '' : ' unselected'}"${unavailable ? ' style="opacity:.6"' : ''}>
+          <input type="checkbox" class="item-check" ${isSelected ? 'checked' : ''} ${unavailable ? 'disabled' : ''} onchange="toggleItemSelected('${item.id}', this.checked)">
           <div class="item-img">${item.image_url ? `<img src="${escapeHtml(item.image_url)}" alt="">` : (item.emoji || '📦')}</div>
           <div class="item-info">
             <div class="item-name">${escapeHtml(item.name_ar || item.name || 'منتج')}</div>
@@ -634,14 +640,14 @@ function renderCart() {
             <div>
               <span class="item-price">${eu.toLocaleString('ar-SY')}</span>
               <span class="item-unit">ل.س / ${item.unit || 'وحدة'}</span>
-              ${outOfStock ? '<span style="color:#e57373;font-size:12px;font-weight:700;margin-right:6px">نفد المخزون</span>' : (item.stock_qty !== null && item.stock_qty !== undefined ? `<span style="color:#3fb950;font-size:12px;margin-right:6px">متوفر: ${item.stock_qty}</span>` : '')}
+              ${unavailable ? '<span style="color:#e57373;font-size:12px;font-weight:700;margin-right:6px">⚠️ غير متوفر حالياً</span>' : (outOfStock ? '<span style="color:#e57373;font-size:12px;font-weight:700;margin-right:6px">نفد المخزون</span>' : (item.stock_qty !== null && item.stock_qty !== undefined ? `<span style="color:#3fb950;font-size:12px;margin-right:6px">متوفر: ${item.stock_qty}</span>` : ''))}
             </div>
-            <div class="item-qty">
+            ${unavailable ? '<div style="font-size:12px;color:#e57373;margin-top:4px">لم يعد متاحاً للطلب — أزِله من السلة للمتابعة</div>' : `<div class="item-qty">
               <button class="qty-btn" onclick="changeQty('${item.id}', -1)">−</button>
               <span class="qty-num">${item.qty}</span>
               <button class="qty-btn" onclick="changeQty('${item.id}', 1)">+</button>
               <span style="font-size:11px;color:var(--text-dim);margin-right:8px">= ${subtotal} ل.س</span>
-            </div>
+            </div>`}
           </div>
           <button class="item-delete" onclick="removeItem('${item.id}')">🗑</button>
         </div>
@@ -674,7 +680,7 @@ function toggleItemSelected(id, checked) {
 
 function toggleSelectAll(checked) {
   if (checked) {
-    cart.forEach(i => { selectedIds.add(i.id); explicitlyDeselected.delete(i.id); });
+    cart.forEach(i => { if (i.unavailable) return; selectedIds.add(i.id); explicitlyDeselected.delete(i.id); });
   } else {
     selectedIds.clear();
     cart.forEach(i => explicitlyDeselected.add(i.id));

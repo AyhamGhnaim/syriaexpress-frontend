@@ -911,6 +911,9 @@ async function init() {
         op.seller_governorate = data.seller_governorate || '';
         op.outside_governorates = Array.isArray(data.outside_governorates) ? data.outside_governorates : [];
         op.qty = Number(op.qty || op.quantity) || op.min_order || 1;
+        op.unavailable = false;
+      } else {
+        op.unavailable = true;  // لم يعد متاحاً (فئة معطّلة / محذوف / غير معتمد)
       }
     } catch(e) {}
   }));
@@ -972,6 +975,7 @@ function renderProduct() {
             <div class="product-name">${escapeHtml(productName)}</div>
             <div class="product-company">${escapeHtml(sellerName)}</div>
             <div class="product-price">${formatPrice(p.price)} / ${p.unit || 'وحدة'}</div>
+            ${p.unavailable ? '<div style="color:#e57373;font-size:12px;font-weight:700;margin-top:4px">⚠️ غير متوفر — أزِله من السلة</div>' : ''}
           </div>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:10px;border-top:1px solid var(--border)">
@@ -1139,6 +1143,12 @@ async function submitOrder() {
 
   if (!orderProducts.length) {
     showError('لا توجد منتجات للطلب');
+    return;
+  }
+
+  // منع إتمام طلب لمنتج لم يعد متاحاً (فئة معطّلة / محذوف / غير معتمد)
+  if (orderProducts.some(p => p.unavailable)) {
+    showError('بعض المنتجات لم تعد متاحة للطلب. يرجى العودة إلى السلة وإزالتها قبل المتابعة.');
     return;
   }
 
