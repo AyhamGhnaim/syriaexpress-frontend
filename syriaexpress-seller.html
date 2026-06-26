@@ -96,6 +96,11 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 .stat-trend{font-size:13px;color:var(--text-dim);}
 .stat-trend span{color:var(--green);font-size:15px;font-weight:800}
 [data-theme="light"] .stat-trend span{color:#15803d}
+.sla-banner{display:none;margin:0 0 16px;padding:12px 14px;border-radius:12px;
+  background:rgba(224,85,85,0.12);border:1px solid rgba(224,85,85,0.38);
+  color:#e05555;font-size:14px;font-weight:800;text-align:center;text-decoration:none;}
+[data-theme="light"] .sla-banner{color:#c0392b;}
+.sla-banner:hover{opacity:.9;}
 
 /* ── SECTION BOX ── */
 .box{background:var(--bg3);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
@@ -347,6 +352,8 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 
 <main>
 
+  <a id="slaBanner" class="sla-banner" href="syriaexpress-seller-orders.html"></a>
+
   <!-- STAT CARDS -->
   <div class="stats-grid">
     <div class="stat-card green">
@@ -504,6 +511,18 @@ async function loadDashboard() {
     const completed = orders.filter(o => o.status === 'delivered').length;
     const newOrders = orders.filter(o => o.status === 'pending').length;
     const buyers = new Set(orders.map(o => o.buyer_id)).size;
+
+    // ── تنبيه الطلبات المتأخّرة (SLA) ──
+    const overdue = orders.filter(o => o.sla_overdue).length;
+    const slaBanner = document.getElementById('slaBanner');
+    if (slaBanner) {
+      if (overdue > 0) {
+        slaBanner.textContent = `⏰ لديك ${overdue} ${overdue === 1 ? 'طلب متأخّر' : 'طلبات متأخّرة'} — يرجى الردّ أو الشحن قبل تجاوز المهلة`;
+        slaBanner.style.display = 'block';
+      } else {
+        slaBanner.style.display = 'none';
+      }
+    }
 
     const nums = document.querySelectorAll('.stat-num');
     if (nums[0]) nums[0].textContent = completed;

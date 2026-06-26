@@ -380,6 +380,7 @@ body{transition:background .3s,color .3s;}
         <div class="label">إدارة المستخدمين</div>
       </div>
       <div class="quick-btn" onclick="location.href='syriaexpress-admin-analytics.html'">
+        <span id="qaSla" class="qa-badge">0</span>
         <div class="icon">📊</div>
         <div class="label">التحليلات</div>
       </div>
@@ -531,6 +532,7 @@ async function loadStats() {
     // badges الإجراءات السريعة (تظهر العدد بلا فتح الصفحة)
     setQaBadge('qaProducts', s.pending_products || 0);
     setQaBadge('qaVerif', s.pending_verif || 0);
+    setQaBadge('qaSla', s.sla_breaches || 0);
 
   } catch(e) {
     ['stat-users','stat-sellers','stat-pending','stat-orders'].forEach(id => {

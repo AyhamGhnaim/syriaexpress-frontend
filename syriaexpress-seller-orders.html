@@ -179,6 +179,10 @@
   .status-delivered { background: rgba(76,175,80,0.15); color: var(--success); border: 1px solid rgba(76,175,80,0.3); }
   .status-cancelled { background: rgba(224,85,85,0.15); color: var(--danger); border: 1px solid rgba(224,85,85,0.3); }
 
+  .sla-late { margin: 10px 0 0; padding: 7px 10px; border-radius: 8px;
+    background: rgba(224,85,85,0.12); border: 1px solid rgba(224,85,85,0.35);
+    color: var(--danger); font-size: 12px; font-weight: 700; text-align: center; }
+
   /* Product Info */
   .order-product {
     padding: 12px 14px;
@@ -607,6 +611,7 @@ function buildOrderCard(order) {
         </div>
         <div class="status-badge ${st.cls}">${st.icon} ${st.label}</div>
       </div>
+      ${order.sla_overdue ? `<div class="sla-late">⏰ ${order.sla_kind === 'shipping' ? 'تأخّر شحن' : 'تأخّر ردّ'} — تجاوز الطلب مهلة الـ SLA</div>` : ''}
 
       <div class="order-product">
         ${order.product_image
