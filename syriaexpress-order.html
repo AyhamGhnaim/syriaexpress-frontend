@@ -975,7 +975,7 @@ function renderProduct() {
             <div class="product-name">${escapeHtml(productName)}</div>
             <div class="product-company">${escapeHtml(sellerName)}</div>
             <div class="product-price">${formatPrice(p.price)} / ${p.unit || 'وحدة'}</div>
-            ${p.unavailable ? '<div style="color:#e57373;font-size:12px;font-weight:700;margin-top:4px">⚠️ غير متوفر — أزِله من السلة</div>' : ''}
+            ${p.unavailable ? '<div style="color:#e57373;font-size:12px;font-weight:700;margin-top:4px">⚠️ لم يعد متاحاً للطلب</div>' : ''}
           </div>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:10px;border-top:1px solid var(--border)">
@@ -1148,7 +1148,7 @@ async function submitOrder() {
 
   // منع إتمام طلب لمنتج لم يعد متاحاً (فئة معطّلة / محذوف / غير معتمد)
   if (orderProducts.some(p => p.unavailable)) {
-    showError('بعض المنتجات لم تعد متاحة للطلب. يرجى العودة إلى السلة وإزالتها قبل المتابعة.');
+    showError('بعض المنتجات لم تعد متاحة للطلب (تم تعطيل فئتها أو لم تعد منشورة). لا يمكن إتمام الطلب بها.');
     return;
   }
 

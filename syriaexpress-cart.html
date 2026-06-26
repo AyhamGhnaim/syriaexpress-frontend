@@ -596,7 +596,8 @@ function renderCart() {
     if (!cart.find(i => i.id === id)) selectedIds.delete(id);
   }
 
-  const allSelected = cart.length > 0 && cart.every(i => selectedIds.has(i.id));
+  const selectable = cart.filter(i => !i.unavailable);
+  const allSelected = selectable.length > 0 && selectable.every(i => selectedIds.has(i.id));
 
   // Group by seller
   const bySeller = {};
