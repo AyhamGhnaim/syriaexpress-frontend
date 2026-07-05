@@ -955,7 +955,7 @@ async function changePassword() {
   document.getElementById('pwSuccess').style.display = 'none';
 
   if (!current || !newPw || !confirm) { showMsg('pwError', 'يُرجى ملء جميع الحقول'); return; }
-  if (newPw.length < 6) { showMsg('pwError', 'كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل'); return; }
+  if (newPw.length < 8) { showMsg('pwError', 'كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل'); return; }
   if (newPw !== confirm) { showMsg('pwError', 'كلمة المرور الجديدة غير متطابقة'); return; }
 
   try {

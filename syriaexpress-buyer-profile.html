@@ -693,7 +693,7 @@ async function changePassword() {
   document.getElementById('pwSuccess').style.display = 'none';
 
   if (!current || !newPw || !confirm) { showPwError('يرجى ملء جميع الحقول'); return; }
-  if (newPw.length < 6) { showPwError('كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل'); return; }
+  if (newPw.length < 8) { showPwError('كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل'); return; }
   if (newPw !== confirm) { showPwError('كلمة المرور الجديدة غير متطابقة'); return; }
 
   const token = getToken();
