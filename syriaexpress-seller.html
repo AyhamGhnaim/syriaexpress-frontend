@@ -284,6 +284,14 @@ main{padding:16px;max-width:600px;margin:0 auto;display:flex;flex-direction:colu
 @media(min-width:768px){
   .header{padding:0 32px;height:60px;}
 }
+/* موبيل: الهيدر يلتفّ على سطرين بدل القصّ الأفقي */
+@media(max-width:640px){
+  .header{flex-wrap:wrap;height:auto;min-height:56px;padding:8px 10px;row-gap:8px;column-gap:8px;}
+  .header-left{gap:6px;}
+  .header-right{gap:6px;}
+  .btn-logout,.btn-home,.btn-add{padding:6px 10px;font-size:11px;}
+  .btn-notif{width:34px;height:34px;font-size:15px;}
+}
 [data-theme="light"] .header{background:rgba(245,243,239,0.95);}
 .stat-card,.box{transition:background .3s,border-color .3s;}
 @media(min-width:768px){
