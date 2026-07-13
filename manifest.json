@@ -28,5 +28,13 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "id": "/syriaexpress-landing.html",
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://syriaexpressapp.com/manifest.json"
+    }
+  ],
+  "prefer_related_applications": false
 }

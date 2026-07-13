@@ -639,6 +639,7 @@
       <button class="save-btn" id="pwaBtn" onclick="pwaInstall()" style="display:none">تثبيت التطبيق</button>
   <div id="pwaIos" style="display:none;font-size:13px;line-height:1.9">لتثبيت التطبيق: اضغط زر المشاركة ⬆️ بأسفل المتصفح ثم اختر «إضافة إلى الشاشة الرئيسية».</div>
   <div id="pwaNA" style="display:none;font-size:13px;color:var(--text2)">التثبيت غير متاح على هذا المتصفح حالياً.</div>
+  <div id="pwaHave" style="display:none;font-size:13px;line-height:1.9;color:var(--text2)">✓ التطبيق مثبّت مسبقاً على هذا الجهاز. إذا حذفت الاختصار فقط من سطح المكتب، احذف التطبيق نفسه من صفحة تطبيقات المتصفح (اكتب بشريط العنوان: chrome://apps أو brave://apps) ثم أعد فتح هذه الصفحة ليظهر زر التثبيت من جديد.</div>
   <div id="pwaOk" style="display:none;font-size:13px;font-weight:700;color:var(--success)">✓ تم تثبيت التطبيق بنجاح</div>
       <script>
 /* منطق بطاقة تثبيت الـ PWA — يعتمد window.AppPWA من pwa.js (defer) */
@@ -649,10 +650,18 @@
     var P = window.AppPWA || {};
     if (P.isStandalone && P.isStandalone()) { show('pwaCard', false); return; }
     show('pwaCard', true);
-    if (P.isIOS && P.isIOS()) { show('pwaIos', true); show('pwaBtn', false); show('pwaNA', false); return; }
+    if (P.deferredPrompt) {
+      /* حدث التثبيت وصل = غير مثبّت قطعاً — الزر أولوية */
+      show('pwaBtn', true); show('pwaIos', false); show('pwaNA', false); show('pwaHave', false); return;
+    }
+    show('pwaBtn', false);
+    if (P.isIOS && P.isIOS()) { show('pwaIos', true); show('pwaNA', false); show('pwaHave', false); return; }
     show('pwaIos', false);
-    if (P.deferredPrompt) { show('pwaBtn', true); show('pwaNA', false); }
-    else { show('pwaBtn', false); show('pwaNA', true); }
+    if (P.alreadyInstalled) {
+      /* مثبّت مسبقاً (ولو حُذف اختصار سطح المكتب) — رسالة إرشادية بدل «غير متاح» المضلّلة */
+      show('pwaHave', true); show('pwaNA', false); return;
+    }
+    show('pwaHave', false); show('pwaNA', true);
   }
   window.pwaInstall = async function () {
     var P = window.AppPWA || {};
@@ -670,6 +679,7 @@
     } catch (e) { refreshPwaCard(); }
   };
   window.addEventListener('pwa-install-ready', refreshPwaCard);
+  window.addEventListener('pwa-already-installed', refreshPwaCard);
   window.addEventListener('pwa-installed', function () {
     show('pwaBtn', false); show('pwaIos', false); show('pwaNA', false); show('pwaOk', true);
     setTimeout(function () { show('pwaCard', false); }, 2500);

@@ -29,6 +29,22 @@
     } catch (e) { return false; }
   };
 
+  // كشف تثبيت سابق (كروم/إيدج/بريف — يتطلب related_applications بالمانيفست).
+  // يغطي حالة: التطبيق مثبّت لكن المستخدم حذف اختصار سطح المكتب فقط،
+  // فلا يصل beforeinstallprompt وتظهر رسالة «غير متاح» المضلّلة.
+  P.alreadyInstalled = false;
+  (function checkInstalled() {
+    if (!navigator.getInstalledRelatedApps) return;
+    try {
+      navigator.getInstalledRelatedApps().then(function (apps) {
+        if (apps && apps.length > 0) {
+          P.alreadyInstalled = true;
+          try { window.dispatchEvent(new CustomEvent('pwa-already-installed')); } catch (err) {}
+        }
+      }).catch(function () {});
+    } catch (e) {}
+  })();
+
   // التقاط حدث التثبيت (كروم/إيدج/أندرويد)
   window.addEventListener('beforeinstallprompt', function (e) {
     e.preventDefault();

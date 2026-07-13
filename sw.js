@@ -4,7 +4,7 @@
    والخطوط كلها cross-origin فلا تُلمَس إطلاقاً.
    عند تعديل أي أصل ثابت (js/css/صور): ارفع SW_VERSION ليُنظَّف الكاش القديم. */
 
-const SW_VERSION = 'se-pwa-v2';
+const SW_VERSION = 'se-pwa-v3';
 const PAGE_CACHE = SW_VERSION + '-pages';
 const STATIC_CACHE = SW_VERSION + '-static';
 
