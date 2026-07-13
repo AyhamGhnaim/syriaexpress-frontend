@@ -33,7 +33,8 @@
   "related_applications": [
     {
       "platform": "webapp",
-      "url": "https://syriaexpressapp.com/manifest.json"
+      "url": "https://syriaexpressapp.com/manifest.json",
+      "id": "https://syriaexpressapp.com/syriaexpress-landing.html"
     }
   ],
   "prefer_related_applications": false
