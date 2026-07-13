@@ -493,6 +493,10 @@ function escapeHtml(str) {
       <div class="stat-value" id="sAdmins" style="color:var(--danger)">—</div>
       <div class="stat-label">أدمن</div>
     </div>
+    <div class="stat-card">
+      <div class="stat-value" id="sNew" style="color:var(--gold2)">—</div>
+      <div class="stat-label">جدد (7 أيام)</div>
+    </div>
   </div>
 
   <!-- Search -->
@@ -507,6 +511,7 @@ function escapeHtml(str) {
     <button class="filter-btn" onclick="setFilter('buyer', this)">🛒 مشترين</button>
     <button class="filter-btn" onclick="setFilter('seller', this)">🏪 بائعين</button>
     <button class="filter-btn" onclick="setFilter('admin', this)">⚙️ أدمن</button>
+    <button class="filter-btn" data-filter="new" onclick="setFilter('new', this)">🆕 جدد</button>
   </div>
 
   <div class="error-msg" id="errorMsg"></div>
@@ -605,6 +610,15 @@ function getVerLabel(s) {
   return map[s] || { label: s, color: 'var(--text2)' };
 }
 
+// «جديد» = انضمّ خلال آخر 7 أيام (مطابق لعدّاد new_users بالباكند)
+const NEW_USER_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+function isNewUser(u) {
+  if (!u || !u.created_at) return false;
+  const t = new Date(u.created_at).getTime();
+  if (isNaN(t)) return false;
+  return (Date.now() - t) <= NEW_USER_WINDOW_MS;
+}
+
 function buildCard(u) {
   const type = getTypeInfo(u.user_type);
   const initials = (u.name || u.full_name || '?').charAt(0).toUpperCase();
@@ -623,6 +637,7 @@ function buildCard(u) {
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
           <div class="type-badge ${type.cls}">${type.icon} ${type.label}</div>
+          ${isNewUser(u) ? '<div class="type-badge" style="background:rgba(201,168,76,0.15);color:var(--gold);border:1px solid rgba(201,168,76,0.35);font-size:10px">🆕 جديد</div>' : ''}
           ${u.user_type === 'seller' && u.verification_status === 'rejected' ? '<div class="type-badge" style="background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.3);font-size:10px">✕ مرفوض</div>' : ''}
           ${u.user_type === 'seller' && u.verification_status === 'pending' ? '<div class="type-badge" style="background:rgba(251,146,60,0.15);color:#fb923c;border:1px solid rgba(251,146,60,0.3);font-size:10px">⏳ قيد المراجعة</div>' : ''}
           ${u.user_type === 'seller' && (u.verification_status === 'verified' || u.verification_status === 'approved') ? verifiedBadgeHTML() : ''}
@@ -685,7 +700,7 @@ async function loadUsers() {
   document.getElementById('errorMsg').style.display = 'none';
 
   try {
-    const res = await fetch(`${API}/api/admin/users`, {
+    const res = await fetch(`${API}/api/admin/users?limit=1000`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const data = await res.json();
@@ -711,6 +726,7 @@ function updateStats() {
   document.getElementById('sSellers').textContent = allUsers.filter(u => u.user_type === 'seller').length;
   document.getElementById('sBuyers').textContent = allUsers.filter(u => u.user_type === 'buyer').length;
   document.getElementById('sAdmins').textContent = allUsers.filter(u => u.user_type === 'admin').length;
+  document.getElementById('sNew').textContent = allUsers.filter(isNewUser).length;
 }
 
 function setFilter(filter, btn) {
@@ -724,7 +740,9 @@ function renderUsers() {
   const search = document.getElementById('searchInput').value.trim().toLowerCase();
 
   let filtered = allUsers;
-  if (currentFilter !== 'all') {
+  if (currentFilter === 'new') {
+    filtered = filtered.filter(isNewUser);
+  } else if (currentFilter !== 'all') {
     filtered = filtered.filter(u => u.user_type === currentFilter);
   }
   if (search) {
@@ -857,6 +875,25 @@ function showToast(msg) {
   t.style.display = 'block';
   setTimeout(() => { t.style.display = 'none'; }, 2500);
 }
+
+// قراءة ?filter= (whitelist) — يُستخدم من إشعار الأدمن لينزل مباشرة على «جدد»
+(function applyUrlFilter(){
+  try {
+    var f = new URLSearchParams(location.search).get('filter');
+    if (['new','buyer','seller','admin'].indexOf(f) === -1) return;
+    currentFilter = f;
+    var btn = document.querySelector('.filter-btn[data-filter="' + f + '"]');
+    if (!btn) {
+      document.querySelectorAll('.filter-btn').forEach(function(b){
+        if ((b.getAttribute('onclick') || '').indexOf("setFilter('" + f + "'") !== -1) btn = b;
+      });
+    }
+    if (btn) {
+      document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+    }
+  } catch(e) {}
+})();
 
 loadUsers();
 </script>

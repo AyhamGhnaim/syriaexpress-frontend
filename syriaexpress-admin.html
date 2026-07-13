@@ -376,6 +376,7 @@ body{transition:background .3s,color .3s;}
         <div class="label">مراجعة التوثيق</div>
       </div>
       <div class="quick-btn" onclick="location.href='syriaexpress-admin-users.html'">
+        <span id="qaUsers" class="qa-badge">0</span>
         <div class="icon">👥</div>
         <div class="label">إدارة المستخدمين</div>
       </div>
@@ -533,6 +534,7 @@ async function loadStats() {
     setQaBadge('qaProducts', s.pending_products || 0);
     setQaBadge('qaVerif', s.pending_verif || 0);
     setQaBadge('qaSla', s.sla_breaches || 0);
+    setQaBadge('qaUsers', s.new_users || 0);
 
   } catch(e) {
     ['stat-users','stat-sellers','stat-pending','stat-orders'].forEach(id => {
@@ -704,10 +706,11 @@ loadVerifications();
 function notifLink(n){
   if(n.ref_type==='admin_products')return'syriaexpress-admin-products.html?filter=pending';
   if(n.ref_type==='admin_verifications')return'syriaexpress-admin-verifications.html';
+  if(n.ref_type==='admin_users')return'syriaexpress-admin-users.html?filter=new';
   return null;
 }
 function notifEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
-function notifIcon(t){return ({new_order:'🛒',new_review:'⭐',verification_update:'✅',product_moderation:'📦',order_status:'🚚',order_cancelled:'❌',product_pending:'🆕',verification_pending:'📋'})[t]||'🔔';}
+function notifIcon(t){return ({new_order:'🛒',new_review:'⭐',verification_update:'✅',product_moderation:'📦',order_status:'🚚',order_cancelled:'❌',product_pending:'🆕',verification_pending:'📋',user_new:'👤'})[t]||'🔔';}
 function notifTime(ts){if(!ts)return'';var dt=new Date(ts),s=Math.floor((Date.now()-dt.getTime())/1000);if(s<60)return'الآن';if(s<3600)return'منذ '+Math.floor(s/60)+' دقيقة';if(s<86400)return'منذ '+Math.floor(s/3600)+' ساعة';if(s<604800)return'منذ '+Math.floor(s/86400)+' يوم';return dt.toLocaleDateString('ar-SY');}
 async function loadNotifications(){
   try{
