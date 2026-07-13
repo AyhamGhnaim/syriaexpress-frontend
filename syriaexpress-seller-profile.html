@@ -6,6 +6,7 @@
     <link rel="manifest" href="/manifest.json">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <meta name="theme-color" content="#C9A84C">
+  <script src="/pwa.js" defer></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>معلوماتي — SyriaExpress</title>
@@ -629,6 +630,57 @@
         </div>
       </div>
       <button class="save-btn" onclick="changePassword()">تغيير كلمة المرور</button>
+    </div>
+
+    <!-- PWA INSTALL CARD -->
+    <div class="section" id="pwaCard" style="display:none">
+      <div class="section-title">📲 ثبّت سوريا إكسبريس كتطبيق</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px">ثبّت المنصة على جهازك لفتحها مباشرة كتطبيق مستقل بدون متصفح.</div>
+      <button class="save-btn" id="pwaBtn" onclick="pwaInstall()" style="display:none">تثبيت التطبيق</button>
+  <div id="pwaIos" style="display:none;font-size:13px;line-height:1.9">لتثبيت التطبيق: اضغط زر المشاركة ⬆️ بأسفل المتصفح ثم اختر «إضافة إلى الشاشة الرئيسية».</div>
+  <div id="pwaNA" style="display:none;font-size:13px;color:var(--text2)">التثبيت غير متاح على هذا المتصفح حالياً.</div>
+  <div id="pwaOk" style="display:none;font-size:13px;font-weight:700;color:var(--success)">✓ تم تثبيت التطبيق بنجاح</div>
+      <script>
+/* منطق بطاقة تثبيت الـ PWA — يعتمد window.AppPWA من pwa.js (defer) */
+(function () {
+  function el(id) { return document.getElementById(id); }
+  function show(id, on) { var e = el(id); if (e) e.style.display = on ? '' : 'none'; }
+  function refreshPwaCard() {
+    var P = window.AppPWA || {};
+    if (P.isStandalone && P.isStandalone()) { show('pwaCard', false); return; }
+    show('pwaCard', true);
+    if (P.isIOS && P.isIOS()) { show('pwaIos', true); show('pwaBtn', false); show('pwaNA', false); return; }
+    show('pwaIos', false);
+    if (P.deferredPrompt) { show('pwaBtn', true); show('pwaNA', false); }
+    else { show('pwaBtn', false); show('pwaNA', true); }
+  }
+  window.pwaInstall = async function () {
+    var P = window.AppPWA || {};
+    var p = P.deferredPrompt;
+    if (!p) return; /* حماية من زر ميت */
+    p.prompt();
+    try {
+      var choice = await p.userChoice;
+      P.deferredPrompt = null;
+      if (choice && choice.outcome === 'accepted') {
+        show('pwaBtn', false); show('pwaNA', false); show('pwaOk', true);
+      } else {
+        refreshPwaCard();
+      }
+    } catch (e) { refreshPwaCard(); }
+  };
+  window.addEventListener('pwa-install-ready', refreshPwaCard);
+  window.addEventListener('pwa-installed', function () {
+    show('pwaBtn', false); show('pwaIos', false); show('pwaNA', false); show('pwaOk', true);
+    setTimeout(function () { show('pwaCard', false); }, 2500);
+  });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', refreshPwaCard);
+  } else {
+    refreshPwaCard();
+  }
+})();
+</script>
     </div>
 
     <!-- Logout -->
