@@ -931,17 +931,17 @@ function renderProduct() {
     <!-- IMAGE -->
     <div class="product-image-wrap">
       ${hasImg
-        ? `<img src="${product.image_url}" alt="${product.name}" onerror="this.parentElement.innerHTML='<div class=\\'product-image-placeholder\\'>📦</div>'">`
+        ? `<img src="${escapeHtml(product.image_url)}" alt="${escapeHtml(product.name || 'منتج')}" onerror="this.parentElement.innerHTML='<div class=\\'product-image-placeholder\\'>📦</div>'">`
         : '<div class="product-image-placeholder">📦</div>'
       }
-      ${product.category_name ? `<div class="product-category-badge">${product.category_name}</div>` : ''}
+      ${product.category_name ? `<div class="product-category-badge">${escapeHtml(product.category_name)}</div>` : ''}
     </div>
 
     <!-- TITLE + SELLER ROW -->
-    <h1 class="product-title">${product.name || 'منتج'}</h1>
+    <h1 class="product-title">${escapeHtml(product.name || 'منتج')}</h1>
     <div class="seller-row">
       <div class="seller-logo">${sellerLogoHtml}</div>
-      <span class="seller-name">${seller?.company_name || 'بائع'}</span>
+      <span class="seller-name">${escapeHtml(seller?.company_name || 'بائع')}</span>
       ${isVerified ? verifiedBadgeHTML() : ''}
     </div>
 
@@ -949,21 +949,21 @@ function renderProduct() {
     <div class="price-card">
       <div class="price-row">
         <span class="price-amount">${(product.price || 0).toLocaleString('ar-SY')}</span>
-        <span class="price-unit">ل.س / ${product.unit || 'وحدة'}</span>
+        <span class="price-unit">ل.س / ${escapeHtml(product.unit || 'وحدة')}</span>
       </div>
       <div class="min-order-row">
-        الحدّ الأدنى للطلب: <strong>${product.min_order || 1} ${product.unit || 'وحدة'}</strong>
+        الحدّ الأدنى للطلب: <strong>${escapeHtml(product.min_order || 1)} ${escapeHtml(product.unit || 'وحدة')}</strong>
       </div>
       ${ isOutOfStock()
           ? '<div style="margin-top:10px;display:inline-block;background:rgba(229,115,115,.15);color:#e57373;padding:4px 12px;border-radius:8px;font-size:13px;font-weight:600">نفد المخزون</div>'
           : (product.stock_qty !== null && product.stock_qty !== undefined
-              ? `<div style="margin-top:10px;display:inline-block;background:rgba(63,185,80,.15);color:#3fb950;padding:4px 12px;border-radius:8px;font-size:13px;font-weight:600">متوفر: ${product.stock_qty} ${product.unit||'وحدة'}</div>`
+              ? `<div style="margin-top:10px;display:inline-block;background:rgba(63,185,80,.15);color:#3fb950;padding:4px 12px;border-radius:8px;font-size:13px;font-weight:600">متوفر: ${escapeHtml(product.stock_qty)} ${escapeHtml(product.unit||'وحدة')}</div>`
               : '<div style="margin-top:10px;display:inline-block;background:rgba(63,185,80,.15);color:#3fb950;padding:4px 12px;border-radius:8px;font-size:13px;font-weight:600">متوفر</div>') }
       ${ (product.price_tiers||[]).length ? `
       <div style="margin-top:12px;border-top:1px solid rgba(255,255,255,.08);padding-top:10px">
         <div style="font-size:13px;color:var(--text2);margin-bottom:6px">أسعار الجملة:</div>
         ${product.price_tiers.map(t => `<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0">
-          <span>${t.min_qty}+ ${product.unit||'وحدة'}</span><span style="color:var(--gold);font-weight:600">${t.unit_price.toLocaleString('ar-SY')} ل.س</span></div>`).join('')}
+          <span>${t.min_qty}+ ${escapeHtml(product.unit||'وحدة')}</span><span style="color:var(--gold);font-weight:600">${t.unit_price.toLocaleString('ar-SY')} ل.س</span></div>`).join('')}
       </div>` : '' }
     </div>
 
@@ -1002,7 +1002,7 @@ function renderProduct() {
     <div class="section">
       <div class="section-title">📝 وصف المنتج</div>
       <div class="description-box">
-        ${product.description || 'لا يوجد وصف لهذا المنتج.'}
+        ${escapeHtml(product.description || 'لا يوجد وصف لهذا المنتج.')}
       </div>
     </div>
 
@@ -1014,8 +1014,8 @@ function renderProduct() {
         <div class="seller-card-header">
           <div class="seller-card-logo">${sellerCardLogoHtml}</div>
           <div class="seller-card-info">
-            <div class="seller-card-name">${seller.company_name || 'بائع'}</div>
-            <div class="seller-card-city">${seller.city || ''}</div>
+            <div class="seller-card-name">${escapeHtml(seller.company_name || 'بائع')}</div>
+            <div class="seller-card-city">${escapeHtml(seller.city || '')}</div>
             ${seller.rating ? `<div style="font-size:13px;margin-top:2px"><span style="color:var(--gold)">${renderStars(seller.rating)}</span> <span style="color:var(--text2)">${Number(seller.rating).toFixed(1)} (${seller.review_count})</span></div>` : ''}
           </div>
           ${isVerified ? verifiedBadgeHTML() : ''}
@@ -1026,7 +1026,7 @@ function renderProduct() {
         </a>
         <div class="contact-row">
           ${seller.phone
-            ? `<a href="tel:${seller.phone}" class="btn-call">📞 اتصال</a>
+            ? `<a href="tel:${escapeHtml(seller.phone)}" class="btn-call">📞 اتصال</a>
                <a href="https://wa.me/${seller.phone.replace(/\D/g,'')}" target="_blank" class="btn-whatsapp">📱 واتساب</a>`
             : `<button class="btn-call" disabled style="opacity:.4;cursor:not-allowed">📞 اتصال</button>
                <button class="btn-whatsapp" disabled style="opacity:.4;cursor:not-allowed">📱 واتساب</button>`
@@ -1093,7 +1093,7 @@ function updateTotal() {
   const el = document.getElementById('qtyTotal');
   if (el) {
     const note = ((product?.price_tiers||[]).length && unit !== (product?.price||0))
-      ? ` <span style="color:var(--gold);font-size:12px">(${unit.toLocaleString('ar-SY')} ل.س/${product.unit||'وحدة'})</span>` : '';
+      ? ` <span style="color:var(--gold);font-size:12px">(${unit.toLocaleString('ar-SY')} ل.س/${escapeHtml(product.unit||'وحدة')})</span>` : '';
     el.innerHTML = `الإجمالي: <strong>${total} ل.س</strong>${note}`;
   }
 }
