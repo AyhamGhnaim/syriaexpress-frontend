@@ -650,7 +650,8 @@ function renderPerformance(pf){
 async function loadData() {
   try {
     // Fetch orders
-    const ordersRes = await fetch(`${API_BASE}/api/orders/seller`, {
+    // limit صريح — السقف الافتراضي للباكند 20 صفاً (كانت التقارير محسوبة من آخر 20 طلب فقط)
+    const ordersRes = await fetch(`${API_BASE}/api/orders/seller?limit=1000`, {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (ordersRes.ok) {
@@ -754,11 +755,13 @@ function renderReports() {
 
 // ===== 1. Stats Cards =====
 function renderStats(orders) {
-  const totalRevenue = orders.reduce((sum, o) => sum + (parseFloat(o.total_amount || ((o.quantity||0)*(o.price||0)) + (o.shipping_price||0) || 0)), 0);
+  // الإيراد ومتوسط الطلب من الطلبات غير الملغاة فقط (كان يجمع الملغى)
+  const revOrders = orders.filter(o => o.status !== 'cancelled');
+  const totalRevenue = revOrders.reduce((sum, o) => sum + (parseFloat(o.total_amount) || (((o.quantity||0)*(o.price||0)) + (parseFloat(o.shipping_price)||0))), 0);
   const totalOrders = orders.length;
   const delivered = orders.filter(o => o.status === 'delivered').length;
   const completionRate = totalOrders > 0 ? Math.round((delivered / totalOrders) * 100) : 0;
-  const avgValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
+  const avgValue = revOrders.length > 0 ? Math.round(totalRevenue / revOrders.length) : 0;
 
   document.getElementById('totalRevenue').textContent = totalRevenue > 0 ? Number(totalRevenue).toLocaleString() : '0';
   document.getElementById('totalOrders').textContent = totalOrders;
@@ -768,7 +771,7 @@ function renderStats(orders) {
   // Compare with previous period
   const prevOrders = getPreviousPeriodOrders();
   if (prevOrders !== null) {
-    const prevRevenue = prevOrders.reduce((sum, o) => sum + (parseFloat(o.total_amount || o.total || 0)), 0);
+    const prevRevenue = prevOrders.filter(o => o.status !== 'cancelled').reduce((sum, o) => sum + (parseFloat(o.total_amount || o.total) || 0), 0);
     const prevCount = prevOrders.length;
 
     renderChange('revenueChange', totalRevenue, prevRevenue);
@@ -943,7 +946,7 @@ function renderMonthlyChart() {
     const d = new Date(o.created_at);
     const m = months.find(m => m.year === d.getFullYear() && m.month === d.getMonth());
     if (m) {
-      m.revenue += parseFloat(o.total_amount || o.total || 0);
+      if (o.status !== 'cancelled') m.revenue += parseFloat(o.total_amount || o.total) || 0;
       m.orders += 1;
     }
   });

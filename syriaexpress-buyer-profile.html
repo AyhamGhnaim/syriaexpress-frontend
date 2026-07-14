@@ -559,7 +559,8 @@ async function loadProfile() {
 
   try {
     // بيانات الطلبات لحساب الإحصائيات
-    const ordersRes = await fetch(`${API}/api/orders/my`, {
+    // limit صريح — السقف الافتراضي 10 صفوف (كان «إجمالي المشتريات» من آخر 10 طلبات فقط)
+    const ordersRes = await fetch(`${API}/api/orders/my?limit=1000`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const ordersData = ordersRes.ok ? await ordersRes.json() : [];
