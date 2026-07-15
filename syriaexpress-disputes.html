@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#C9A84C">
+  <script src="/pwa.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سياسة النزاعات — SyriaExpress</title>
+  <script>(function(){var s=localStorage.getItem('theme');if(s!=='dark'){document.documentElement.setAttribute('data-theme','light');if(!s)localStorage.setItem('theme','light');}})()</script>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --gold:#C9A84C;--gold-light:#E8C96A;
+      --bg:#0F0E0C;--bg2:#161410;--bg3:#1C1A16;
+      --text:#F5F0E8;--text-dim:#A89880;
+      --border:#2A2620;--border-gold:rgba(201,168,76,0.25);
+    }
+    [data-theme="light"]{
+      --bg:#F5F3EF;--bg2:#FFFFFF;--bg3:#E8E4DC;
+      --text:#1a1917;--text-dim:#5a5650;
+      --border:#d5d0c8;--border-gold:rgba(201,168,76,0.35);
+    }
+    body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);direction:rtl;transition:background .3s,color .3s;}
+
+    nav{position:fixed;top:0;right:0;left:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:60px;background:var(--bg2);border-bottom:1px solid var(--border-gold);}
+    .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .nav-logo img{width:34px;height:34px;object-fit:contain}
+    .nav-logo-text .name{font-family:'Amiri',serif;color:var(--gold);font-size:16px;line-height:1}
+    .nav-logo-text .sub{color:var(--text-dim);font-size:9px;letter-spacing:2px}
+    .nav-actions{display:flex;align-items:center;gap:8px}
+    .btn-theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-dim);padding:6px 10px;border-radius:6px;font-size:17px;cursor:pointer;line-height:1;}
+    .btn-back-link{background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:7px 14px;border-radius:6px;font-family:'Cairo',sans-serif;font-size:12px;cursor:pointer;text-decoration:none;}
+
+    main{max-width:760px;margin:0 auto;padding:84px 20px 40px;}
+    .page-title{font-family:'Amiri',serif;color:var(--gold);font-size:30px;margin-bottom:6px;}
+    .page-meta{font-size:12px;color:var(--text-dim);margin-bottom:26px;}
+    .intro{background:var(--bg2);border:1px solid var(--border-gold);border-radius:12px;padding:16px 18px;font-size:14px;line-height:1.9;color:var(--text);margin-bottom:28px;}
+    section{margin-bottom:26px;}
+    h2{font-size:17px;font-weight:700;color:var(--gold);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+    p,li{font-size:14px;line-height:1.9;color:var(--text);}
+    ul,ol{padding-right:20px;margin-top:6px;}
+    li{margin-bottom:6px;}
+    .note{background:var(--bg3);border-right:3px solid var(--gold);border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.8;color:var(--text-dim);margin-top:10px;}
+    .step-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start;}
+    .step-num{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--gold);color:#0F0E0C;font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;}
+    .step-card p{font-size:13.5px;}
+    .step-card strong{display:block;margin-bottom:2px;font-size:14px;}
+    .links-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px;}
+    .links-row a{color:var(--gold);font-size:13px;text-decoration:none;border:1px solid var(--border-gold);padding:9px 16px;border-radius:8px;}
+
+    footer{border-top:1px solid var(--border);padding:20px;text-align:center;margin-top:20px;}
+    footer p{font-size:12px;color:var(--text-dim);}
+  </style>
+  <style>
+  #ptr-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--bg2, #1a1917);
+    z-index: 9999;
+    transition: height 0.1s;
+    border-bottom: 1px solid var(--border, rgba(201,168,76,0.2));
+  }
+  #ptr-indicator.visible { height: 56px; }
+  #ptr-indicator.refreshing { height: 56px; }
+  .ptr-spinner {
+    width: 22px; height: 22px;
+    border: 2px solid rgba(201,168,76,0.3);
+    border-top-color: #C9A84C;
+    border-radius: 50%;
+    animation: ptr-spin 0.7s linear infinite;
+  }
+  .ptr-arrow {
+    font-size: 22px;
+    transition: transform 0.2s;
+    color: #C9A84C;
+  }
+  @keyframes ptr-spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <img src="logo_main.png" alt="SyriaExpress" onerror="this.style.display='none'">
+    <div class="nav-logo-text">
+      <div class="name">سوريا إكسبريس</div>
+      <div class="sub">SYRIAEXPRESS</div>
+    </div>
+  </a>
+  <div class="nav-actions">
+    <button class="btn-theme-toggle" id="themeToggle" title="تبديل الوضع">🌙</button>
+    <a class="btn-back-link" href="javascript:history.length>1?history.back():location.assign('index.html')">→ رجوع</a>
+  </div>
+</nav>
+
+<main>
+  <h1 class="page-title">سياسة النزاعات</h1>
+  <p class="page-meta">آخر تحديث: 15 يوليو 2026</p>
+
+  <div class="intro">
+    هدفنا سوق جملة قائم على <strong>الثقة</strong>. لأن الدفع والتسليم يتمّان حالياً خارج المنصّة، فإن دور SyriaExpress في الخلافات هو دور <strong>الوسيط والمشرف</strong> — لا الضامن المالي. هذه الصفحة توضّح بصراحة ما نستطيع فعله عند حدوث مشكلة، وما لا نستطيعه.
+  </div>
+
+  <section>
+    <h2>متى تُقدِّم بلاغ نزاع؟</h2>
+    <ul>
+      <li>البضاعة وصلت تالفة أو ناقصة أو مختلفة جوهرياً عن الوصف أو الصور.</li>
+      <li>البائع أكّد الطلب ثم لم يشحنه دون سبب أو تواصل.</li>
+      <li>المشتري استلم البضاعة وامتنع عن الالتزام بما تم الاتفاق عليه.</li>
+      <li>سلوك احتيالي أو مضلِّل من أي طرف.</li>
+    </ul>
+    <div class="note">⏱️ <strong>نافذة الإبلاغ: 72 ساعة</strong> من استلام البضاعة (أو من تاريخ الشحن المتوقَّع في حال عدم الاستلام). البلاغات بعد هذه النافذة قد تُقبل بحسب الحالة لكن قدرتنا على المساعدة فيها أقل.</div>
+  </section>
+
+  <section>
+    <h2>الأدلة المطلوبة</h2>
+    <ul>
+      <li>رقم الطلب على المنصّة (شرط أساسي — الطلبات خارج المنصّة لا تشملها هذه السياسة).</li>
+      <li>صور أو فيديو واضح للمشكلة (البضاعة، التغليف، إيصال الشحن إن وُجد).</li>
+      <li>وصف مختصر ودقيق لما حدث وما تم الاتفاق عليه.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>مسار حلّ النزاع</h2>
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <p><strong>التواصل المباشر أولاً</strong>معظم الخلافات تُحلّ بمكالمة. تواصل مع الطرف الآخر عبر بيانات الطلب وحاول الوصول لحل خلال 48 ساعة.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <p><strong>تصعيد للإدارة</strong>إن لم يُحلّ الخلاف، أرسل البلاغ مع الأدلة إلى إدارة المنصّة (عبر قنوات التواصل الرسمية) مذكوراً فيه رقم الطلب.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <p><strong>الوساطة والمراجعة</strong>تراجع الإدارة سجل الطلب على المنصّة وأدلة الطرفين، وتتواصل معهما، وتسعى لحل توافقي خلال 5 أيام عمل من اكتمال الأدلة.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">4</div>
+      <p><strong>القرار والإجراء</strong>بناءً على المراجعة قد تتخذ الإدارة إجراءً بحق الطرف المخالف (انظر الفقرة التالية)، وتُوثَّق النتيجة في سجل الحساب.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>الإجراءات الممكنة</h2>
+    <ul>
+      <li><strong>إنذار موثَّق</strong> في سجل الحساب.</li>
+      <li><strong>تعليق منتجات</strong> البائع المخالف أو تجميد قدرته على استقبال طلبات جديدة.</li>
+      <li><strong>توقيف الحساب</strong> مؤقتاً أو نهائياً عند المخالفات الجسيمة أو المتكررة.</li>
+      <li><strong>أثر على السمعة</strong>: النزاعات المثبتة تنعكس على أداء الحساب وتقييمه داخل المنصّة.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>حدود دور المنصّة — بصراحة</h2>
+    <ul>
+      <li>المنصّة <strong>لا تستردّ أموالاً ولا تعوّض مالياً</strong>، لأنها لا تُحصّل الدفعات ولا تحتفظ بها. التسوية المالية شأن مباشر بين الطرفين.</li>
+      <li>المنصّة ليست جهة قضائية؛ قراراتها إدارية تخص استخدام المنصّة فقط، ولا تمنع أي طرف من اللجوء للطرق القانونية.</li>
+      <li>حمايتنا الفعلية لك: <strong>التوثيق، الإشراف على المنتجات، سجل الطلبات الموثَّق، التقييمات، والإجراءات بحق المخالفين</strong> — هذه أدوات سمعة وثقة تجعل الغش مكلفاً.</li>
+    </ul>
+    <div class="note">💡 نصيحة: أتمّ كل تفاصيل الاتفاق (الكمية، السعر، الشحن) عبر طلب موثَّق على المنصّة. الطلب الموثَّق هو أساس أي وساطة — ما يتم خارجه لا نستطيع التحقق منه.</div>
+  </section>
+
+  <section>
+    <h2>سوء استخدام نظام النزاعات</h2>
+    <p>البلاغات الكيدية أو الزائفة أو المتكررة بلا أساس تُعامل كمخالفة بحد ذاتها وقد تؤدي لإجراءات بحق مقدِّمها.</p>
+  </section>
+
+  <div class="links-row">
+    <a href="syriaexpress-terms.html">📄 شروط الاستخدام</a>
+    <a href="index.html">🏠 الصفحة الرئيسية</a>
+  </div>
+</main>
+
+<footer>
+  <p>© 2026 SyriaExpress — جميع الحقوق محفوظة</p>
+</footer>
+
+<script>
+  // ── Theme toggle ──
+  (function(){
+    var btn = document.getElementById('themeToggle');
+    function paint(){
+      btn.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? '☀️' : '🌙';
+    }
+    btn.addEventListener('click', function(){
+      var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      if (isLight) {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+      }
+      paint();
+    });
+    paint();
+  })();
+</script>
+<script>
+  // ── Pull to Refresh (iOS PWA compatible) ──
+  (function() {
+    let startY = 0, currentY = 0, pulling = false;
+    const threshold = 65;
+
+    const ind = document.createElement('div');
+    ind.id = 'ptr-indicator';
+    ind.innerHTML = '<div class="ptr-arrow">↓</div>';
+    document.body.prepend(ind);
+
+    function getScrollTop() {
+      return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    }
+
+    document.addEventListener('touchstart', function(e) {
+      if (getScrollTop() <= 0) {
+        startY = e.touches[0].pageY;
+        pulling = true;
+      }
+    }, { passive: true });
+
+    document.addEventListener('touchmove', function(e) {
+      if (!pulling) return;
+      currentY = e.touches[0].pageY;
+      const dy = currentY - startY;
+      if (dy > 8 && getScrollTop() <= 0) {
+        const arrow = ind.querySelector('.ptr-arrow');
+        ind.classList.add('visible');
+        const progress = Math.min(dy / threshold, 1);
+        if (arrow) {
+          arrow.style.transform = 'rotate(' + (progress * 180) + 'deg)';
+          arrow.style.opacity = 0.4 + progress * 0.6;
+        }
+      }
+    }, { passive: true });
+
+    document.addEventListener('touchend', function(e) {
+      if (!pulling) return;
+      pulling = false;
+      const dy = (e.changedTouches[0].pageY - startY);
+      if (dy >= threshold && getScrollTop() <= 0) {
+        ind.innerHTML = '<div class="ptr-spinner"></div>';
+        ind.classList.add('refreshing');
+        setTimeout(function() { location.reload(true); }, 400);
+      } else {
+        ind.classList.remove('visible');
+        setTimeout(function() {
+          ind.innerHTML = '<div class="ptr-arrow">↓</div>';
+        }, 200);
+      }
+    }, { passive: true });
+  })();
+</script>
+</body>
+</html>

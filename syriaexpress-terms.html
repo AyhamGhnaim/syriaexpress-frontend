@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#C9A84C">
+  <script src="/pwa.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>شروط الاستخدام — SyriaExpress</title>
+  <script>(function(){var s=localStorage.getItem('theme');if(s!=='dark'){document.documentElement.setAttribute('data-theme','light');if(!s)localStorage.setItem('theme','light');}})()</script>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --gold:#C9A84C;--gold-light:#E8C96A;
+      --bg:#0F0E0C;--bg2:#161410;--bg3:#1C1A16;
+      --text:#F5F0E8;--text-dim:#A89880;
+      --border:#2A2620;--border-gold:rgba(201,168,76,0.25);
+    }
+    [data-theme="light"]{
+      --bg:#F5F3EF;--bg2:#FFFFFF;--bg3:#E8E4DC;
+      --text:#1a1917;--text-dim:#5a5650;
+      --border:#d5d0c8;--border-gold:rgba(201,168,76,0.35);
+    }
+    body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);direction:rtl;transition:background .3s,color .3s;}
+
+    nav{position:fixed;top:0;right:0;left:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:60px;background:var(--bg2);border-bottom:1px solid var(--border-gold);}
+    .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .nav-logo img{width:34px;height:34px;object-fit:contain}
+    .nav-logo-text .name{font-family:'Amiri',serif;color:var(--gold);font-size:16px;line-height:1}
+    .nav-logo-text .sub{color:var(--text-dim);font-size:9px;letter-spacing:2px}
+    .nav-actions{display:flex;align-items:center;gap:8px}
+    .btn-theme-toggle{background:var(--bg3);border:1px solid var(--border);color:var(--text-dim);padding:6px 10px;border-radius:6px;font-size:17px;cursor:pointer;line-height:1;}
+    .btn-back-link{background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:7px 14px;border-radius:6px;font-family:'Cairo',sans-serif;font-size:12px;cursor:pointer;text-decoration:none;}
+
+    main{max-width:760px;margin:0 auto;padding:84px 20px 40px;}
+    .page-title{font-family:'Amiri',serif;color:var(--gold);font-size:30px;margin-bottom:6px;}
+    .page-meta{font-size:12px;color:var(--text-dim);margin-bottom:26px;}
+    .intro{background:var(--bg2);border:1px solid var(--border-gold);border-radius:12px;padding:16px 18px;font-size:14px;line-height:1.9;color:var(--text);margin-bottom:28px;}
+    section{margin-bottom:26px;}
+    h2{font-size:17px;font-weight:700;color:var(--gold);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+    p,li{font-size:14px;line-height:1.9;color:var(--text);}
+    ul{padding-right:20px;margin-top:6px;}
+    li{margin-bottom:6px;}
+    .note{background:var(--bg3);border-right:3px solid var(--gold);border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.8;color:var(--text-dim);margin-top:10px;}
+    .links-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px;}
+    .links-row a{color:var(--gold);font-size:13px;text-decoration:none;border:1px solid var(--border-gold);padding:9px 16px;border-radius:8px;}
+
+    footer{border-top:1px solid var(--border);padding:20px;text-align:center;margin-top:20px;}
+    footer p{font-size:12px;color:var(--text-dim);}
+  </style>
+  <style>
+  #ptr-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--bg2, #1a1917);
+    z-index: 9999;
+    transition: height 0.1s;
+    border-bottom: 1px solid var(--border, rgba(201,168,76,0.2));
+  }
+  #ptr-indicator.visible { height: 56px; }
+  #ptr-indicator.refreshing { height: 56px; }
+  .ptr-spinner {
+    width: 22px; height: 22px;
+    border: 2px solid rgba(201,168,76,0.3);
+    border-top-color: #C9A84C;
+    border-radius: 50%;
+    animation: ptr-spin 0.7s linear infinite;
+  }
+  .ptr-arrow {
+    font-size: 22px;
+    transition: transform 0.2s;
+    color: #C9A84C;
+  }
+  @keyframes ptr-spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <img src="logo_main.png" alt="SyriaExpress" onerror="this.style.display='none'">
+    <div class="nav-logo-text">
+      <div class="name">سوريا إكسبريس</div>
+      <div class="sub">SYRIAEXPRESS</div>
+    </div>
+  </a>
+  <div class="nav-actions">
+    <button class="btn-theme-toggle" id="themeToggle" title="تبديل الوضع">🌙</button>
+    <a class="btn-back-link" href="javascript:history.length>1?history.back():location.assign('index.html')">→ رجوع</a>
+  </div>
+</nav>
+
+<main>
+  <h1 class="page-title">شروط الاستخدام</h1>
+  <p class="page-meta">آخر تحديث: 15 يوليو 2026</p>
+
+  <div class="intro">
+    مرحباً بك في <strong>SyriaExpress</strong> — منصّة إلكترونية تربط المصانع وتجّار الجملة السوريين (البائعين) بالموزّعين وتجّار التجزئة (المشترين). باستخدامك للمنصّة أو إنشائك حساباً فيها فأنت توافق على الشروط التالية. إن لم توافق على أيّ منها، يُرجى عدم استخدام المنصّة.
+  </div>
+
+  <section>
+    <h2>1. طبيعة المنصّة ودورها</h2>
+    <p>SyriaExpress <strong>وسيط تقني</strong> يتيح عرض المنتجات والتواصل وإتمام الطلبات بين البائع والمشتري. المنصّة <strong>ليست بائعاً ولا مصنّعاً ولا ناقلاً</strong>، ولا تملك المنتجات المعروضة ولا تضمن جودتها أو مطابقتها للوصف. المسؤولية عن المنتج ودقّة بياناته تقع على البائع الذي يعرضه.</p>
+    <div class="note">الدفع والتسليم يتمّان حالياً <strong>خارج المنصّة</strong> بالتنسيق المباشر بين الطرفين. المنصّة لا تُحصّل أموالاً ولا تحتفظ بها، وبالتالي غير مسؤولة عن أي معاملة مالية بين المستخدمين.</div>
+  </section>
+
+  <section>
+    <h2>2. الحسابات والتسجيل</h2>
+    <ul>
+      <li>يجب أن تكون البيانات المقدَّمة عند التسجيل (الاسم، رقم الهاتف، البريد، المحافظة) صحيحة ومحدّثة.</li>
+      <li>أنت مسؤول عن سرّية كلمة المرور وعن كل نشاط يتم عبر حسابك.</li>
+      <li>يُسمح بحساب واحد لكل نشاط تجاري. الحسابات الوهمية أو المنتحلة تُوقَف فوراً.</li>
+      <li>يجب أن يكون المستخدم شخصاً طبيعياً بالغاً مخوّلاً بتمثيل النشاط التجاري المسجَّل باسمه.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>3. توثيق البائعين</h2>
+    <p>يخضع البائع لمراجعة توثيق تشمل تقديم وثائق تجارية. للإدارة الحق الكامل في قبول أو رفض أو تعليق التوثيق دون إلزامها بتفصيل الأسباب. الوثائق المقدَّمة تُستخدم لغرض التحقق فقط ولا تُعرض علناً.</p>
+  </section>
+
+  <section>
+    <h2>4. المنتجات والإشراف</h2>
+    <ul>
+      <li>كل منتج جديد يخضع لمراجعة الإدارة قبل ظهوره للمشترين، وللإدارة حق رفض أو تعليق أو إزالة أي منتج في أي وقت.</li>
+      <li>البائع مسؤول عن دقّة الوصف والسعر والحد الأدنى للطلب وحالة المخزون.</li>
+      <li>يُمنع عرض منتجات مخالفة للقانون، أو مقلَّدة، أو مضلِّلة في وصفها أو صورها.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>5. الطلبات ومهل الاستجابة (SLA)</h2>
+    <ul>
+      <li>على البائع الردّ على الطلب (تأكيد أو رفض) ضمن المهلة المحدَّدة في إعدادات المنصّة، وشحنه ضمن مهلة الشحن المحدَّدة.</li>
+      <li>تجاوز المهل بشكل متكرر قد يؤدي إلى تنبيهات ثم إجراءات تصل إلى تعليق الحساب.</li>
+      <li>الأسعار النهائية للطلب هي المعتمدة لحظة إرساله عبر المنصّة، وفق شرائح التسعير والكوبونات السارية.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>6. التقييمات</h2>
+    <p>يحق للمشتري تقييم البائع بعد إتمام الطلب. يجب أن تكون التقييمات صادقة ومبنية على تجربة فعلية. يُمنع التقييم الزائف أو التشهيري أو المتبادَل بقصد التلاعب، وللإدارة حذف أي تقييم مخالف.</p>
+  </section>
+
+  <section>
+    <h2>7. الاستخدامات المحظورة</h2>
+    <ul>
+      <li>أي نشاط يخالف القوانين النافذة.</li>
+      <li>محاولة اختراق المنصّة أو استخراج بياناتها آلياً أو إساءة استخدام واجهاتها البرمجية.</li>
+      <li>التحايل على نظام الطلبات أو التوثيق أو التقييم.</li>
+      <li>استخدام بيانات المستخدمين الآخرين لأي غرض خارج إتمام المعاملات التجارية عبر المنصّة.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>8. إيقاف الحسابات</h2>
+    <p>يحق للإدارة توقيف أو حذف أي حساب يخالف هذه الشروط، مؤقتاً أو نهائياً، مع أو بدون إشعار مسبق بحسب جسامة المخالفة. حذف الحساب نهائي ولا يمكن التراجع عنه.</p>
+  </section>
+
+  <section>
+    <h2>9. البيانات والخصوصية</h2>
+    <ul>
+      <li>نجمع البيانات اللازمة لتشغيل المنصّة فقط: بيانات الحساب، بيانات النشاط التجاري، الطلبات، والوثائق المقدَّمة للتوثيق.</li>
+      <li>لا نبيع بياناتك ولا نشاركها مع أطراف ثالثة لأغراض تسويقية.</li>
+      <li>تُعرض بيانات التواصل (كالهاتف والعنوان) للطرف الآخر في الطلب فقط بالقدر اللازم لإتمامه.</li>
+      <li>يمكنك طلب حذف حسابك وبياناته من داخل المنصّة أو بالتواصل مع الإدارة.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>10. حدود المسؤولية</h2>
+    <p>تُقدَّم المنصّة "كما هي" دون ضمانات صريحة أو ضمنية. لا تتحمّل المنصّة مسؤولية أي خسارة مباشرة أو غير مباشرة تنشأ عن التعامل بين المستخدمين، أو عن انقطاع الخدمة، أو عن أخطاء في البيانات المُدخلة من قِبل المستخدمين. لمعرفة كيفية التعامل مع الخلافات، راجع <a href="syriaexpress-disputes.html" style="color:var(--gold)">سياسة النزاعات</a>.</p>
+  </section>
+
+  <section>
+    <h2>11. تعديل الشروط</h2>
+    <p>قد تُحدَّث هذه الشروط من وقت لآخر. يُعتبر استمرارك باستخدام المنصّة بعد نشر أي تعديل موافقةً عليه. تاريخ آخر تحديث مذكور أعلى الصفحة.</p>
+  </section>
+
+  <div class="links-row">
+    <a href="syriaexpress-disputes.html">⚖️ سياسة النزاعات</a>
+    <a href="index.html">🏠 الصفحة الرئيسية</a>
+  </div>
+</main>
+
+<footer>
+  <p>© 2026 SyriaExpress — جميع الحقوق محفوظة</p>
+</footer>
+
+<script>
+  // ── Theme toggle ──
+  (function(){
+    var btn = document.getElementById('themeToggle');
+    function paint(){
+      btn.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? '☀️' : '🌙';
+    }
+    btn.addEventListener('click', function(){
+      var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      if (isLight) {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+      }
+      paint();
+    });
+    paint();
+  })();
+</script>
+<script>
+  // ── Pull to Refresh (iOS PWA compatible) ──
+  (function() {
+    let startY = 0, currentY = 0, pulling = false;
+    const threshold = 65;
+
+    const ind = document.createElement('div');
+    ind.id = 'ptr-indicator';
+    ind.innerHTML = '<div class="ptr-arrow">↓</div>';
+    document.body.prepend(ind);
+
+    function getScrollTop() {
+      return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    }
+
+    document.addEventListener('touchstart', function(e) {
+      if (getScrollTop() <= 0) {
+        startY = e.touches[0].pageY;
+        pulling = true;
+      }
+    }, { passive: true });
+
+    document.addEventListener('touchmove', function(e) {
+      if (!pulling) return;
+      currentY = e.touches[0].pageY;
+      const dy = currentY - startY;
+      if (dy > 8 && getScrollTop() <= 0) {
+        const arrow = ind.querySelector('.ptr-arrow');
+        ind.classList.add('visible');
+        const progress = Math.min(dy / threshold, 1);
+        if (arrow) {
+          arrow.style.transform = 'rotate(' + (progress * 180) + 'deg)';
+          arrow.style.opacity = 0.4 + progress * 0.6;
+        }
+      }
+    }, { passive: true });
+
+    document.addEventListener('touchend', function(e) {
+      if (!pulling) return;
+      pulling = false;
+      const dy = (e.changedTouches[0].pageY - startY);
+      if (dy >= threshold && getScrollTop() <= 0) {
+        ind.innerHTML = '<div class="ptr-spinner"></div>';
+        ind.classList.add('refreshing');
+        setTimeout(function() { location.reload(true); }, 400);
+      } else {
+        ind.classList.remove('visible');
+        setTimeout(function() {
+          ind.innerHTML = '<div class="ptr-arrow">↓</div>';
+        }, 200);
+      }
+    }, { passive: true });
+  })();
+</script>
+</body>
+</html>
