@@ -757,7 +757,8 @@ function renderReports() {
 function renderStats(orders) {
   // الإيراد ومتوسط الطلب من الطلبات غير الملغاة فقط (كان يجمع الملغى)
   const revOrders = orders.filter(o => o.status !== 'cancelled');
-  const totalRevenue = revOrders.reduce((sum, o) => sum + (parseFloat(o.total_amount) || (((o.quantity||0)*(o.price||0)) + (parseFloat(o.shipping_price)||0))), 0);
+  // fallback يطابق تعبير الباكند الموحّد: كمية×السعر − الخصم + الشحن (كان يُسقط الخصم).
+  const totalRevenue = revOrders.reduce((sum, o) => sum + (parseFloat(o.total_amount) || (((o.quantity||0)*(parseFloat(o.unit_price ?? o.price)||0)) - (parseFloat(o.discount)||0) + (parseFloat(o.shipping_price)||0))), 0);
   const totalOrders = orders.length;
   const delivered = orders.filter(o => o.status === 'delivered').length;
   const completionRate = totalOrders > 0 ? Math.round((delivered / totalOrders) * 100) : 0;
