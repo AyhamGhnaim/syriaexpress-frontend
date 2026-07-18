@@ -158,18 +158,29 @@
       position: relative;
     }
 
+    .input-wrapper input { padding-left: 3rem; }
+
     .toggle-pass {
       position: absolute;
-      left: 0.8rem;
+      left: 0.5rem;
       top: 50%;
       transform: translateY(-50%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.2rem;
+      height: 2.2rem;
       background: none;
       border: none;
+      border-radius: 8px;
       color: var(--text-muted);
       cursor: pointer;
-      font-size: 1rem;
-      padding: 0.2rem;
+      padding: 0;
+      transition: color 0.15s ease, background 0.15s ease;
     }
+    .toggle-pass:hover { color: var(--text); background: rgba(0,0,0,0.05); }
+    .toggle-pass:active { transform: translateY(-50%) scale(0.9); }
+    .toggle-pass svg { width: 20px; height: 20px; display: block; }
 
     /* ALERT */
     .alert {
@@ -367,7 +378,7 @@
         <label for="password">كلمة المرور</label>
         <div class="input-wrapper">
           <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
-          <button class="toggle-pass" onclick="togglePass()" type="button" id="toggleBtn">👁</button>
+          <button class="toggle-pass" onclick="togglePass()" type="button" id="toggleBtn" aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button>
         </div>
       </div>
 
@@ -410,16 +421,18 @@
       text.textContent = loading ? 'جارٍ التسجيل...' : 'تسجيل الدخول';
     }
 
+    const EYE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+    const EYE_OFF_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c6.5 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3.5 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>';
+
     function togglePass() {
       const input = document.getElementById('password');
       const btn = document.getElementById('toggleBtn');
-      if (input.type === 'password') {
-        input.type = 'text';
-        btn.textContent = '🙈';
-      } else {
-        input.type = 'password';
-        btn.textContent = '👁';
-      }
+      const show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      btn.innerHTML = show ? EYE_OFF_ICON : EYE_ICON;
+      const label = show ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور';
+      btn.setAttribute('aria-label', label);
+      btn.title = label;
     }
 
     async function handleLogin() {
