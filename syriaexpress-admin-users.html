@@ -593,6 +593,16 @@ function formatDate(d) {
   return new Date(d).toLocaleDateString('ar-SY', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
+// للحظات (آخر دخول / آخر ظهور) — تاريخ + وقت. الشرطة لو فاضي/غير صالح.
+function formatDateTime(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  if (isNaN(dt.getTime())) return '—';
+  return dt.toLocaleDateString('ar-SY', { year: 'numeric', month: 'short', day: 'numeric' })
+       + ' · '
+       + dt.toLocaleTimeString('ar-SY', { hour: '2-digit', minute: '2-digit' });
+}
+
 function getTypeInfo(t) {
   const map = {
     buyer:  { label: 'مشتري', cls: 'type-buyer',  icon: '🛒' },
@@ -666,7 +676,11 @@ function buildCard(u) {
           </div>
           <div class="expand-field">
             <div class="lbl">آخر دخول</div>
-            <div class="val">${formatDate(u.last_login)}</div>
+            <div class="val">${formatDateTime(u.last_login)}</div>
+          </div>
+          <div class="expand-field">
+            <div class="lbl">آخر ظهور</div>
+            <div class="val">${formatDateTime(u.last_seen)}</div>
           </div>
         </div>
 
