@@ -67,3 +67,78 @@
     });
   }
 })();
+
+/* ===== SE-PWA-REFRESH-FAB START =====
+   زر تحديث عائم — يظهر فقط بالتطبيق المثبّت على الديسكتوب.
+   بوابة مزدوجة: standalone + (hover:hover and pointer:fine).
+   السبب: النافذة المثبّتة ما فيها زر تحديث؛ الـSW network-first للHTML فالـreload يجيب آخر نشر.
+   الموبايل مستثنى (pull-to-refresh موجود) والمتصفح العادي مستثنى (زر تحديث أصلي). */
+(function () {
+  'use strict';
+  if (window.__sePwaRefreshFabInit) return;      // حارس idempotent
+  window.__sePwaRefreshFabInit = true;
+
+  function isStandalone() {
+    try {
+      return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+             window.navigator.standalone === true;          // الثانية لـ iOS
+    } catch (e) { return false; }
+  }
+  function isDesktopPrecise() {
+    try {
+      return !!(window.matchMedia &&
+               window.matchMedia('(hover: hover) and (pointer: fine)').matches);
+    } catch (e) { return false; }
+  }
+
+  // البوابة المزدوجة — لازم الشرطان معاً
+  if (!isStandalone() || !isDesktopPrecise()) return;
+
+  function injectFab() {
+    if (document.getElementById('sePwaRefreshFab')) return; // حارس ثانٍ
+    if (!document.body) return;
+
+    if (!document.getElementById('sePwaRefreshFabCss')) {
+      var css = document.createElement('style');
+      css.id = 'sePwaRefreshFabCss';
+      css.textContent =
+        '#sePwaRefreshFab{position:fixed;bottom:22px;right:22px;width:46px;height:46px;' +
+        'border-radius:50%;border:1px solid var(--border-gold,rgba(201,168,76,0.35));' +
+        'background:var(--bg2,#161410);color:var(--gold,#C9A84C);font-size:22px;line-height:1;' +
+        'display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;' +
+        'box-shadow:0 6px 20px rgba(0,0,0,0.35);z-index:9990;' +
+        '-webkit-tap-highlight-color:transparent;' +
+        'transition:transform .15s ease,box-shadow .15s ease,background .15s ease;}' +
+        '#sePwaRefreshFab:hover{background:var(--bg3,#1C1A16);transform:translateY(-1px);' +
+        'box-shadow:0 8px 26px rgba(0,0,0,0.45);}' +
+        '#sePwaRefreshFab:active{transform:scale(0.94);}' +
+        '#sePwaRefreshFab .se-fab-ico{display:inline-block;transition:transform .2s ease;}' +
+        '#sePwaRefreshFab.spinning .se-fab-ico{animation:se-fab-spin .7s linear infinite;}' +
+        '@keyframes se-fab-spin{to{transform:rotate(360deg);}}';
+      document.head.appendChild(css);
+    }
+
+    var btn = document.createElement('button');
+    btn.id = 'sePwaRefreshFab';
+    btn.type = 'button';
+    btn.title = 'تحديث';
+    btn.setAttribute('aria-label', 'تحديث');
+
+    var ico = document.createElement('span');
+    ico.className = 'se-fab-ico';
+    ico.textContent = '\u21BB';                    // رمز التحديث — Unicode escape واحد
+    btn.appendChild(ico);
+
+    btn.addEventListener('click', function () {
+      btn.classList.add('spinning');               // دوران CSS
+      try { location.reload(); }                   // network-first ⇒ آخر نشر
+      catch (e) { window.location.href = window.location.href; }
+    });
+
+    document.body.appendChild(btn);
+  }
+
+  if (document.body) injectFab();
+  else document.addEventListener('DOMContentLoaded', injectFab, { once: true });
+})();
+/* ===== SE-PWA-REFRESH-FAB END ===== */
