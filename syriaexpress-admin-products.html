@@ -184,6 +184,12 @@ async function apiFetch(path, opts = {}, onWake) {
       const res = await fetch(`${API}${path}`, Object.assign({}, opts, { signal: ac.signal }));
       clearTimeout(t);
       if (res.status === 401 || res.status === 403) { window.location.href = 'login.html'; return null; }
+      if (res.status === 503) {
+        // 503 قد يكون قفل المنصّة أو خللاً عابراً بـ Render — نفرّق بالـ code
+        const d503 = await res.json().catch(() => ({}));
+        if (d503.code === 'PLATFORM_LOCKED') { window.location.replace('syriaexpress-soon.html'); return null; }
+        throw new Error('server 503');   // عابر → يدخل دورة إعادة المحاولة
+      }
       if (!res.ok) throw new Error('server ' + res.status);
       return await res.json();
     } catch (e) {

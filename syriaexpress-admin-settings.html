@@ -43,6 +43,12 @@
     .kv-row .k { flex:0 0 38%; font-size:12px; color:var(--text2); word-break:break-all; }
     .kv-row .v { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:8px 10px; color:var(--text); font-family:'Cairo',sans-serif; font-size:13px; }
     .kv-row select.v { cursor:pointer; }
+    .kv-item { padding:11px 0; border-bottom:1px solid var(--border); }
+    .kv-item:last-child { border-bottom:none; }
+    .kv-row .k b { display:block; font-size:13px; font-weight:600; color:var(--text); word-break:normal; }
+    .kv-row .k small { display:block; font-size:10px; color:var(--text2); direction:ltr; text-align:right; margin-top:2px; }
+    .kv-desc { font-size:11px; color:var(--text2); line-height:1.75; margin-top:7px; }
+    .kv-item.danger .kv-row .k b { color:var(--gold); }
     .kv-row button { background:var(--bg3); border:1px solid var(--border); color:var(--text); border-radius:8px; padding:8px 12px; font-family:'Cairo',sans-serif; font-weight:600; font-size:12px; cursor:pointer; }
     .spinner { width:30px; height:30px; border:3px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin .8s linear infinite; margin:30px auto; }
     @keyframes spin { to { transform:rotate(360deg); } }
@@ -201,6 +207,12 @@ async function apiFetch(path, opts = {}, onWake) {
       const res = await fetch(`${API}${path}`, Object.assign({}, opts, { signal: ac.signal }));
       clearTimeout(t);
       if (res.status === 401 || res.status === 403) { window.location.href = 'login.html'; return null; }
+      if (res.status === 503) {
+        // 503 قد يكون قفل المنصّة أو خللاً عابراً بـ Render — نفرّق بالـ code
+        const d503 = await res.json().catch(() => ({}));
+        if (d503.code === 'PLATFORM_LOCKED') { window.location.replace('syriaexpress-soon.html'); return null; }
+        throw new Error('server 503');   // عابر → يدخل دورة إعادة المحاولة
+      }
       if (!res.ok) throw new Error('server ' + res.status);
       return await res.json();
     } catch (e) {
@@ -214,6 +226,25 @@ async function apiFetch(path, opts = {}, onWake) {
 }
 
 const SLA_KEYS = ['sla_max_response_hours','sla_max_shipping_hours'];
+
+// أسماء عربية ووصف لكل إعداد. المفاتيح غير المذكورة تُعرض بمفتاحها الخام
+// (لا تنكسر الصفحة إن أُضيف مفتاح جديد من قاعدة البيانات).
+const META = {
+  platform_locked: { label:'قفل المنصّة بالكامل', on:'مقفلة — لا أحد يدخل', off:'مفتوحة', danger:true,
+    desc:'يحجب المنصّة كلياً عن الجميع — حتى التصفّح والمنتجات والأسعار — ويعرض صفحة «قريباً». أنت كأدمن تبقى تدخل وتعمل طبيعي.' },
+  maintenance_mode: { label:'وضع الصيانة', on:'مفعّل', off:'مغلق',
+    desc:'يمنع العمليات فقط (طلب / تسجيل / تعديل) ويُبقي التصفّح مفتوحاً للجميع. لا يخفي المنتجات ولا الأسعار.' },
+  buyer_open_registration: { label:'تسجيل المشترين', on:'مفتوح', off:'مغلق',
+    desc:'السماح بإنشاء حسابات مشترين جديدة.' },
+  seller_open_registration: { label:'تسجيل البائعين', on:'مفتوح', off:'مغلق',
+    desc:'السماح بإنشاء حسابات بائعين جديدة.' },
+  seller_manual_verify: { label:'توثيق البائعين', on:'يدوي — تعتمده أنت', off:'تلقائي',
+    desc:'عند التفعيل يبقى البائع الجديد «قيد المراجعة» حتى تعتمده من صفحة طلبات التوثيق.' },
+  international_shipping: { label:'الشحن الدولي', on:'متاح', off:'موقوف',
+    desc:'يُفحص عند إنشاء الطلب — إن كان موقوفاً تُرفض الطلبات ذات الشحن الدولي.' },
+  commission_rate: { label:'نسبة العمولة',
+    desc:'تُستخدم في تقرير العمولة التقديري بلوحة التحليلات فقط — لا تُحصَّل ولا تمسّ أي مبلغ فعلي.' }
+};
 
 function showToast(msg){
   const t = document.getElementById('toast');
@@ -250,17 +281,23 @@ async function loadSettings(){
       box.innerHTML = others.map(r => {
         const valStr = parseVal(r.value);
         const isBool = valStr === 'true' || valStr === 'false';
+        const m      = META[r.key] || {};
+        const onTxt  = m.on  || 'true';
+        const offTxt = m.off || 'false';
         const control = isBool
           ? `<select class="v" id="set_${esc(r.key)}">
-               <option value="true"${valStr === 'true' ? ' selected' : ''}>true</option>
-               <option value="false"${valStr === 'false' ? ' selected' : ''}>false</option>
+               <option value="true"${valStr === 'true' ? ' selected' : ''}>${esc(onTxt)}</option>
+               <option value="false"${valStr === 'false' ? ' selected' : ''}>${esc(offTxt)}</option>
              </select>`
           : `<input class="v" id="set_${esc(r.key)}" value="${esc(valStr)}">`;
         return `
-        <div class="kv-row">
-          <div class="k">${esc(r.key)}</div>
-          ${control}
-          <button onclick="saveKey('${esc(r.key)}')">حفظ</button>
+        <div class="kv-item${m.danger ? ' danger' : ''}">
+          <div class="kv-row">
+            <div class="k"><b>${esc(m.label || r.key)}</b><small>${esc(r.key)}</small></div>
+            ${control}
+            <button onclick="saveKey('${esc(r.key)}')">حفظ</button>
+          </div>
+          ${m.desc ? `<div class="kv-desc">${esc(m.desc)}</div>` : ''}
         </div>`;
       }).join('');
     }
@@ -295,6 +332,10 @@ async function saveSla(){
 
 async function saveKey(key){
   const el = document.getElementById('set_' + key);
+  // تأكيد إلزامي للمفاتيح التي توقف المنصّة على كل المستخدمين
+  if ((META[key] || {}).danger && el.value === 'true') {
+    if (!confirm('سيتم قفل المنصّة بالكامل عن جميع الزوّار والمستخدمين فوراً.\n\nمتأكد؟')) return;
+  }
   let value;
   // تفسير القيمة كـ JSON (رقم/منطقي/كائن/سلسلة JSON)، وإلا تُعامل كنص عادي
   try { value = JSON.parse(el.value); } catch(_) { value = el.value; }

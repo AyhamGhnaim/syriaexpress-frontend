@@ -159,3 +159,64 @@
   }
 })();
 /* ===== SE-PWA-REFRESH-FAB END ===== */
+
+/* ===== SE-PLATFORM-LOCK-GUARD START =====
+   حارس القفل الكامل — يُحمَّل على كل الصفحات عبر pwa.js.
+   عند تفعيل platform_locked من لوحة الأدمن، يحوّل الزائر غير الأدمن
+   لصفحة «قريباً» بدل ما يصطدم برسائل خطأ من الـ API.
+
+   قواعد التصميم:
+   - نداء واحد رخيص لـ /api/health (لا يمرّ بالقفل، وإعداداته مكاشّة 60ث).
+   - fail-open: أي خطأ شبكة/ردّ غير صالح → لا تحويل إطلاقاً.
+   - التحويل فقط عند locked === true صراحةً.
+   - الأدمن لا يُحوَّل (توكنه يتجاوز القفل بالباكند أصلاً).
+   - صفحات مستثناة: صفحة «قريباً» نفسها (منعاً للدوران) وصفحة الدخول
+     (لأنها المدخل الوحيد الذي يبقى مفتوحاً ليدخل الأدمن ويفكّ القفل).
+   - كاش جلسة قصير يمنع نداءً على كل تنقّل داخل نفس الجلسة. */
+(function () {
+  'use strict';
+
+  var SOON  = 'syriaexpress-soon.html';
+  var API   = 'https://syriaexpress-backend.onrender.com';
+  var TTL   = 60 * 1000;               // مطابق لكاش الإعدادات بالباكند
+
+  var page = (location.pathname.split('/').pop() || '').toLowerCase();
+  if (page === SOON || page === 'login.html') return;   // مستثناة
+
+  // ── هل المستخدم الحالي أدمن؟ قراءة الحمولة فقط (بلا تحقّق توقيع —
+  //    التحقّق الحقيقي بالباكند؛ هذا مجرّد تفادٍ لتحويل الأدمن بصرياً). ──
+  function isAdmin() {
+    try {
+      var t = localStorage.getItem('token');
+      if (!t) return false;
+      var p = t.split('.')[1];
+      if (!p) return false;
+      p = p.replace(/-/g, '+').replace(/_/g, '/');
+      while (p.length % 4) p += '=';
+      var claims = JSON.parse(decodeURIComponent(escape(atob(p))));
+      return claims && claims.user_type === 'admin';
+    } catch (e) { return false; }
+  }
+  if (isAdmin()) return;
+
+  function go() { location.replace(SOON); }
+
+  // كاش جلسة: يتفادى نداء health على كل صفحة خلال نفس الدقيقة
+  try {
+    var c = JSON.parse(sessionStorage.getItem('se_locked') || 'null');
+    if (c && (Date.now() - c.at) < TTL) { if (c.locked) go(); return; }
+  } catch (e) { /* كاش تالف → تجاهل واستعلم */ }
+
+  var ac = new AbortController();
+  var timer = setTimeout(function () { ac.abort(); }, 20000);
+  fetch(API + '/api/health', { signal: ac.signal, cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) {
+      clearTimeout(timer);
+      if (!d || typeof d.locked !== 'boolean') return;    // fail-open
+      try { sessionStorage.setItem('se_locked', JSON.stringify({ locked: d.locked, at: Date.now() })); } catch (e) {}
+      if (d.locked) go();
+    })
+    .catch(function () { clearTimeout(timer); /* fail-open: لا تحويل */ });
+})();
+/* ===== SE-PLATFORM-LOCK-GUARD END ===== */

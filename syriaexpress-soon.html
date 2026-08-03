@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#C9A84C">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SyriaExpress</title>
+  <script>(function(){var s=localStorage.getItem('theme');if(s!=='dark'){document.documentElement.setAttribute('data-theme','light');if(!s)localStorage.setItem('theme','light');}})()</script>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --gold:#C9A84C;--gold-light:#E8C96A;
+      --bg:#0F0E0C;--bg2:#161410;--bg3:#1C1A16;
+      --text:#F5F0E8;--text-dim:#A89880;
+      --border:#2A2620;--border-gold:rgba(201,168,76,0.25);
+    }
+    [data-theme="light"]{
+      --bg:#F5F3EF;--bg2:#FFFFFF;--bg3:#E8E4DC;
+      --text:#1a1917;--text-dim:#5a5650;
+      --border:#d5d0c8;--border-gold:rgba(201,168,76,0.35);
+    }
+    html,body{height:100%}
+    body{
+      font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);direction:rtl;
+      display:flex;align-items:center;justify-content:center;padding:24px;
+      transition:background .3s,color .3s;
+    }
+    .card{
+      width:100%;max-width:420px;text-align:center;
+      background:var(--bg2);border:1px solid var(--border-gold);border-radius:16px;
+      padding:40px 26px;
+    }
+    .logo{width:82px;height:82px;object-fit:contain;margin-bottom:18px}
+    .brand{font-family:'Amiri',serif;color:var(--gold);font-size:26px;line-height:1.2}
+    .sub{color:var(--text-dim);font-size:10px;letter-spacing:3px;margin-top:2px}
+    h1{font-family:'Amiri',serif;color:var(--text);font-size:22px;font-weight:700;margin:26px 0 10px}
+    p{color:var(--text-dim);font-size:14px;line-height:1.9}
+    .actions{display:flex;gap:10px;justify-content:center;margin-top:26px;flex-wrap:wrap}
+    button{
+      font-family:'Cairo',sans-serif;font-size:13px;cursor:pointer;
+      padding:10px 20px;border-radius:8px;border:1px solid var(--border-gold);
+      background:transparent;color:var(--gold);
+    }
+    button:disabled{opacity:.55;cursor:default}
+    .theme-btn{border-color:var(--border);color:var(--text-dim);font-size:16px;padding:9px 13px;line-height:1}
+    .status{margin-top:16px;font-size:12px;color:var(--text-dim);min-height:18px}
+    footer{margin-top:28px;font-size:11px;color:var(--text-dim)}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img class="logo" src="/icon-192.png" alt="">
+    <div class="brand">SyriaExpress</div>
+    <div class="sub">MADE IN SYRIA</div>
+
+    <h1>المنصّة قيد التجهيز</h1>
+    <p>نعمل حالياً على إطلاق النسخة الجديدة.<br>تفضّل بالعودة قريباً.</p>
+
+    <div class="actions">
+      <button id="checkBtn" type="button">تحقّق مجدداً</button>
+      <button id="themeBtn" class="theme-btn" type="button" aria-label="تبديل الوضع">☀️</button>
+    </div>
+    <div class="status" id="status"></div>
+
+    <footer>© 2026 SyriaExpress</footer>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+  var API = 'https://syriaexpress-backend.onrender.com';
+
+  // ── تبديل الوضع (نفس منطق باقي الموقع) ──
+  function syncThemeIcon() {
+    var dark = document.documentElement.getAttribute('data-theme') !== 'light';
+    document.getElementById('themeBtn').textContent = dark ? '🌙' : '☀️';
+  }
+  document.getElementById('themeBtn').addEventListener('click', function () {
+    var dark = document.documentElement.getAttribute('data-theme') !== 'light';
+    if (dark) { document.documentElement.setAttribute('data-theme', 'light'); localStorage.setItem('theme', 'light'); }
+    else      { document.documentElement.removeAttribute('data-theme');       localStorage.setItem('theme', 'dark');  }
+    syncThemeIcon();
+  });
+  syncThemeIcon();
+
+  // ── فحص الحالة: إن رُفع القفل نعيد الزائر للصفحة الرئيسية ──
+  // لا تحويل إلا عند ردّ صريح locked=false — أي خطأ شبكة يُبقي الزائر هنا
+  // (لا نفتح المنصّة بسبب انقطاع مؤقّت).
+  var btn = document.getElementById('checkBtn');
+  var out = document.getElementById('status');
+
+  function check(manual) {
+    if (manual) { btn.disabled = true; out.textContent = 'جارٍ التحقّق...'; }
+    var ac = new AbortController();
+    var t  = setTimeout(function () { ac.abort(); }, 20000);
+    fetch(API + '/api/health', { signal: ac.signal, cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        clearTimeout(t);
+        if (d && d.locked === false) {
+          try { sessionStorage.removeItem('se_locked'); } catch (e) {}
+          location.replace('syriaexpress-landing.html');
+          return;
+        }
+        if (manual) { btn.disabled = false; out.textContent = 'ما زلنا نجهّز المنصّة.'; }
+      })
+      .catch(function () {
+        clearTimeout(t);
+        if (manual) { btn.disabled = false; out.textContent = 'تعذّر الاتصال، حاول بعد قليل.'; }
+      });
+  }
+
+  btn.addEventListener('click', function () { check(true); });
+  check(false);   // فحص صامت عند التحميل
+})();
+</script>
+</body>
+</html>
