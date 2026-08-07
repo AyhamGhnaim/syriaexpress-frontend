@@ -19,19 +19,40 @@ jobs:
       - name: Ping backend DB endpoint (reset Supabase 7-day pause timer)
         run: |
           set -euo pipefail
+          # مقبولان كلاهما:
+          #   200 → المنصّة مفتوحة، والمسار نفّذ SELECT على categories.
+          #   503 + PLATFORM_LOCKED → المنصّة مقفولة (ما قبل الإطلاق). الردّ
+          #   نفسه دليل أنّ الباكند صاحٍ وأنّ بوابة القفل قرأت platform_settings
+          #   (استعلام DB إن كان الكاش 60ث قد انتهى).
+          # أي شيء آخر (000/404/500…) يبقى فشلاً حقيقياً — لا نكتم إنذاراً صحيحاً.
+          # يُزال فرع 503 عند فكّ القفل نهائياً (أو عند الترقية لـ Supabase Pro).
           URL="https://syriaexpress-backend.onrender.com/api/categories"
           HTTP="000"
+          BODY=""
+          OK="no"
           for i in 1 2 3; do
             echo "Attempt $i — GET $URL"
             HTTP=$(curl -sS -o /tmp/resp.txt -w "%{http_code}" --max-time 120 "$URL") || HTTP="000"
+            BODY=$(head -c 300 /tmp/resp.txt 2>/dev/null || true)
             echo "HTTP status: $HTTP"
-            [ "$HTTP" = "200" ] && break
-            echo "Not 200 yet (Render cold start?) — waiting 20s before retry..."
+            if [ "$HTTP" = "200" ]; then OK="open"; break; fi
+            if [ "$HTTP" = "503" ] && printf '%s' "$BODY" | grep -q 'PLATFORM_LOCKED'; then OK="locked"; break; fi
+            echo "Not an accepted response yet (Render cold start?) — waiting 20s before retry..."
             sleep 20
           done
-          echo "Response body (first 300 chars): $(head -c 300 /tmp/resp.txt 2>/dev/null || true)"
-          [ "$HTTP" = "200" ] || { echo "::error::keep-alive ping failed after retries (HTTP $HTTP)"; exit 1; }
-          echo "✅ Backend executed DB query (SELECT FROM categories) — Supabase 7-day timer reset + Render awake."
+          echo "Response body (first 300 chars): $BODY"
+          case "$OK" in
+            open)
+              echo "✅ Backend executed DB query (SELECT FROM categories) — Supabase 7-day timer reset + Render awake."
+              ;;
+            locked)
+              echo "🔒 Platform is LOCKED (503 PLATFORM_LOCKED) — backend awake, lock gate read platform_settings. Treated as success."
+              ;;
+            *)
+              echo "::error::keep-alive ping failed after retries (HTTP $HTTP)"
+              exit 1
+              ;;
+          esac
 
       - name: Keep GitHub Actions schedule alive (reset 60-day timer)
         run: |
